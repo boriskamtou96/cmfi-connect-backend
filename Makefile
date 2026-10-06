@@ -1,5 +1,6 @@
-include .envrc
-MIGRATIONS_PATH = ./cmd/migrate/migrations
+include .env
+MIGRATIONS_PATH = ./internal/db/migration
+COMPOSE_FILE = ./docker-compose.yml
 
 .PHONY: migrate-create
 migration:
@@ -15,7 +16,23 @@ migrate-down:
 	@migrate -path=${MIGRATIONS_PATH} -database=$(DB_ADDR) down $(filter-out $@,$(MAKECMDGOALS))
 
 
+.PHONY: docker-up
+docker-up:
+	docker compose -f ${COMPOSE_FILE} up -d
 
-.PHONY: gen-docs
-gen-docs:
-	@swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal --useStructName
+
+.PHONY: docker-down
+docker-down:
+	docker compose -f ${COMPOSE_FILE} down
+
+.PHONY: test
+test:
+	go test -v -cover ./...
+
+.PHONY: run
+run:
+	go run
+
+.PHONY: sqlc
+sqlc:
+	sqlc generate
