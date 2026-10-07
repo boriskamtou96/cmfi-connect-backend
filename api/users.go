@@ -120,11 +120,10 @@ func (s *Server) login(c *gin.Context) {
 }
 
 type getUserRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int64 `uri:"id"`
 }
 
 func (s *Server) getUser(c *gin.Context) {
-	// Get ID param and validate
 	var req getUserRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		badRequestError(c, err)

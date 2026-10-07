@@ -42,7 +42,6 @@ func TestCreateUserAuthority(t *testing.T) {
 
 func TestGetUserAuthorities(t *testing.T) {
 	params := GetUserAuthoritiesParams{
-		UserID: 22,
 		Limit:  10,
 		Offset: 0,
 	}
@@ -56,12 +55,9 @@ func TestGetUserAuthorities(t *testing.T) {
 }
 
 func TestGetAuthorityByID(t *testing.T) {
-	params := GetAuthorityByIdParams{
-		ID:     1,
-		UserID: 22,
-	}
+	ID := 3
 
-	authority, err := testQueries.GetAuthorityById(context.Background(), params)
+	authority, err := testQueries.GetAuthorityById(context.Background(), int64(ID))
 	require.NoError(t, err)
 
 	require.NotEmpty(t, authority)
@@ -77,10 +73,6 @@ func TestDeleteAuthority(t *testing.T) {
 	err := testQueries.DeleteAuthority(context.Background(), params)
 	require.NoError(t, err)
 
-	deleteParams := GetAuthorityByIdParams{
-		ID:     1,
-		UserID: 22,
-	}
-	_, err = testQueries.GetAuthorityById(context.Background(), deleteParams)
+	_, err = testQueries.GetAuthorityById(context.Background(), int64(4))
 	require.Error(t, err)
 }

@@ -20,6 +20,18 @@ type Authority struct {
 	UserID          int64          `json:"user_id"`
 }
 
+type Profile struct {
+	ID        int64          `json:"id"`
+	UserID    int64          `json:"user_id"`
+	BirthDate sql.NullTime   `json:"birth_date"`
+	City      sql.NullString `json:"city"`
+	Country   sql.NullString `json:"country"`
+	Church    sql.NullString `json:"church"`
+	Assembly  sql.NullString `json:"assembly"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
+
 type User struct {
 	ID           int64          `json:"id"`
 	FirstName    string         `json:"first_name"`

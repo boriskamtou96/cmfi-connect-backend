@@ -24,3 +24,13 @@ WHERE id = $1 AND user_id = $2;
 SELECT COUNT(*)
 FROM authorities
 WHERE user_id = $1;
+
+-- name: UpdateAuthority :one
+UPDATE authorities
+SET first_name = COALESCE($2, first_name),
+    last_name = COALESCE($3, last_name),
+    phone_number = COALESCE($4, phone_number),
+    email = COALESCE($5, email),
+    is_disciple_maker = COALESCE($6, is_disciple_maker)
+WHERE user_id = $1
+RETURNING *;

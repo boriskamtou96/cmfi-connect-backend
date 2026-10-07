@@ -33,10 +33,10 @@ WHERE id = $1;
 -- name: UpdateUser :one
 UPDATE users
 SET
-    first_name = $2,
-    last_name = $3,
-    phone_number = $4,
-    email = $5,
-    hash_password = $6
+    first_name = COALESCE($2, first_name),
+    last_name = COALESCE($3, last_name),
+    phone_number = COALESCE($4, phone_number),
+    email = COALESCE($5, email),
+    hash_password = COALESCE($6, hash_password),
 WHERE id = $1
 RETURNING *;

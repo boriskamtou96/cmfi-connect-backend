@@ -55,6 +55,13 @@ func (s *Server) SetupRouter() *gin.Engine {
 			}
 		}
 
+		profiles := r.Group("/profiles").Use(authMiddleware(s.jwtAuthenticator))
+		{
+			profiles.POST("/", s.createProfile)
+			profiles.GET("/", s.getProfile)
+			profiles.PUT("/", s.updateProfile)
+		}
+
 		authorities := r.Group("/authorities").Use(authMiddleware(s.jwtAuthenticator))
 		{
 			authorities.POST("/", s.createAuthority)

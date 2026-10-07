@@ -143,3 +143,46 @@ func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthorities
 	}
 	return items, nil
 }
+
+const updateAuthority = `-- name: UpdateAuthority :one
+UPDATE authorities
+SET first_name = COALESCE($2, first_name),
+    last_name = COALESCE($3, last_name),
+    phone_number = COALESCE($4, phone_number),
+    email = COALESCE($5, email),
+    is_disciple_maker = COALESCE($6, is_disciple_maker)
+WHERE user_id = $1
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
+`
+
+type UpdateAuthorityParams struct {
+	UserID          int64          `json:"user_id"`
+	FirstName       string         `json:"first_name"`
+	LastName        sql.NullString `json:"last_name"`
+	PhoneNumber     string         `json:"phone_number"`
+	Email           sql.NullString `json:"email"`
+	IsDiscipleMaker bool           `json:"is_disciple_maker"`
+}
+
+func (q *Queries) UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error) {
+	row := q.db.QueryRowContext(ctx, updateAuthority,
+		arg.UserID,
+		arg.FirstName,
+		arg.LastName,
+		arg.PhoneNumber,
+		arg.Email,
+		arg.IsDiscipleMaker,
+	)
+	var i Authority
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.IsDiscipleMaker,
+		&i.CreatedAt,
+		&i.UserID,
+	)
+	return i, err
+}
