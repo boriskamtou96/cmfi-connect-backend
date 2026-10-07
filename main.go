@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/boriskamtou96/cmfi-connect-backend/api"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/db"
+	dbs "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -32,26 +32,14 @@ func main() {
 	}
 
 	// Configure the db connection using the loaded configuration
-	db, err := db.New(cfg.DB)
-	if err != nil {
-		log.Fatalf("Failed to connect to db: %v", err)
-	}
-	mainDB, err := db.DB()
-	if err != nil {
-		log.Fatalf("Failed to get db connection: %v", err)
-	}
-	defer func(mainDB *sql.DB) {
-		err := mainDB.Close()
-		if err != nil {
-			log.Printf("Failed to close db connection: %v", err)
-		}
-	}(mainDB)
+	conn := db.New(cfg.DB)
 
 	// Configure Gin Mode
 	gin.SetMode(cfg.Server.GinMode)
 
 	// Configure http server
-	srv := api.New(db, cfg)
+	store := dbs.NewSQLStore(conn)
+	srv := api.New(store, cfg)
 	router := srv.SetupRouter()
 
 	httpServer := &http.Server{

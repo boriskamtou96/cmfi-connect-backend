@@ -23,10 +23,11 @@ OFFSET $2;
 DELETE FROM users
 WHERE id = $1;
 
--- name: UpdateUser :exec
+-- name: UpdateUser :one
 UPDATE users
 SET
     first_name = $2,
     last_name = $3,
     hash_password = $4
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;

@@ -110,13 +110,14 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
     first_name = $2,
     last_name = $3,
     hash_password = $4
 WHERE id = $1
+RETURNING id, first_name, last_name, hash_password, created_at
 `
 
 type UpdateUserParams struct {
@@ -126,12 +127,20 @@ type UpdateUserParams struct {
 	HashPassword string         `json:"hash_password"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.HashPassword,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.HashPassword,
+		&i.CreatedAt,
+	)
+	return i, err
 }

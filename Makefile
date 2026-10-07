@@ -1,6 +1,7 @@
 include .env
 MIGRATIONS_PATH = ./internal/db/migration
 COMPOSE_FILE = ./docker-compose.yml
+DB_ADDR = postgresql://postgres:postgres@localhost:5432/cmfi_connect?sslmode=disable
 
 .PHONY: migrate-create
 migration:
@@ -31,7 +32,7 @@ test:
 
 .PHONY: run
 run:
-	go run
+	go run ./main.go
 
 .PHONY: sqlc
 sqlc:

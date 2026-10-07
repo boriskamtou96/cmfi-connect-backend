@@ -13,7 +13,7 @@ type Querier interface {
 	GetUserById(ctx context.Context, id int64) (User, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

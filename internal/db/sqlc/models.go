@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 )
 
 type User struct {
@@ -13,5 +14,5 @@ type User struct {
 	FirstName    string         `json:"first_name"`
 	LastName     sql.NullString `json:"last_name"`
 	HashPassword string         `json:"hash_password"`
-	CreatedAt    interface{}    `json:"created_at"`
+	CreatedAt    time.Time      `json:"created_at"`
 }

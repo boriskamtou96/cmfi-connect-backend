@@ -12,6 +12,7 @@ type Config struct {
 }
 
 type DBConfig struct {
+	Driver   string
 	Host     string
 	Port     string
 	Name     string
@@ -19,6 +20,7 @@ type DBConfig struct {
 	Password string
 	User     string
 	SSLMode  string
+	Dsn      string
 }
 
 type ServerConfig struct {
@@ -40,12 +42,14 @@ func (c *Config) loadConfig() (*Config, error) {
 
 	config := &Config{
 		DB: DBConfig{
+			Driver:   getEnv("DB_DRIVER", "postgres"),
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnv("DB_PORT", "5432"),
 			Name:     getEnv("DB_NAME", "cmfi_connect"),
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			Dsn:      getEnv("DB_DSN", "postgresql://postgres:postgres@localhost:5432/cmfi_connect?sslmode=disable"),
 		},
 		Server: ServerConfig{
 			Port:    getEnv("PORT", "8080"),
