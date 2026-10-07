@@ -31,6 +31,27 @@ type profileResponse struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 }
 
+type userResp struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	PhoneNumber string `json:"phone_number"`
+	Email       string `json:"email"`
+}
+
+type fullUserProfile struct {
+	FirstName   string     `json:"first_name"`
+	LastName    string     `json:"last_name"`
+	PhoneNumber string     `json:"phone_number"`
+	Email       string     `json:"email"`
+	BirthDate   *time.Time `json:"birth_date,omitempty"`
+	City        *string    `json:"city,omitempty"`
+	Country     *string    `json:"country,omitempty"`
+	Church      *string    `json:"church,omitempty"`
+	Assembly    *string    `json:"assembly,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
 func (s *Server) createProfile(c *gin.Context) {
 	var payload createProfileRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -91,9 +112,23 @@ func (s *Server) createProfile(c *gin.Context) {
 func (s *Server) getProfile(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
+	user, err := s.store.GetUserById(c, authUser.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "User")
+			return
+		}
+		internalServerError(c)
+		return
+	}
+
 	profile, err := s.store.GetProfile(c, authUser.ID)
 	if err != nil {
-		resourceNotFoundError(c, "Profile")
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "Profile")
+			return
+		}
+		internalServerError(c)
 		return
 	}
 
@@ -102,7 +137,7 @@ func (s *Server) getProfile(c *gin.Context) {
 		return
 	}
 
-	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
+	apiResponse(c, http.StatusOK, convertToFullUserProfile(user, profile))
 }
 
 type updateProfileRequest struct {
@@ -174,7 +209,35 @@ func (s *Server) updateProfile(c *gin.Context) {
 	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
 }
 
-func convertToProfileResponse(profile db.Profile) profileResponse {
+func convertToFullUserProfile(user db.User, profile db.Profile) *fullUserProfile {
+	profileResp := convertToProfileResponse(profile)
+	userRes := convertToUserResp(user)
+
+	return &fullUserProfile{
+		FirstName:   user.FirstName,
+		LastName:    user.LastName.String,
+		PhoneNumber: userRes.PhoneNumber,
+		Email:       userRes.Email,
+		BirthDate:   profileResp.BirthDate,
+		City:        profileResp.City,
+		Country:     profileResp.Country,
+		Church:      profileResp.Church,
+		Assembly:    profileResp.Assembly,
+		CreatedAt:   profileResp.CreatedAt,
+		UpdatedAt:   profileResp.UpdatedAt,
+	}
+}
+
+func convertToUserResp(user db.User) userResp {
+	return userResp{
+		FirstName:   user.FirstName,
+		LastName:    user.LastName.String,
+		Email:       user.Email.String,
+		PhoneNumber: user.PhoneNumber,
+	}
+}
+
+func convertToProfileResponse(profile db.Profile) *profileResponse {
 	var birthDatePtr *time.Time
 	if profile.BirthDate.Valid {
 		birthDatePtr = &profile.BirthDate.Time
@@ -195,7 +258,7 @@ func convertToProfileResponse(profile db.Profile) profileResponse {
 		assemblyPtr = &profile.Assembly.String
 	}
 
-	return profileResponse{
+	return &profileResponse{
 		ID:        profile.ID,
 		UserID:    profile.UserID,
 		BirthDate: birthDatePtr,
