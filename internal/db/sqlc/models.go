@@ -17,6 +17,7 @@ type Authority struct {
 	Email           sql.NullString `json:"email"`
 	IsDiscipleMaker bool           `json:"is_disciple_maker"`
 	CreatedAt       time.Time      `json:"created_at"`
+	UserID          int64          `json:"user_id"`
 }
 
 type User struct {
@@ -27,10 +28,4 @@ type User struct {
 	CreatedAt    time.Time      `json:"created_at"`
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`
-}
-
-type UserAuthority struct {
-	UserID      int64     `json:"user_id"`
-	AuthorityID int64     `json:"authority_id"`
-	CreatedAt   time.Time `json:"created_at"`
 }
