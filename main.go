@@ -39,7 +39,10 @@ func main() {
 
 	// Configure http server
 	store := dbs.NewSQLStore(conn)
-	srv := api.New(store, cfg)
+	srv, err := api.New(store, cfg)
+	if err != nil {
+		log.Fatalf("Failed to load server: %v", err)
+	}
 	router := srv.SetupRouter()
 
 	httpServer := &http.Server{

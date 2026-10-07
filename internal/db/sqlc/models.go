@@ -9,10 +9,28 @@ import (
 	"time"
 )
 
+type Authority struct {
+	ID              int64          `json:"id"`
+	FirstName       string         `json:"first_name"`
+	LastName        sql.NullString `json:"last_name"`
+	PhoneNumber     string         `json:"phone_number"`
+	Email           sql.NullString `json:"email"`
+	IsDiscipleMaker bool           `json:"is_disciple_maker"`
+	CreatedAt       time.Time      `json:"created_at"`
+}
+
 type User struct {
 	ID           int64          `json:"id"`
 	FirstName    string         `json:"first_name"`
 	LastName     sql.NullString `json:"last_name"`
 	HashPassword string         `json:"hash_password"`
 	CreatedAt    time.Time      `json:"created_at"`
+	PhoneNumber  string         `json:"phone_number"`
+	Email        sql.NullString `json:"email"`
+}
+
+type UserAuthority struct {
+	UserID      int64     `json:"user_id"`
+	AuthorityID int64     `json:"authority_id"`
+	CreatedAt   time.Time `json:"created_at"`
 }

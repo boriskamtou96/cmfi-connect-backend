@@ -34,12 +34,12 @@ func NewApiResponse(status int, content any) ApiResponse {
 }
 
 func apiResponse(c *gin.Context, status int, data any) {
-	apiResponse := ApiResponse{status, data}
+	apiResponse := NewApiResponse(status, data)
 	c.JSON(status, apiResponse)
 }
 
-func badRequestError(c *gin.Context) {
-	errorResponse := NewErrorResponse(http.StatusBadRequest, "BAD_REQUEST", fmt.Errorf("bad request"))
+func badRequestError(c *gin.Context, err error) {
+	errorResponse := NewErrorResponse(http.StatusBadRequest, "BAD_REQUEST", fmt.Errorf("bad request: %s", err))
 	c.JSON(http.StatusForbidden, errorResponse)
 }
 
@@ -51,6 +51,16 @@ func forbiddenError(c *gin.Context) {
 func internalServerError(c *gin.Context) {
 	errorResponse := NewErrorResponse(http.StatusForbidden, "INTERNAL_SERVER_ERROR", fmt.Errorf("internal server error"))
 	c.JSON(http.StatusInternalServerError, errorResponse)
+}
+
+func unauthorizedError(c *gin.Context) {
+	errorResponse := NewErrorResponse(http.StatusUnauthorized, "UNAUTHORIZED", fmt.Errorf("unauthorized action"))
+	c.JSON(http.StatusUnauthorized, errorResponse)
+}
+
+func invalidCredentialsError(c *gin.Context) {
+	errorResponse := NewErrorResponse(http.StatusUnauthorized, "INVALID_CREDENTIALS", fmt.Errorf("invalid credentials"))
+	c.JSON(http.StatusUnauthorized, errorResponse)
 }
 
 func resourceNotFoundError(c *gin.Context, resourceName string) {

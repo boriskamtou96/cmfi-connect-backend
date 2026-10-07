@@ -9,6 +9,7 @@ import (
 type Config struct {
 	DB     DBConfig
 	Server ServerConfig
+	Token  TokenConfig
 }
 
 type DBConfig struct {
@@ -26,6 +27,11 @@ type DBConfig struct {
 type ServerConfig struct {
 	Port    string
 	GinMode string
+}
+
+type TokenConfig struct {
+	SecretKey string
+	Duration  string
 }
 
 // LoadConfig loads the configuration from environment variables and returns a Config struct.
@@ -54,6 +60,10 @@ func (c *Config) loadConfig() (*Config, error) {
 		Server: ServerConfig{
 			Port:    getEnv("PORT", "8080"),
 			GinMode: getEnv("GIN_MODE", "debug"),
+		},
+		Token: TokenConfig{
+			SecretKey: getEnv("TOKEN_SECRET", ""),
+			Duration:  getEnv("TOKEN_DURATION", "168h"),
 		},
 	}
 	return config, nil

@@ -1,25 +1,35 @@
 package api
 
 import (
+	"fmt"
+
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  *db.SQLStore
-	config *utils.Config
+	store      *db.SQLStore
+	config     *utils.Config
+	tokenMaker token.JWTAuthenticator
 }
 
-func New(store *db.SQLStore, cfg *utils.Config) *Server {
-	return &Server{
-		store:  store,
-		config: cfg,
+func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
+	jwtAuthenticator, err := token.NewPasetoMaker(cfg.Token.SecretKey)
+	if err != nil {
+		return nil, fmt.Errorf("token.NewPasetoMaker: %w", err)
 	}
+
+	return &Server{
+		store:      store,
+		config:     cfg,
+		tokenMaker: jwtAuthenticator,
+	}, nil
 }
 
 func (s *Server) SetupRouter() *gin.Engine {
-	router := gin.New()
+	router := gin.Default()
 
 	router.NoRoute(func(c *gin.Context) {
 		resourceNotFoundError(c, "ROUTE")
@@ -36,8 +46,13 @@ func (s *Server) SetupRouter() *gin.Engine {
 		users := r.Group("users")
 		{
 			users.POST("/register", s.registerUser)
-			users.GET("/:userID", s.getUser)
-			users.PUT("/:userID", s.updateUser)
+			users.POST("/login", s.login)
+			usersWithID := users.Group("/:id")
+			{
+				usersWithID.GET("/", s.getUser)
+				usersWithID.PUT("/", s.updateUser)
+				usersWithID.DELETE("/", s.deleteUser)
+			}
 		}
 	}
 

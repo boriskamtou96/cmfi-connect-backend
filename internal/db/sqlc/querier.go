@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	DeleteUser(ctx context.Context, id int64) error
+	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
