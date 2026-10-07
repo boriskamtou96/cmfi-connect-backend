@@ -7,27 +7,51 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type errorResponse struct {
+type MetaResponse struct {
+	Total  int64 `json:"total"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type PaginatedResponse struct {
+	Status  int          `json:"status"`
+	Content any          `json:"content"`
+	Meta    MetaResponse `json:"meta"`
+}
+
+func NewPaginatedResponse(status int, content any, meta MetaResponse) PaginatedResponse {
+	return PaginatedResponse{
+		Status:  status,
+		Content: content,
+		Meta: MetaResponse{
+			Total:  meta.Total,
+			Limit:  meta.Limit,
+			Offset: meta.Offset,
+		},
+	}
+}
+
+type ErrorResponse struct {
 	Status  int    `json:"status"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
-func NewErrorResponse(status int, code string, err error) errorResponse {
-	return errorResponse{
+func NewErrorResponse(status int, code string, err error) ErrorResponse {
+	return ErrorResponse{
 		Status:  status,
 		Code:    code,
 		Message: err.Error(),
 	}
 }
 
-type ApiResponse struct {
+type Response struct {
 	Status  int `json:"status"`
 	Content any `json:"content"`
 }
 
-func NewApiResponse(status int, content any) ApiResponse {
-	return ApiResponse{
+func NewApiResponse(status int, content any) Response {
+	return Response{
 		Status:  status,
 		Content: content,
 	}
@@ -35,6 +59,11 @@ func NewApiResponse(status int, content any) ApiResponse {
 
 func apiResponse(c *gin.Context, status int, data any) {
 	apiResponse := NewApiResponse(status, data)
+	c.JSON(status, apiResponse)
+}
+
+func paginatedApiResponse(c *gin.Context, status int, content any, meta MetaResponse) {
+	apiResponse := NewPaginatedResponse(status, content, meta)
 	c.JSON(status, apiResponse)
 }
 

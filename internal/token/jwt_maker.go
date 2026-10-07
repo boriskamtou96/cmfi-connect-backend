@@ -25,8 +25,8 @@ func NewPasetoMaker(symetricKey string) (JWTAuthenticator, error) {
 	return maker, nil
 }
 
-func (p *PasetoMaker) GenerateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+func (p *PasetoMaker) GenerateToken(userID int64, phoneNumber string, duration time.Duration) (string, error) {
+	payload, err := NewPayload(userID, phoneNumber, duration)
 	if err != nil {
 		return "", err
 	}

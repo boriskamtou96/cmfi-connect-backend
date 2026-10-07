@@ -10,6 +10,19 @@ import (
 	"database/sql"
 )
 
+const countUserAuthorities = `-- name: CountUserAuthorities :one
+SELECT COUNT(*)
+FROM authorities
+WHERE user_id = $1
+`
+
+func (q *Queries) CountUserAuthorities(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUserAuthorities, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUserAuthority = `-- name: CreateUserAuthority :one
 INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -66,17 +79,12 @@ func (q *Queries) DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams
 const getAuthorityById = `-- name: GetAuthorityById :one
 SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
 FROM authorities
-WHERE user_id = $1 AND id = $2
+WHERE id = $1
 LIMIT 1
 `
 
-type GetAuthorityByIdParams struct {
-	UserID int64 `json:"user_id"`
-	ID     int64 `json:"id"`
-}
-
-func (q *Queries) GetAuthorityById(ctx context.Context, arg GetAuthorityByIdParams) (Authority, error) {
-	row := q.db.QueryRowContext(ctx, getAuthorityById, arg.UserID, arg.ID)
+func (q *Queries) GetAuthorityById(ctx context.Context, id int64) (Authority, error) {
+	row := q.db.QueryRowContext(ctx, getAuthorityById, id)
 	var i Authority
 	err := row.Scan(
 		&i.ID,
@@ -94,20 +102,18 @@ func (q *Queries) GetAuthorityById(ctx context.Context, arg GetAuthorityByIdPara
 const getUserAuthorities = `-- name: GetUserAuthorities :many
 SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
 FROM authorities
-WHERE user_id = $1
 ORDER BY id DESC
-LIMIT $2
-OFFSET $3
+LIMIT $1
+OFFSET $2
 `
 
 type GetUserAuthoritiesParams struct {
-	UserID int64 `json:"user_id"`
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error) {
-	rows, err := q.db.QueryContext(ctx, getUserAuthorities, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserAuthorities, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

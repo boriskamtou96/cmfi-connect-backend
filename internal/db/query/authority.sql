@@ -6,17 +6,21 @@ RETURNING *;
 -- name: GetUserAuthorities :many
 SELECT *
 FROM authorities
-WHERE user_id = $1
 ORDER BY id DESC
-LIMIT $2
-OFFSET $3;
+LIMIT $1
+OFFSET $2;
 
 -- name: GetAuthorityById :one
 SELECT *
 FROM authorities
-WHERE user_id = $1 AND id = $2
+WHERE id = $1
 LIMIT 1;
 
 -- name: DeleteAuthority :exec
 DELETE FROM authorities
 WHERE id = $1 AND user_id = $2;
+
+-- name: CountUserAuthorities :one
+SELECT COUNT(*)
+FROM authorities
+WHERE user_id = $1;

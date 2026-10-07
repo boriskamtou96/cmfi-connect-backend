@@ -3,26 +3,20 @@ package token
 import (
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Payload struct {
-	ID          uuid.UUID `json:"id"`
+	ID          int64     `json:"id"`
 	PhoneNumber string    `json:"username"`
 	IssueAt     time.Time `json:"issue_at"`
 	ExpireAt    time.Time `json:"expire_at"`
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	tokenID, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
+func NewPayload(userID int64, phoneNumber string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
-		ID:          tokenID,
-		PhoneNumber: username,
+		ID:          userID,
+		PhoneNumber: phoneNumber,
 		IssueAt:     time.Now(),
 		ExpireAt:    time.Now().Add(duration),
 	}

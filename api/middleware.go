@@ -11,7 +11,7 @@ import (
 
 const (
 	authorizationHeaderKey  = "authorization"
-	authorizationType       = "bearer"
+	authorizationType       = "Bearer"
 	authorizationPayloadKey = "authorizationPayloadKey"
 )
 

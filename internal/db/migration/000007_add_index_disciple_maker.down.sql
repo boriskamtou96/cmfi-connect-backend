@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_unique_user_disciple_maker;

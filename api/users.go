@@ -110,7 +110,7 @@ func (s *Server) login(c *gin.Context) {
 		internalServerError(c)
 		return
 	}
-	accessToken, err := s.tokenMaker.GenerateToken(req.Phone, duration)
+	accessToken, err := s.jwtAuthenticator.GenerateToken(user.ID, user.PhoneNumber, duration)
 	if err != nil {
 		internalServerError(c)
 		return

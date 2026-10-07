@@ -9,10 +9,11 @@ import (
 )
 
 type Querier interface {
+	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams) error
 	DeleteUser(ctx context.Context, id int64) error
-	GetAuthorityById(ctx context.Context, arg GetAuthorityByIdParams) (Authority, error)
+	GetAuthorityById(ctx context.Context, id int64) (Authority, error)
 	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	GetUserById(ctx context.Context, id int64) (User, error)

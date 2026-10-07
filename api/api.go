@@ -10,9 +10,9 @@ import (
 )
 
 type Server struct {
-	store      *db.SQLStore
-	config     *utils.Config
-	tokenMaker token.JWTAuthenticator
+	store            *db.SQLStore
+	config           *utils.Config
+	jwtAuthenticator token.JWTAuthenticator
 }
 
 func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
@@ -22,9 +22,9 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 	}
 
 	return &Server{
-		store:      store,
-		config:     cfg,
-		tokenMaker: jwtAuthenticator,
+		store:            store,
+		config:           cfg,
+		jwtAuthenticator: jwtAuthenticator,
 	}, nil
 }
 
@@ -50,9 +50,17 @@ func (s *Server) SetupRouter() *gin.Engine {
 			usersWithID := users.Group("/:id")
 			{
 				usersWithID.GET("/", s.getUser)
-				usersWithID.PUT("/", s.updateUser)
+				usersWithID.PUT("/", s.updateUser).Use(authMiddleware(s.jwtAuthenticator))
 				usersWithID.DELETE("/", s.deleteUser)
 			}
+		}
+
+		authorities := r.Group("/authorities").Use(authMiddleware(s.jwtAuthenticator))
+		{
+			authorities.POST("/", s.createAuthority)
+			authorities.GET("/", s.listAuthorities)
+			authorities.GET("/:id", s.getAuthorityById)
+			authorities.DELETE("/:id", s.deleteAuthority)
 		}
 	}
 
