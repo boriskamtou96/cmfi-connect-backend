@@ -69,7 +69,12 @@ func paginatedApiResponse(c *gin.Context, status int, content any, meta MetaResp
 
 func badRequestError(c *gin.Context, err error) {
 	errorResponse := NewErrorResponse(http.StatusBadRequest, "BAD_REQUEST", fmt.Errorf("bad request: %s", err))
-	c.JSON(http.StatusForbidden, errorResponse)
+	c.JSON(http.StatusBadRequest, errorResponse)
+}
+
+func conflictError(c *gin.Context, err error) {
+	errorResponse := NewErrorResponse(http.StatusConflict, "CONFLICT", err)
+	c.JSON(http.StatusConflict, errorResponse)
 }
 
 func forbiddenError(c *gin.Context) {
@@ -78,7 +83,7 @@ func forbiddenError(c *gin.Context) {
 }
 
 func internalServerError(c *gin.Context) {
-	errorResponse := NewErrorResponse(http.StatusForbidden, "INTERNAL_SERVER_ERROR", fmt.Errorf("internal server error"))
+	errorResponse := NewErrorResponse(http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", fmt.Errorf("internal server error"))
 	c.JSON(http.StatusInternalServerError, errorResponse)
 }
 
@@ -99,5 +104,5 @@ func resourceNotFoundError(c *gin.Context, resourceName string) {
 
 func methodNotAllowError(c *gin.Context) {
 	errorResponse := NewErrorResponse(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOW", fmt.Errorf("%s not allow", c.Request.Method))
-	c.JSON(http.StatusNotFound, errorResponse)
+	c.JSON(http.StatusMethodNotAllowed, errorResponse)
 }

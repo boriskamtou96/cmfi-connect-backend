@@ -67,7 +67,7 @@ func TestGetUserProfile(t *testing.T) {
 func TestUpdateProfile(t *testing.T) {
 
 	params := UpdateProfileParams{
-		ID: int64(5),
+		UserID: int64(5),
 		BirthDate: sql.NullTime{
 			Time: time.Date(
 				1995,

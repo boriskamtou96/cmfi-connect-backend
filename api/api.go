@@ -69,6 +69,14 @@ func (s *Server) SetupRouter() *gin.Engine {
 			authorities.GET("/:id", s.getAuthorityById)
 			authorities.DELETE("/:id", s.deleteAuthority)
 		}
+
+		activityTypes := r.Group("/activities").Use(authMiddleware(s.jwtAuthenticator))
+		{
+			activityTypes.GET("/", s.listActivityTypes)
+			activityTypes.POST("/", s.createActivityType)
+			activityTypes.PUT("/:id", s.updateActivityType)
+			activityTypes.DELETE("/:id", s.archiveActivityType)
+		}
 	}
 
 	return router

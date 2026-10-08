@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+type ActivityType struct {
+	ID             int64          `json:"id"`
+	UserID         sql.NullInt64  `json:"user_id"`
+	Code           string         `json:"code"`
+	Label          string         `json:"label"`
+	TracksQuantity bool           `json:"tracks_quantity"`
+	QuantityUnit   sql.NullString `json:"quantity_unit"`
+	TracksDuration bool           `json:"tracks_duration"`
+	Position       int32          `json:"position"`
+	ArchivedAt     sql.NullTime   `json:"archived_at"`
+	CreatedAt      time.Time      `json:"created_at"`
+}
+
 type Authority struct {
 	ID              int64          `json:"id"`
 	FirstName       string         `json:"first_name"`
@@ -18,6 +31,15 @@ type Authority struct {
 	IsDiscipleMaker bool           `json:"is_disciple_maker"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UserID          int64          `json:"user_id"`
+}
+
+type DailyReport struct {
+	ID         int64          `json:"id"`
+	UserID     int64          `json:"user_id"`
+	ReportDate time.Time      `json:"report_date"`
+	Note       sql.NullString `json:"note"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
 type Profile struct {
@@ -36,11 +58,18 @@ type Profile struct {
 	Email       sql.NullString `json:"email"`
 }
 
+type ReportEntry struct {
+	ReportID       int64          `json:"report_id"`
+	ActivityTypeID int64          `json:"activity_type_id"`
+	Val            string         `json:"val"`
+	TimePass       sql.NullString `json:"time_pass"`
+}
+
 type User struct {
 	ID           int64          `json:"id"`
 	FirstName    string         `json:"first_name"`
 	LastName     sql.NullString `json:"last_name"`
-	HashPassword string         `json:"hash_password"`
+	HashPassword []byte         `json:"hash_password"`
 	CreatedAt    time.Time      `json:"created_at"`
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`

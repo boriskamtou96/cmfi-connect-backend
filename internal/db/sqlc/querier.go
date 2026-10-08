@@ -9,7 +9,11 @@ import (
 )
 
 type Querier interface {
+	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
+	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
+	// Personal items are numbered after the standard ones: 101, 102...
+	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams) error
@@ -17,11 +21,17 @@ type Querier interface {
 	GetAuthorityById(ctx context.Context, id int64) (Authority, error)
 	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
+	// Standard items (user_id IS NULL) + the user's own items, archived ones excluded.
+	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
+	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
+	// Only the user's own active item can change; standard items never match (user_id IS NULL).
+	// tracks_quantity / tracks_duration stay fixed: past entries were saved with them.
+	UpdateActivityType(ctx context.Context, arg UpdateActivityTypeParams) (ActivityType, error)
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

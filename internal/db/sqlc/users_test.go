@@ -16,7 +16,9 @@ func createRandomUser(t *testing.T) User {
 			String: faker.LastName(),
 			Valid:  true,
 		},
-		HashPassword: faker.Password(),
+		// phone_number is UNIQUE: each test user needs its own
+		PhoneNumber:  faker.E164PhoneNumber(),
+		HashPassword: []byte(faker.Password()),
 	}
 
 	user, err := testQueries.RegisterUser(context.Background(), params)

@@ -58,7 +58,7 @@ func (s *Server) registerUser(c *gin.Context) {
 			Valid:  payload.Email != "",
 		},
 		PhoneNumber:  payload.PhoneNumber,
-		HashPassword: string(hashPassword),
+		HashPassword: hashPassword,
 	}
 
 	user, err := s.store.RegisterUser(c, arg)
@@ -124,7 +124,7 @@ func (s *Server) login(c *gin.Context) {
 		return
 	}
 
-	err = utils.CheckPassword(req.Password, user.HashPassword)
+	err = utils.CheckPassword(req.Password, string(user.HashPassword))
 	if err != nil {
 		invalidCredentialsError(c)
 		return
@@ -208,7 +208,16 @@ func (s *Server) updateUser(c *gin.Context) {
 			String: payload.LastName,
 			Valid:  payload.LastName != "",
 		},
-		HashPassword: payload.HashPassword,
+	}
+
+	// hash the new password; nil keeps the current one (COALESCE in the query)
+	if payload.HashPassword != "" {
+		hashPassword, err := bcrypt.GenerateFromPassword([]byte(payload.HashPassword), bcrypt.DefaultCost)
+		if err != nil {
+			internalServerError(c)
+			return
+		}
+		arg.HashPassword = hashPassword
 	}
 
 	updatedUser, err := s.store.UpdateUser(c, arg)

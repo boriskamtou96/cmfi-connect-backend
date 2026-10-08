@@ -123,7 +123,7 @@ type RegisterUserParams struct {
 	LastName     sql.NullString `json:"last_name"`
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`
-	HashPassword string         `json:"hash_password"`
+	HashPassword []byte         `json:"hash_password"`
 }
 
 func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error) {
@@ -165,7 +165,7 @@ type UpdateUserParams struct {
 	LastName     sql.NullString `json:"last_name"`
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`
-	HashPassword string         `json:"hash_password"`
+	HashPassword []byte         `json:"hash_password"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
