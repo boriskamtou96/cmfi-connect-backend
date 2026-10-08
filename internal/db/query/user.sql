@@ -37,6 +37,6 @@ SET
     last_name = COALESCE($3, last_name),
     phone_number = COALESCE($4, phone_number),
     email = COALESCE($5, email),
-    hash_password = COALESCE($6, hash_password),
+    hash_password = COALESCE($6, hash_password)
 WHERE id = $1
 RETURNING *;

@@ -74,6 +74,31 @@ func (s *Server) registerUser(c *gin.Context) {
 		return
 	}
 
+	_, err = s.store.CreateProfile(c, db.CreateProfileParams{
+		UserID:    user.ID,
+		FirstName: payload.FirstName,
+		LastName: sql.NullString{
+			String: payload.LastName,
+			Valid:  payload.LastName != "",
+		},
+		Email: sql.NullString{
+			String: payload.Email,
+			Valid:  payload.Email != "",
+		},
+		PhoneNumber: payload.PhoneNumber,
+	})
+	if err != nil {
+		if pgErr, ok := errors.AsType[*pq.Error](err); ok {
+			switch pgErr.Code.Name() {
+			case "unique_violation":
+				forbiddenError(c)
+				return
+			}
+		}
+		internalServerError(c)
+		return
+	}
+
 	apiResponse(c, http.StatusCreated, convertToUserResponse(user))
 }
 

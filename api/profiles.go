@@ -12,23 +12,31 @@ import (
 )
 
 type createProfileRequest struct {
-	BirthDate *time.Time `json:"birth_date"`
-	City      *string    `json:"city"`
-	Country   *string    `json:"country"`
-	Church    *string    `json:"church"`
-	Assembly  *string    `json:"assembly"`
+	FirstName   string     `json:"first_name"`
+	LastName    *string    `json:"last_name"`
+	PhoneNumber string     `json:"phone_number"`
+	Email       *string    `json:"email"`
+	BirthDate   *time.Time `json:"birth_date"`
+	City        *string    `json:"city"`
+	Country     *string    `json:"country"`
+	Church      *string    `json:"church"`
+	Assembly    *string    `json:"assembly"`
 }
 
 type profileResponse struct {
-	ID        int64      `json:"id"`
-	UserID    int64      `json:"user_id"`
-	BirthDate *time.Time `json:"birth_date,omitempty"`
-	City      *string    `json:"city,omitempty"`
-	Country   *string    `json:"country,omitempty"`
-	Church    *string    `json:"church,omitempty"`
-	Assembly  *string    `json:"assembly,omitempty"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID          int64      `json:"id"`
+	UserID      int64      `json:"user_id"`
+	FirstName   string     `json:"first_name"`
+	LastName    string     `json:"last_name"`
+	PhoneNumber string     `json:"phone_number"`
+	Email       string     `json:"email"`
+	BirthDate   *time.Time `json:"birth_date"`
+	City        *string    `json:"city"`
+	Country     *string    `json:"country"`
+	Church      *string    `json:"church"`
+	Assembly    *string    `json:"assembly"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
 type userResp struct {
@@ -43,11 +51,11 @@ type fullUserProfile struct {
 	LastName    string     `json:"last_name"`
 	PhoneNumber string     `json:"phone_number"`
 	Email       string     `json:"email"`
-	BirthDate   *time.Time `json:"birth_date,omitempty"`
-	City        *string    `json:"city,omitempty"`
-	Country     *string    `json:"country,omitempty"`
-	Church      *string    `json:"church,omitempty"`
-	Assembly    *string    `json:"assembly,omitempty"`
+	BirthDate   *time.Time `json:"birth_date"`
+	City        *string    `json:"city"`
+	Country     *string    `json:"country"`
+	Church      *string    `json:"church"`
+	Assembly    *string    `json:"assembly"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
@@ -62,7 +70,23 @@ func (s *Server) createProfile(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	params := db.CreateProfileParams{
-		UserID: authUser.ID,
+		UserID:      authUser.ID,
+		FirstName:   payload.FirstName,
+		PhoneNumber: payload.PhoneNumber,
+	}
+
+	if payload.LastName != nil {
+		params.LastName = sql.NullString{
+			String: *payload.LastName,
+			Valid:  true,
+		}
+	}
+
+	if payload.Email != nil {
+		params.LastName = sql.NullString{
+			String: *payload.Email,
+			Valid:  true,
+		}
 	}
 
 	if payload.BirthDate != nil {
@@ -112,16 +136,6 @@ func (s *Server) createProfile(c *gin.Context) {
 func (s *Server) getProfile(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
-	user, err := s.store.GetUserById(c, authUser.ID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			resourceNotFoundError(c, "User")
-			return
-		}
-		internalServerError(c)
-		return
-	}
-
 	profile, err := s.store.GetProfile(c, authUser.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -137,15 +151,19 @@ func (s *Server) getProfile(c *gin.Context) {
 		return
 	}
 
-	apiResponse(c, http.StatusOK, convertToFullUserProfile(user, profile))
+	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
 }
 
 type updateProfileRequest struct {
-	BirthDate *time.Time `json:"birth_date"`
-	City      *string    `json:"city"`
-	Country   *string    `json:"country"`
-	Church    *string    `json:"church"`
-	Assembly  *string    `json:"assembly"`
+	FirstName   string     `json:"first_name"`
+	LastName    string     `json:"last_name"`
+	PhoneNumber string     `json:"phone_number"`
+	Email       string     `json:"email"`
+	BirthDate   *time.Time `json:"birth_date"`
+	City        *string    `json:"city"`
+	Country     *string    `json:"country"`
+	Church      *string    `json:"church"`
+	Assembly    *string    `json:"assembly"`
 }
 
 func (s *Server) updateProfile(c *gin.Context) {
@@ -158,7 +176,23 @@ func (s *Server) updateProfile(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	params := db.UpdateProfileParams{
-		UserID: authUser.ID,
+		UserID:      authUser.ID,
+		FirstName:   payload.FirstName,
+		PhoneNumber: payload.PhoneNumber,
+	}
+
+	if payload.LastName != "" {
+		params.LastName = sql.NullString{
+			String: payload.LastName,
+			Valid:  true,
+		}
+	}
+
+	if payload.Email != "" {
+		params.Email = sql.NullString{
+			String: payload.Email,
+			Valid:  true,
+		}
 	}
 
 	if payload.BirthDate != nil {
@@ -209,34 +243,6 @@ func (s *Server) updateProfile(c *gin.Context) {
 	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
 }
 
-func convertToFullUserProfile(user db.User, profile db.Profile) *fullUserProfile {
-	profileResp := convertToProfileResponse(profile)
-	userRes := convertToUserResp(user)
-
-	return &fullUserProfile{
-		FirstName:   user.FirstName,
-		LastName:    user.LastName.String,
-		PhoneNumber: userRes.PhoneNumber,
-		Email:       userRes.Email,
-		BirthDate:   profileResp.BirthDate,
-		City:        profileResp.City,
-		Country:     profileResp.Country,
-		Church:      profileResp.Church,
-		Assembly:    profileResp.Assembly,
-		CreatedAt:   profileResp.CreatedAt,
-		UpdatedAt:   profileResp.UpdatedAt,
-	}
-}
-
-func convertToUserResp(user db.User) userResp {
-	return userResp{
-		FirstName:   user.FirstName,
-		LastName:    user.LastName.String,
-		Email:       user.Email.String,
-		PhoneNumber: user.PhoneNumber,
-	}
-}
-
 func convertToProfileResponse(profile db.Profile) *profileResponse {
 	var birthDatePtr *time.Time
 	if profile.BirthDate.Valid {
@@ -259,14 +265,18 @@ func convertToProfileResponse(profile db.Profile) *profileResponse {
 	}
 
 	return &profileResponse{
-		ID:        profile.ID,
-		UserID:    profile.UserID,
-		BirthDate: birthDatePtr,
-		City:      cityPtr,
-		Country:   countryPtr,
-		Church:    churchPtr,
-		Assembly:  assemblyPtr,
-		CreatedAt: profile.CreatedAt,
-		UpdatedAt: profile.UpdatedAt,
+		ID:          profile.ID,
+		UserID:      profile.UserID,
+		FirstName:   profile.FirstName,
+		LastName:    profile.LastName.String,
+		PhoneNumber: profile.PhoneNumber,
+		Email:       profile.Email.String,
+		BirthDate:   birthDatePtr,
+		City:        cityPtr,
+		Country:     countryPtr,
+		Church:      churchPtr,
+		Assembly:    assemblyPtr,
+		CreatedAt:   profile.CreatedAt,
+		UpdatedAt:   profile.UpdatedAt,
 	}
 }

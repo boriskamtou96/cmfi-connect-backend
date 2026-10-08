@@ -1,0 +1,5 @@
+ALTER TABLE profiles
+    ADD COLUMN first_name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN last_name VARCHAR(255),
+    ADD COLUMN phone_number VARCHAR NOT NULL DEFAULT '',
+    ADD COLUMN email VARCHAR;

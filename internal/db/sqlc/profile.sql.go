@@ -11,23 +11,31 @@ import (
 )
 
 const createProfile = `-- name: CreateProfile :one
-INSERT INTO profiles (user_id, birth_date, city, country, church, assembly)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, birth_date, city, country, church, assembly, created_at, updated_at
+INSERT INTO profiles (user_id, first_name, last_name, phone_number, email, birth_date, city, country, church, assembly)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+RETURNING id, user_id, birth_date, city, country, church, assembly, created_at, updated_at, first_name, last_name, phone_number, email
 `
 
 type CreateProfileParams struct {
-	UserID    int64          `json:"user_id"`
-	BirthDate sql.NullTime   `json:"birth_date"`
-	City      sql.NullString `json:"city"`
-	Country   sql.NullString `json:"country"`
-	Church    sql.NullString `json:"church"`
-	Assembly  sql.NullString `json:"assembly"`
+	UserID      int64          `json:"user_id"`
+	FirstName   string         `json:"first_name"`
+	LastName    sql.NullString `json:"last_name"`
+	PhoneNumber string         `json:"phone_number"`
+	Email       sql.NullString `json:"email"`
+	BirthDate   sql.NullTime   `json:"birth_date"`
+	City        sql.NullString `json:"city"`
+	Country     sql.NullString `json:"country"`
+	Church      sql.NullString `json:"church"`
+	Assembly    sql.NullString `json:"assembly"`
 }
 
 func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error) {
 	row := q.db.QueryRowContext(ctx, createProfile,
 		arg.UserID,
+		arg.FirstName,
+		arg.LastName,
+		arg.PhoneNumber,
+		arg.Email,
 		arg.BirthDate,
 		arg.City,
 		arg.Country,
@@ -45,12 +53,16 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (P
 		&i.Assembly,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
 	)
 	return i, err
 }
 
 const getProfile = `-- name: GetProfile :one
-SELECT id, user_id, birth_date, city, country, church, assembly, created_at, updated_at FROM profiles
+SELECT id, user_id, birth_date, city, country, church, assembly, created_at, updated_at, first_name, last_name, phone_number, email FROM profiles
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -67,12 +79,16 @@ func (q *Queries) GetProfile(ctx context.Context, userID int64) (Profile, error)
 		&i.Assembly,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
 	)
 	return i, err
 }
 
 const listProfiles = `-- name: ListProfiles :many
-SELECT id, user_id, birth_date, city, country, church, assembly, created_at, updated_at FROM profiles
+SELECT id, user_id, birth_date, city, country, church, assembly, created_at, updated_at, first_name, last_name, phone_number, email FROM profiles
 ORDER BY id DESC
 `
 
@@ -95,6 +111,10 @@ func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
 			&i.Assembly,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FirstName,
+			&i.LastName,
+			&i.PhoneNumber,
+			&i.Email,
 		); err != nil {
 			return nil, err
 		}
@@ -112,28 +132,40 @@ func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
 const updateProfile = `-- name: UpdateProfile :one
 UPDATE profiles
 SET birth_date = COALESCE($2, birth_date),
-    city = COALESCE($3, city),
-    country = COALESCE($4, country),
-    church = COALESCE($5, church),
-    assembly = COALESCE($6, assembly),
+    first_name = COALESCE($3, first_name),
+    last_name = COALESCE($4, last_name),
+    phone_number = COALESCE($5, phone_number),
+    email = COALESCE($6, email),
+    city = COALESCE($7, city),
+    country = COALESCE($8, country),
+    church = COALESCE($9, church),
+    assembly = COALESCE($10, assembly),
     updated_at = NOW()
 WHERE user_id = $1
-RETURNING id, user_id, birth_date, city, country, church, assembly, created_at, updated_at
+RETURNING id, user_id, birth_date, city, country, church, assembly, created_at, updated_at, first_name, last_name, phone_number, email
 `
 
 type UpdateProfileParams struct {
-	UserID    int64          `json:"user_id"`
-	BirthDate sql.NullTime   `json:"birth_date"`
-	City      sql.NullString `json:"city"`
-	Country   sql.NullString `json:"country"`
-	Church    sql.NullString `json:"church"`
-	Assembly  sql.NullString `json:"assembly"`
+	UserID      int64          `json:"user_id"`
+	BirthDate   sql.NullTime   `json:"birth_date"`
+	FirstName   string         `json:"first_name"`
+	LastName    sql.NullString `json:"last_name"`
+	PhoneNumber string         `json:"phone_number"`
+	Email       sql.NullString `json:"email"`
+	City        sql.NullString `json:"city"`
+	Country     sql.NullString `json:"country"`
+	Church      sql.NullString `json:"church"`
+	Assembly    sql.NullString `json:"assembly"`
 }
 
 func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
 	row := q.db.QueryRowContext(ctx, updateProfile,
 		arg.UserID,
 		arg.BirthDate,
+		arg.FirstName,
+		arg.LastName,
+		arg.PhoneNumber,
+		arg.Email,
 		arg.City,
 		arg.Country,
 		arg.Church,
@@ -150,6 +182,10 @@ func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (P
 		&i.Assembly,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
 	)
 	return i, err
 }
