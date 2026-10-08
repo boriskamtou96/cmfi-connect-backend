@@ -11,21 +11,33 @@ import (
 type Querier interface {
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
+	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
 	// Personal items are numbered after the standard ones: 101, 102...
 	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
+	CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams) error
+	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAuthorityById(ctx context.Context, id int64) (Authority, error)
 	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
+	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
+	// Every item the user can fill in, with the values entered that day (NULL when empty).
+	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
+	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
+	// standard items are shared, joining report_entries directly would mix users.
+	GetReportSummary(ctx context.Context, arg GetReportSummaryParams) ([]GetReportSummaryRow, error)
 	// Standard items (user_id IS NULL) + the user's own items, archived ones excluded.
 	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
+	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
+	// Archived items still show here: past values are never lost.
+	ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
@@ -35,6 +47,8 @@ type Querier interface {
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	// Creates the day, or updates its note when it already exists.
+	UpsertDailyReport(ctx context.Context, arg UpsertDailyReportParams) (DailyReport, error)
 }
 
 var _ Querier = (*Queries)(nil)

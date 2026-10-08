@@ -59,10 +59,10 @@ type Profile struct {
 }
 
 type ReportEntry struct {
-	ReportID       int64          `json:"report_id"`
-	ActivityTypeID int64          `json:"activity_type_id"`
-	Val            string         `json:"val"`
-	TimePass       sql.NullString `json:"time_pass"`
+	ReportID        int64         `json:"report_id"`
+	ActivityTypeID  int64         `json:"activity_type_id"`
+	Quantity        sql.NullInt32 `json:"quantity"`
+	DurationMinutes sql.NullInt32 `json:"duration_minutes"`
 }
 
 type User struct {
