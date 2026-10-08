@@ -15,10 +15,13 @@ type Querier interface {
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
 	// Personal items are numbered after the standard ones: 101, 102...
 	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
+	CreateHymnBook(ctx context.Context, arg CreateHymnBookParams) (HymnBook, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams) error
+	DeleteHymnBook(ctx context.Context, id int64) error
+	DeleteHymnsNotIn(ctx context.Context, arg DeleteHymnsNotInParams) (int64, error)
 	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAuthorityById(ctx context.Context, id int64) (Authority, error)
@@ -26,6 +29,8 @@ type Querier interface {
 	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
 	// Every item the user can fill in, with the values entered that day (NULL when empty).
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
+	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
+	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
 	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
 	// standard items are shared, joining report_entries directly would mix users.
@@ -35,20 +40,29 @@ type Querier interface {
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
+	ListBookHymns(ctx context.Context, bookID int64) ([]ListBookHymnsRow, error)
 	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 	// Archived items still show here: past values are never lost.
 	ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error)
+	ListHymnBooks(ctx context.Context) ([]ListHymnBooksRow, error)
+	ListHymnNumbers(ctx context.Context, bookID int64) ([]int32, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
+	// A new version of the book: the apps download it again.
+	TouchHymnBook(ctx context.Context, id int64) error
 	// Only the user's own active item can change; standard items never match (user_id IS NULL).
 	// tracks_quantity / tracks_duration stay fixed: past entries were saved with them.
 	UpdateActivityType(ctx context.Context, arg UpdateActivityTypeParams) (ActivityType, error)
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
+	// Only writes when something differs, so the caller knows if the book changed.
+	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	// Creates the day, or updates its note when it already exists.
 	UpsertDailyReport(ctx context.Context, arg UpsertDailyReportParams) (DailyReport, error)
+	// 1 row when the hymn is new or changed, 0 when it is already identical.
+	UpsertHymn(ctx context.Context, arg UpsertHymnParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

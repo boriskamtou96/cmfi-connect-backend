@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 )
 
@@ -40,6 +41,27 @@ type DailyReport struct {
 	Note       sql.NullString `json:"note"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
+}
+
+type Hymn struct {
+	ID        int64           `json:"id"`
+	BookID    int64           `json:"book_id"`
+	Number    int32           `json:"number"`
+	Title     string          `json:"title"`
+	Author    string          `json:"author"`
+	Parts     json.RawMessage `json:"parts"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+type HymnBook struct {
+	ID        int64     `json:"id"`
+	Code      string    `json:"code"`
+	Title     string    `json:"title"`
+	Language  string    `json:"language"`
+	Position  int32     `json:"position"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Profile struct {

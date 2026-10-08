@@ -40,3 +40,9 @@ run:
 .PHONY: sqlc
 sqlc:
 	sqlc generate
+
+# Hymn books: make import-hymns (all of data/hymns) or make import-hymns FILES=data/hymns/x.json
+# See tools/hymns/README.md.
+.PHONY: import-hymns
+import-hymns:
+	go run ./cmd/import-hymns $(or $(FILES),data/hymns/*.json)

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS hymns;
+DROP TABLE IF EXISTS hymn_books;

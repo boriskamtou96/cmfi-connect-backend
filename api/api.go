@@ -85,6 +85,13 @@ func (s *Server) SetupRouter() *gin.Engine {
 			reports.GET("/:date", s.getDailyReport)
 			reports.PUT("/:date", s.saveDailyReport)
 		}
+
+		hymnBooks := r.Group("/hymns").Use(authMiddleware(s.jwtAuthenticator))
+		{
+			hymnBooks.GET("/books", s.listHymnBooks)
+			hymnBooks.GET("/books/:code", s.getHymnBook)
+			hymnBooks.GET("/books/:code/:number", s.getHymn)
+		}
 	}
 
 	return router
