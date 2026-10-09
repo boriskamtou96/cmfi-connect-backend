@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strconv"
+	"slices"
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/usernames"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -24,9 +26,14 @@ type registerUserRequest struct {
 	HashPassword string `json:"hash_password" binding:"required,min=6"`
 	PhoneNumber  string `json:"phone_number" binding:"required"`
 	Email        string `json:"email"`
+	// Chosen in the form; without it (older apps), one is made from the name.
+	Username string `json:"username"`
 }
 
 type userResponse struct {
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Role        string    `json:"role"`
 	FirstName   string    `json:"first_name"`
 	LastName    string    `json:"last_name"`
 	PhoneNumber string    `json:"phone_number"`
@@ -41,6 +48,21 @@ func (s *Server) registerUser(c *gin.Context) {
 		return
 	}
 
+	username := usernames.Normalize(payload.Username)
+	if username != "" {
+		if problem := usernames.Check(username); problem != "" {
+			usernameError(c, problem)
+			return
+		}
+	} else {
+		suggestions, err := s.freeSuggestions(c, payload.FirstName, payload.LastName)
+		if err != nil || len(suggestions) == 0 {
+			internalServerError(c)
+			return
+		}
+		username = suggestions[0]
+	}
+
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(payload.HashPassword), bcrypt.DefaultCost)
 	if err != nil {
 		internalServerError(c)
@@ -48,6 +70,7 @@ func (s *Server) registerUser(c *gin.Context) {
 	}
 
 	arg := db.RegisterUserParams{
+		Username:  username,
 		FirstName: payload.FirstName,
 		LastName: sql.NullString{
 			String: payload.LastName,
@@ -63,6 +86,10 @@ func (s *Server) registerUser(c *gin.Context) {
 
 	user, err := s.store.RegisterUser(c, arg)
 	if err != nil {
+		if isUniqueViolation(err, "users_username_key") {
+			usernameError(c, usernames.Taken)
+			return
+		}
 		if pgErr, ok := errors.AsType[*pq.Error](err); ok {
 			switch pgErr.Code.Name() {
 			case "unique_violation":
@@ -144,14 +171,48 @@ func (s *Server) login(c *gin.Context) {
 	apiResponse(c, http.StatusOK, convertToUserResponse(user, accessToken))
 }
 
-type getUserRequest struct {
-	ID int64 `uri:"id"`
+// GET /v1/users/me: the signed-in account, with its pseudo and role.
+func (s *Server) getMe(c *gin.Context) {
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	user, err := s.store.GetUserById(c, authUser.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "user")
+			return
+		}
+		internalServerError(c)
+		return
+	}
+	apiResponse(c, http.StatusOK, convertToUserResponse(user))
 }
 
+type getUserRequest struct {
+	ID int64 `uri:"id" binding:"required"`
+}
+
+// mayActOn tells whether the signed-in member may read or change account [id]:
+// their own, or any for a member with one of [roles].
+func (s *Server) mayActOn(c *gin.Context, id int64, roles ...string) bool {
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authUser.ID == id {
+		return true
+	}
+	if len(roles) == 0 {
+		return false
+	}
+	role, err := s.store.GetUserRole(c, authUser.ID)
+	return err == nil && slices.Contains(roles, role)
+}
+
+// GET /v1/users/:id: one's own account; admins may read any.
 func (s *Server) getUser(c *gin.Context) {
 	var req getUserRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		badRequestError(c, err)
+		return
+	}
+	if !s.mayActOn(c, req.ID, roleAdmin, roleSuperadmin) {
+		forbiddenError(c)
 		return
 	}
 
@@ -174,11 +235,16 @@ type updateUserRequest struct {
 	HashPassword string `json:"hash_password"`
 }
 
+// PUT /v1/users/:id: one's own account only.
 func (s *Server) updateUser(c *gin.Context) {
 	// Get ID param and validate
 	var req getUserRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		badRequestError(c, err)
+		return
+	}
+	if !s.mayActOn(c, req.ID) {
+		forbiddenError(c)
 		return
 	}
 
@@ -230,16 +296,20 @@ func (s *Server) updateUser(c *gin.Context) {
 	apiResponse(c, http.StatusOK, convertToUserResponse(updatedUser))
 }
 
+// DELETE /v1/users/:id: one's own account, or any for a superadmin.
 func (s *Server) deleteUser(c *gin.Context) {
-	// Get ID param
-	idParam := c.Param("userID")
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	var req getUserRequest
+	if err := c.ShouldBindUri(&req); err != nil {
 		badRequestError(c, err)
 		return
 	}
+	id := req.ID
+	if !s.mayActOn(c, id, roleSuperadmin) {
+		forbiddenError(c)
+		return
+	}
 
-	_, err = s.store.GetUserById(c, id)
+	_, err := s.store.GetUserById(c, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "user")
@@ -266,6 +336,9 @@ func convertToUserResponse(user db.User, accessToken ...string) BaseUserResponse
 	}
 	return BaseUserResponse{
 		User: userResponse{
+			ID:          user.ID,
+			Username:    user.Username,
+			Role:        user.Role,
 			FirstName:   user.FirstName,
 			LastName:    user.LastName.String,
 			Email:       user.Email.String,

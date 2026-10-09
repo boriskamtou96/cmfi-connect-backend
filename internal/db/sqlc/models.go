@@ -27,11 +27,13 @@ type Authority struct {
 	ID              int64          `json:"id"`
 	FirstName       string         `json:"first_name"`
 	LastName        sql.NullString `json:"last_name"`
-	PhoneNumber     string         `json:"phone_number"`
+	PhoneNumber     sql.NullString `json:"phone_number"`
 	Email           sql.NullString `json:"email"`
 	IsDiscipleMaker bool           `json:"is_disciple_maker"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UserID          int64          `json:"user_id"`
+	LinkedUserID    sql.NullInt64  `json:"linked_user_id"`
+	Status          string         `json:"status"`
 }
 
 type DailyReport struct {
@@ -95,4 +97,6 @@ type User struct {
 	CreatedAt    time.Time      `json:"created_at"`
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`
+	Role         string         `json:"role"`
+	Username     string         `json:"username"`
 }

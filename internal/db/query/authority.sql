@@ -1,14 +1,15 @@
 -- name: CreateUserAuthority :one
-INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id, linked_user_id, status)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetUserAuthorities :many
 SELECT *
 FROM authorities
+WHERE user_id = $1
 ORDER BY id DESC
-LIMIT $1
-OFFSET $2;
+LIMIT $2
+OFFSET $3;
 
 -- name: GetAuthorityById :one
 SELECT *
@@ -33,4 +34,17 @@ SET first_name = COALESCE($2, first_name),
     email = COALESCE($5, email),
     is_disciple_maker = COALESCE($6, is_disciple_maker)
 WHERE user_id = $1
+RETURNING *;
+
+-- name: ListAuthorityRequests :many
+-- Members who asked [linked_user_id] to accompany them, waiting for an answer.
+SELECT *
+FROM authorities
+WHERE linked_user_id = $1 AND status = 'pending'
+ORDER BY created_at DESC;
+
+-- name: AnswerAuthorityRequest :one
+UPDATE authorities
+SET status = $3
+WHERE id = $1 AND linked_user_id = $2 AND status = 'pending'
 RETURNING *;

@@ -46,3 +46,9 @@ sqlc:
 .PHONY: import-hymns
 import-hymns:
 	go run ./cmd/import-hymns $(or $(FILES),data/hymns/*.json)
+
+# Roles: make promote PHONE=+237690000001 (superadmin), or
+# make promote USERNAME=boris.kamtou ROLE=admin (ROLE=user takes it back)
+.PHONY: promote
+promote:
+	go run ./cmd/promote $(if $(PHONE),-phone $(PHONE)) $(if $(USERNAME),-username $(USERNAME)) -role $(or $(ROLE),superadmin)

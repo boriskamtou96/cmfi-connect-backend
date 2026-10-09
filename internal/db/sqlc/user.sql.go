@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+
+	"github.com/lib/pq"
 )
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -21,7 +23,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getByPhoneNumber = `-- name: GetByPhoneNumber :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
 FROM users
 WHERE phone_number = $1 LIMIT 1
 `
@@ -37,12 +39,14 @@ func (q *Queries) GetByPhoneNumber(ctx context.Context, phoneNumber string) (Use
 		&i.CreatedAt,
 		&i.PhoneNumber,
 		&i.Email,
+		&i.Role,
+		&i.Username,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
 FROM users
 WHERE id = $1 LIMIT 1
 `
@@ -58,12 +62,139 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 		&i.CreatedAt,
 		&i.PhoneNumber,
 		&i.Email,
+		&i.Role,
+		&i.Username,
 	)
 	return i, err
 }
 
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+FROM users
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.HashPassword,
+		&i.CreatedAt,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.Role,
+		&i.Username,
+	)
+	return i, err
+}
+
+const getUserRole = `-- name: GetUserRole :one
+SELECT role
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserRole(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRowContext(ctx, getUserRole, id)
+	var role string
+	err := row.Scan(&role)
+	return role, err
+}
+
+const listMemberCards = `-- name: ListMemberCards :many
+SELECT u.id,
+       u.username,
+       COALESCE(NULLIF(p.first_name, ''), u.first_name)::text AS first_name,
+       COALESCE(NULLIF(p.last_name, ''), u.last_name, '')::text AS last_name,
+       COALESCE(NULLIF(p.phone_number, ''), u.phone_number)::text AS phone_number,
+       COALESCE(NULLIF(p.email, ''), u.email, '')::text AS email,
+       COALESCE(p.church, '')::text AS church,
+       COALESCE(p.assembly, '')::text AS assembly
+FROM users u
+LEFT JOIN profiles p ON p.user_id = u.id
+WHERE u.id = ANY($1::bigint[])
+`
+
+type ListMemberCardsRow struct {
+	ID          int64  `json:"id"`
+	Username    string `json:"username"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	PhoneNumber string `json:"phone_number"`
+	Email       string `json:"email"`
+	Church      string `json:"church"`
+	Assembly    string `json:"assembly"`
+}
+
+// What members show of themselves, the profile first (the user row has the
+// names of the sign-up). Contact fields are for the handlers to give or hide.
+func (q *Queries) ListMemberCards(ctx context.Context, ids []int64) ([]ListMemberCardsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMemberCards, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMemberCardsRow{}
+	for rows.Next() {
+		var i ListMemberCardsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.PhoneNumber,
+			&i.Email,
+			&i.Church,
+			&i.Assembly,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTakenUsernames = `-- name: ListTakenUsernames :many
+SELECT username
+FROM users
+WHERE username = ANY($1::text[])
+`
+
+// Among the candidates, the pseudos already used.
+func (q *Queries) ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listTakenUsernames, pq.Array(candidates))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
 FROM users
 ORDER BY id DESC
 LIMIT $1
@@ -92,6 +223,48 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.CreatedAt,
 			&i.PhoneNumber,
 			&i.Email,
+			&i.Role,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersByRoles = `-- name: ListUsersByRoles :many
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+FROM users
+WHERE role = ANY($1::text[])
+ORDER BY role DESC, username
+`
+
+func (q *Queries) ListUsersByRoles(ctx context.Context, roles []string) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByRoles, pq.Array(roles))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.HashPassword,
+			&i.CreatedAt,
+			&i.PhoneNumber,
+			&i.Email,
+			&i.Role,
+			&i.Username,
 		); err != nil {
 			return nil, err
 		}
@@ -112,10 +285,11 @@ INSERT INTO users(
                   last_name,
                   phone_number,
                   email,
-                  hash_password
+                  hash_password,
+                  username
 )
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
 `
 
 type RegisterUserParams struct {
@@ -124,6 +298,7 @@ type RegisterUserParams struct {
 	PhoneNumber  string         `json:"phone_number"`
 	Email        sql.NullString `json:"email"`
 	HashPassword []byte         `json:"hash_password"`
+	Username     string         `json:"username"`
 }
 
 func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error) {
@@ -133,6 +308,7 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		arg.PhoneNumber,
 		arg.Email,
 		arg.HashPassword,
+		arg.Username,
 	)
 	var i User
 	err := row.Scan(
@@ -143,6 +319,8 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.CreatedAt,
 		&i.PhoneNumber,
 		&i.Email,
+		&i.Role,
+		&i.Username,
 	)
 	return i, err
 }
@@ -156,7 +334,7 @@ SET
     email = COALESCE($5, email),
     hash_password = COALESCE($6, hash_password)
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
 `
 
 type UpdateUserParams struct {
@@ -186,6 +364,66 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.CreatedAt,
 		&i.PhoneNumber,
 		&i.Email,
+		&i.Role,
+		&i.Username,
+	)
+	return i, err
+}
+
+const updateUserRole = `-- name: UpdateUserRole :one
+UPDATE users
+SET role = $2
+WHERE id = $1
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+`
+
+type UpdateUserRoleParams struct {
+	ID   int64  `json:"id"`
+	Role string `json:"role"`
+}
+
+func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserRole, arg.ID, arg.Role)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.HashPassword,
+		&i.CreatedAt,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.Role,
+		&i.Username,
+	)
+	return i, err
+}
+
+const updateUsername = `-- name: UpdateUsername :one
+UPDATE users
+SET username = $2
+WHERE id = $1
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+`
+
+type UpdateUsernameParams struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.ID, arg.Username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.HashPassword,
+		&i.CreatedAt,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.Role,
+		&i.Username,
 	)
 	return i, err
 }

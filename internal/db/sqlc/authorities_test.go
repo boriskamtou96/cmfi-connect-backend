@@ -16,13 +16,15 @@ func createAuthority(t *testing.T) Authority {
 			String: faker.LastName(),
 			Valid:  true,
 		},
-		PhoneNumber: faker.PhoneNumber,
+		PhoneNumber: sql.NullString{String: faker.Phonenumber(), Valid: true},
 		Email: sql.NullString{
 			String: faker.Email(),
 			Valid:  false,
 		},
 		IsDiscipleMaker: true,
-		UserID:          22,
+		// its own user: the test doesn't depend on the data of the database
+		UserID: createRandomUser(t).ID,
+		Status: "accepted",
 	}
 
 	authority, err := testQueries.CreateUserAuthority(context.Background(), params)
@@ -42,6 +44,7 @@ func TestCreateUserAuthority(t *testing.T) {
 
 func TestGetUserAuthorities(t *testing.T) {
 	params := GetUserAuthoritiesParams{
+		UserID: 22,
 		Limit:  10,
 		Offset: 0,
 	}

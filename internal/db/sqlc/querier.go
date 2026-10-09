@@ -6,9 +6,11 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
+	AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorityRequestParams) (Authority, error)
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
@@ -39,15 +41,25 @@ type Querier interface {
 	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
+	GetUserRole(ctx context.Context, id int64) (string, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
+	// Members who asked [linked_user_id] to accompany them, waiting for an answer.
+	ListAuthorityRequests(ctx context.Context, linkedUserID sql.NullInt64) ([]Authority, error)
 	ListBookHymns(ctx context.Context, bookID int64) ([]ListBookHymnsRow, error)
 	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 	// Archived items still show here: past values are never lost.
 	ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error)
 	ListHymnBooks(ctx context.Context) ([]ListHymnBooksRow, error)
 	ListHymnNumbers(ctx context.Context, bookID int64) ([]int32, error)
+	// What members show of themselves, the profile first (the user row has the
+	// names of the sign-up). Contact fields are for the handlers to give or hide.
+	ListMemberCards(ctx context.Context, ids []int64) ([]ListMemberCardsRow, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
+	// Among the candidates, the pseudos already used.
+	ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	ListUsersByRoles(ctx context.Context, roles []string) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
 	// A new version of the book: the apps download it again.
 	TouchHymnBook(ctx context.Context, id int64) error
@@ -59,6 +71,8 @@ type Querier interface {
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)
+	UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error)
 	// Creates the day, or updates its note when it already exists.
 	UpsertDailyReport(ctx context.Context, arg UpsertDailyReportParams) (DailyReport, error)
 	// 1 row when the hymn is new or changed, 0 when it is already identical.

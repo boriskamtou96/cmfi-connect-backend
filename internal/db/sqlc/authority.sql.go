@@ -10,6 +10,37 @@ import (
 	"database/sql"
 )
 
+const answerAuthorityRequest = `-- name: AnswerAuthorityRequest :one
+UPDATE authorities
+SET status = $3
+WHERE id = $1 AND linked_user_id = $2 AND status = 'pending'
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+`
+
+type AnswerAuthorityRequestParams struct {
+	ID           int64         `json:"id"`
+	LinkedUserID sql.NullInt64 `json:"linked_user_id"`
+	Status       string        `json:"status"`
+}
+
+func (q *Queries) AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorityRequestParams) (Authority, error) {
+	row := q.db.QueryRowContext(ctx, answerAuthorityRequest, arg.ID, arg.LinkedUserID, arg.Status)
+	var i Authority
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.IsDiscipleMaker,
+		&i.CreatedAt,
+		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
+	)
+	return i, err
+}
+
 const countUserAuthorities = `-- name: CountUserAuthorities :one
 SELECT COUNT(*)
 FROM authorities
@@ -24,18 +55,20 @@ func (q *Queries) CountUserAuthorities(ctx context.Context, userID int64) (int64
 }
 
 const createUserAuthority = `-- name: CreateUserAuthority :one
-INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
+INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id, linked_user_id, status)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
 `
 
 type CreateUserAuthorityParams struct {
 	FirstName       string         `json:"first_name"`
 	LastName        sql.NullString `json:"last_name"`
-	PhoneNumber     string         `json:"phone_number"`
+	PhoneNumber     sql.NullString `json:"phone_number"`
 	Email           sql.NullString `json:"email"`
 	IsDiscipleMaker bool           `json:"is_disciple_maker"`
 	UserID          int64          `json:"user_id"`
+	LinkedUserID    sql.NullInt64  `json:"linked_user_id"`
+	Status          string         `json:"status"`
 }
 
 func (q *Queries) CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error) {
@@ -46,6 +79,8 @@ func (q *Queries) CreateUserAuthority(ctx context.Context, arg CreateUserAuthori
 		arg.Email,
 		arg.IsDiscipleMaker,
 		arg.UserID,
+		arg.LinkedUserID,
+		arg.Status,
 	)
 	var i Authority
 	err := row.Scan(
@@ -57,6 +92,8 @@ func (q *Queries) CreateUserAuthority(ctx context.Context, arg CreateUserAuthori
 		&i.IsDiscipleMaker,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
 	)
 	return i, err
 }
@@ -77,7 +114,7 @@ func (q *Queries) DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams
 }
 
 const getAuthorityById = `-- name: GetAuthorityById :one
-SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
 FROM authorities
 WHERE id = $1
 LIMIT 1
@@ -95,25 +132,29 @@ func (q *Queries) GetAuthorityById(ctx context.Context, id int64) (Authority, er
 		&i.IsDiscipleMaker,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
 	)
 	return i, err
 }
 
 const getUserAuthorities = `-- name: GetUserAuthorities :many
-SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
 FROM authorities
+WHERE user_id = $1
 ORDER BY id DESC
-LIMIT $1
-OFFSET $2
+LIMIT $2
+OFFSET $3
 `
 
 type GetUserAuthoritiesParams struct {
+	UserID int64 `json:"user_id"`
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error) {
-	rows, err := q.db.QueryContext(ctx, getUserAuthorities, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserAuthorities, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +171,50 @@ func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthorities
 			&i.IsDiscipleMaker,
 			&i.CreatedAt,
 			&i.UserID,
+			&i.LinkedUserID,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuthorityRequests = `-- name: ListAuthorityRequests :many
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+FROM authorities
+WHERE linked_user_id = $1 AND status = 'pending'
+ORDER BY created_at DESC
+`
+
+// Members who asked [linked_user_id] to accompany them, waiting for an answer.
+func (q *Queries) ListAuthorityRequests(ctx context.Context, linkedUserID sql.NullInt64) ([]Authority, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorityRequests, linkedUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Authority{}
+	for rows.Next() {
+		var i Authority
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.PhoneNumber,
+			&i.Email,
+			&i.IsDiscipleMaker,
+			&i.CreatedAt,
+			&i.UserID,
+			&i.LinkedUserID,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -152,14 +237,14 @@ SET first_name = COALESCE($2, first_name),
     email = COALESCE($5, email),
     is_disciple_maker = COALESCE($6, is_disciple_maker)
 WHERE user_id = $1
-RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
 `
 
 type UpdateAuthorityParams struct {
 	UserID          int64          `json:"user_id"`
 	FirstName       string         `json:"first_name"`
 	LastName        sql.NullString `json:"last_name"`
-	PhoneNumber     string         `json:"phone_number"`
+	PhoneNumber     sql.NullString `json:"phone_number"`
 	Email           sql.NullString `json:"email"`
 	IsDiscipleMaker bool           `json:"is_disciple_maker"`
 }
@@ -183,6 +268,8 @@ func (q *Queries) UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams
 		&i.IsDiscipleMaker,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
 	)
 	return i, err
 }

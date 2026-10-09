@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
@@ -19,6 +20,8 @@ func createRandomUser(t *testing.T) User {
 		// phone_number is UNIQUE: each test user needs its own
 		PhoneNumber:  faker.E164PhoneNumber(),
 		HashPassword: []byte(faker.Password()),
+		// username is UNIQUE too
+		Username: "member" + strings.ToLower(faker.Username()),
 	}
 
 	user, err := testQueries.RegisterUser(context.Background(), params)

@@ -3,8 +3,10 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 
+	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/gin-gonic/gin"
 )
@@ -48,6 +50,29 @@ func authMiddleware(jwtAuthenticator token.JWTAuthenticator) gin.HandlerFunc {
 		}
 
 		context.Set(authorizationPayloadKey, payload)
+		context.Next()
+	}
+}
+
+// The roles of the members, from the least to the most rights.
+const (
+	roleUser       = "user"
+	roleAdmin      = "admin"
+	roleSuperadmin = "superadmin"
+)
+
+// requireRole lets through the members who have one of [roles]. The role is read
+// from the database, not from the token: a member who loses a role loses its
+// rights at once. Goes after authMiddleware.
+func requireRole(store db.Querier, roles ...string) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		authUser := context.MustGet(authorizationPayloadKey).(*token.Payload)
+		role, err := store.GetUserRole(context, authUser.ID)
+		if err != nil || !slices.Contains(roles, role) {
+			errResp := NewErrorResponse(http.StatusForbidden, "FORBIDDEN", fmt.Errorf("this action needs the role %s", strings.Join(roles, " or ")))
+			context.AbortWithStatusJSON(http.StatusForbidden, errResp)
+			return
+		}
 		context.Next()
 	}
 }
