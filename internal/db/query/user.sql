@@ -90,3 +90,19 @@ SELECT u.id,
 FROM users u
 LEFT JOIN profiles p ON p.user_id = u.id
 WHERE u.id = ANY(@ids::bigint[]);
+
+-- name: CountSuperadmins :one
+SELECT count(*)
+FROM users
+WHERE role = 'superadmin';
+
+-- name: DeleteAuthoritiesLinkedTo :exec
+-- The authorities of other members that point to this member: their copy
+-- of the name and contact goes with the account.
+DELETE FROM authorities
+WHERE linked_user_id = $1;
+
+-- name: DeleteUserReports :exec
+-- Before the account: its personal items can't go while entries use them.
+DELETE FROM daily_reports
+WHERE user_id = $1;

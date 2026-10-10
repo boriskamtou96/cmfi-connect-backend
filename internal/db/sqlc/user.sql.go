@@ -12,6 +12,31 @@ import (
 	"github.com/lib/pq"
 )
 
+const countSuperadmins = `-- name: CountSuperadmins :one
+SELECT count(*)
+FROM users
+WHERE role = 'superadmin'
+`
+
+func (q *Queries) CountSuperadmins(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countSuperadmins)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const deleteAuthoritiesLinkedTo = `-- name: DeleteAuthoritiesLinkedTo :exec
+DELETE FROM authorities
+WHERE linked_user_id = $1
+`
+
+// The authorities of other members that point to this member: their copy
+// of the name and contact goes with the account.
+func (q *Queries) DeleteAuthoritiesLinkedTo(ctx context.Context, linkedUserID sql.NullInt64) error {
+	_, err := q.db.ExecContext(ctx, deleteAuthoritiesLinkedTo, linkedUserID)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1
@@ -19,6 +44,17 @@ WHERE id = $1
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
+}
+
+const deleteUserReports = `-- name: DeleteUserReports :exec
+DELETE FROM daily_reports
+WHERE user_id = $1
+`
+
+// Before the account: its personal items can't go while entries use them.
+func (q *Queries) DeleteUserReports(ctx context.Context, userID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUserReports, userID)
 	return err
 }
 

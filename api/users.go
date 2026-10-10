@@ -186,6 +186,46 @@ func (s *Server) getMe(c *gin.Context) {
 	apiResponse(c, http.StatusOK, convertToUserResponse(user))
 }
 
+type deleteMeRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+// DELETE /v1/users/me: the member deletes their account and everything that
+// is theirs, after typing their password again (a phone left unlocked can't
+// do it). 409 LAST_SUPERADMIN for the only superadmin.
+func (s *Server) deleteMe(c *gin.Context) {
+	var req deleteMeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequestError(c, err)
+		return
+	}
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	user, err := s.store.GetUserById(c, authUser.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "user")
+			return
+		}
+		internalServerError(c)
+		return
+	}
+	if err := utils.CheckPassword(req.Password, string(user.HashPassword)); err != nil {
+		invalidCredentialsError(c)
+		return
+	}
+
+	err = s.store.DeleteAccountTx(c, user.ID)
+	switch {
+	case errors.Is(err, db.ErrLastSuperadmin):
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "LAST_SUPERADMIN", err))
+		return
+	case err != nil:
+		internalServerError(c)
+		return
+	}
+	apiResponse(c, http.StatusNoContent, nil)
+}
+
 type getUserRequest struct {
 	ID int64 `uri:"id" binding:"required"`
 }

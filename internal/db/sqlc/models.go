@@ -45,6 +45,83 @@ type DailyReport struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
+type Event struct {
+	ID                   int64         `json:"id"`
+	SeriesID             sql.NullInt64 `json:"series_id"`
+	Title                string        `json:"title"`
+	Theme                string        `json:"theme"`
+	ThemeVerse           string        `json:"theme_verse"`
+	Description          string        `json:"description"`
+	StartsAt             time.Time     `json:"starts_at"`
+	EndsAt               time.Time     `json:"ends_at"`
+	TimeZone             string        `json:"time_zone"`
+	Venue                string        `json:"venue"`
+	Address              string        `json:"address"`
+	City                 string        `json:"city"`
+	Country              string        `json:"country"`
+	MapsUrl              string        `json:"maps_url"`
+	ContactName          string        `json:"contact_name"`
+	ContactPhone         string        `json:"contact_phone"`
+	PosterID             sql.NullInt64 `json:"poster_id"`
+	RegistrationOpen     bool          `json:"registration_open"`
+	RegistrationDeadline sql.NullTime  `json:"registration_deadline"`
+	Capacity             sql.NullInt32 `json:"capacity"`
+	AsksLodging          bool          `json:"asks_lodging"`
+	AsksDepartureCity    bool          `json:"asks_departure_city"`
+	FeeNote              string        `json:"fee_note"`
+	Scope                string        `json:"scope"`
+	Status               string        `json:"status"`
+	CreatedBy            sql.NullInt64 `json:"created_by"`
+	CreatedAt            time.Time     `json:"created_at"`
+	UpdatedAt            time.Time     `json:"updated_at"`
+}
+
+type EventPhoto struct {
+	ID        int64     `json:"id"`
+	EventID   int64     `json:"event_id"`
+	MediaID   int64     `json:"media_id"`
+	Caption   string    `json:"caption"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type EventPost struct {
+	ID        int64         `json:"id"`
+	EventID   int64         `json:"event_id"`
+	Body      string        `json:"body"`
+	ImageID   sql.NullInt64 `json:"image_id"`
+	Pinned    bool          `json:"pinned"`
+	AuthorID  sql.NullInt64 `json:"author_id"`
+	CreatedAt time.Time     `json:"created_at"`
+}
+
+type EventRegistration struct {
+	EventID       int64     `json:"event_id"`
+	UserID        int64     `json:"user_id"`
+	People        int32     `json:"people"`
+	NeedsLodging  bool      `json:"needs_lodging"`
+	DepartureCity string    `json:"departure_city"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type EventSeries struct {
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type EventSession struct {
+	ID          int64           `json:"id"`
+	EventID     int64           `json:"event_id"`
+	StartsAt    time.Time       `json:"starts_at"`
+	EndsAt      sql.NullTime    `json:"ends_at"`
+	Title       string          `json:"title"`
+	Speaker     string          `json:"speaker"`
+	Place       string          `json:"place"`
+	Description string          `json:"description"`
+	Hymns       json.RawMessage `json:"hymns"`
+}
+
 type Hymn struct {
 	ID        int64           `json:"id"`
 	BookID    int64           `json:"book_id"`
@@ -64,6 +141,89 @@ type HymnBook struct {
 	Position  int32     `json:"position"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Importunity struct {
+	ID          int64         `json:"id"`
+	OwnerID     int64         `json:"owner_id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Goal        sql.NullInt64 `json:"goal"`
+	Total       int64         `json:"total"`
+	ReachedAt   sql.NullTime  `json:"reached_at"`
+	Status      string        `json:"status"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
+type ImportunityMember struct {
+	ImportunityID int64         `json:"importunity_id"`
+	UserID        int64         `json:"user_id"`
+	InvitedBy     sql.NullInt64 `json:"invited_by"`
+	Status        string        `json:"status"`
+	Count         int64         `json:"count"`
+	JoinedAt      sql.NullTime  `json:"joined_at"`
+	CreatedAt     time.Time     `json:"created_at"`
+}
+
+type Medium struct {
+	ID          int64         `json:"id"`
+	Key         string        `json:"key"`
+	ContentType string        `json:"content_type"`
+	Width       int32         `json:"width"`
+	Height      int32         `json:"height"`
+	Color       string        `json:"color"`
+	SizeBytes   int64         `json:"size_bytes"`
+	UploadedBy  sql.NullInt64 `json:"uploaded_by"`
+	CreatedAt   time.Time     `json:"created_at"`
+}
+
+type PrayerPerson struct {
+	ID           int64        `json:"id"`
+	UserID       int64        `json:"user_id"`
+	List         string       `json:"list"`
+	Name         string       `json:"name"`
+	Note         string       `json:"note"`
+	LastPrayedOn sql.NullTime `json:"last_prayed_on"`
+	AnsweredOn   sql.NullTime `json:"answered_on"`
+	CreatedAt    time.Time    `json:"created_at"`
+}
+
+type PrayerRetreat struct {
+	UserID  int64     `json:"user_id"`
+	Day     time.Time `json:"day"`
+	Moment  string    `json:"moment"`
+	Minutes int32     `json:"minutes"`
+	DoneAt  time.Time `json:"done_at"`
+}
+
+type PrayerTopic struct {
+	ID           int64         `json:"id"`
+	Title        string        `json:"title"`
+	Category     string        `json:"category"`
+	Verse        string        `json:"verse"`
+	StartsOn     time.Time     `json:"starts_on"`
+	EndsOn       sql.NullTime  `json:"ends_on"`
+	EventID      sql.NullInt64 `json:"event_id"`
+	DocumentID   sql.NullInt64 `json:"document_id"`
+	DocumentName string        `json:"document_name"`
+	Status       string        `json:"status"`
+	CreatedBy    sql.NullInt64 `json:"created_by"`
+	CreatedAt    time.Time     `json:"created_at"`
+	UpdatedAt    time.Time     `json:"updated_at"`
+}
+
+type PrayerTopicPoint struct {
+	TopicID  int64  `json:"topic_id"`
+	Position int32  `json:"position"`
+	Body     string `json:"body"`
+}
+
+type PrayerTopicPrayer struct {
+	TopicID  int64     `json:"topic_id"`
+	Position int32     `json:"position"`
+	UserID   int64     `json:"user_id"`
+	PrayedOn time.Time `json:"prayed_on"`
 }
 
 type Profile struct {

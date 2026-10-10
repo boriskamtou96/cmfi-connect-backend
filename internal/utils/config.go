@@ -10,6 +10,7 @@ type Config struct {
 	DB     DBConfig
 	Server ServerConfig
 	Token  TokenConfig
+	Media  MediaConfig
 }
 
 type DBConfig struct {
@@ -32,6 +33,11 @@ type ServerConfig struct {
 type TokenConfig struct {
 	SecretKey string
 	Duration  string
+}
+
+// MediaConfig: where the images sent by the admins are kept.
+type MediaConfig struct {
+	Dir string
 }
 
 // LoadConfig loads the configuration from environment variables and returns a Config struct.
@@ -64,6 +70,9 @@ func (c *Config) loadConfig() (*Config, error) {
 		Token: TokenConfig{
 			SecretKey: getEnv("TOKEN_SECRET", ""),
 			Duration:  getEnv("TOKEN_DURATION", "168h"),
+		},
+		Media: MediaConfig{
+			Dir: getEnv("MEDIA_DIR", "data/media"),
 		},
 	}
 	return config, nil

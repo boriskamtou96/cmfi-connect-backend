@@ -7,32 +7,79 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 type Querier interface {
+	AddImportunityOwner(ctx context.Context, arg AddImportunityOwnerParams) error
+	// The total, and the moment the goal is first reached.
+	AddImportunityProclamations(ctx context.Context, arg AddImportunityProclamationsParams) (Importunity, error)
+	AddMemberProclamations(ctx context.Context, arg AddMemberProclamationsParams) (ImportunityMember, error)
+	AddMyPrayedPoint(ctx context.Context, arg AddMyPrayedPointParams) error
 	AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorityRequestParams) (Authority, error)
+	AnswerImportunityInvitation(ctx context.Context, arg AnswerImportunityInvitationParams) (ImportunityMember, error)
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
+	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
+	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
+	CountPrayerPeople(ctx context.Context, userID int64) (int64, error)
+	// How many members prayed for each topic, any day: the apps never show who.
+	CountPrayerTopicPeople(ctx context.Context, topicIds []int64) ([]CountPrayerTopicPeopleRow, error)
 	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
+	CountSuperadmins(ctx context.Context) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
 	// Personal items are numbered after the standard ones: 101, 102...
 	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
+	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
+	CreateEventPhoto(ctx context.Context, arg CreateEventPhotoParams) (EventPhoto, error)
+	CreateEventPost(ctx context.Context, arg CreateEventPostParams) (EventPost, error)
+	CreateEventSeries(ctx context.Context, title string) (EventSeries, error)
+	CreateEventSession(ctx context.Context, arg CreateEventSessionParams) (EventSession, error)
 	CreateHymnBook(ctx context.Context, arg CreateHymnBookParams) (HymnBook, error)
+	// ----- importunity topics -----
+	CreateImportunity(ctx context.Context, arg CreateImportunityParams) (Importunity, error)
+	CreateMedia(ctx context.Context, arg CreateMediaParams) (Medium, error)
+	CreatePrayerPerson(ctx context.Context, arg CreatePrayerPersonParams) (PrayerPerson, error)
+	// ----- prayer topics of the community -----
+	CreatePrayerTopic(ctx context.Context, arg CreatePrayerTopicParams) (PrayerTopic, error)
+	CreatePrayerTopicPoint(ctx context.Context, arg CreatePrayerTopicPointParams) error
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
+	// The authorities of other members that point to this member: their copy
+	// of the name and contact goes with the account.
+	DeleteAuthoritiesLinkedTo(ctx context.Context, linkedUserID sql.NullInt64) error
 	DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams) error
+	DeleteEvent(ctx context.Context, id int64) (int64, error)
+	DeleteEventPhoto(ctx context.Context, arg DeleteEventPhotoParams) (int64, error)
+	DeleteEventPost(ctx context.Context, arg DeleteEventPostParams) (int64, error)
+	DeleteEventRegistration(ctx context.Context, arg DeleteEventRegistrationParams) (int64, error)
+	DeleteEventSessions(ctx context.Context, eventID int64) error
 	DeleteHymnBook(ctx context.Context, id int64) error
 	DeleteHymnsNotIn(ctx context.Context, arg DeleteHymnsNotInParams) (int64, error)
+	DeleteImportunity(ctx context.Context, id int64) (int64, error)
+	DeleteMyPrayedPoints(ctx context.Context, arg DeleteMyPrayedPointsParams) error
+	DeletePrayerPerson(ctx context.Context, arg DeletePrayerPersonParams) (int64, error)
+	DeletePrayerRetreat(ctx context.Context, arg DeletePrayerRetreatParams) (int64, error)
+	DeletePrayerTopic(ctx context.Context, id int64) (int64, error)
+	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
 	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	// Before the account: its personal items can't go while entries use them.
+	DeleteUserReports(ctx context.Context, userID int64) error
 	GetAuthorityById(ctx context.Context, id int64) (Authority, error)
 	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
 	// Every item the user can fill in, with the values entered that day (NULL when empty).
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
+	GetEvent(ctx context.Context, id int64) (Event, error)
 	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
 	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
+	GetImportunity(ctx context.Context, id int64) (Importunity, error)
+	GetImportunityMember(ctx context.Context, arg GetImportunityMemberParams) (ImportunityMember, error)
+	// The member who is my disciple maker (FD), once they accepted the link.
+	GetMyDiscipleMaker(ctx context.Context, userID int64) (int64, error)
+	GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
 	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
 	// standard items are shared, joining report_entries directly would mix users.
@@ -43,40 +90,88 @@ type Querier interface {
 	GetUserById(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserRole(ctx context.Context, id int64) (string, error)
+	// Already invited, joined or declined: left as they are.
+	InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) (int64, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
+	// Their proclamations stay in the total.
+	LeaveImportunity(ctx context.Context, arg LeaveImportunityParams) (int64, error)
+	// For the admins: drafts included, the latest first.
+	ListAllEvents(ctx context.Context, arg ListAllEventsParams) ([]Event, error)
+	// For the admins: drafts included.
+	ListAllPrayerTopics(ctx context.Context, arg ListAllPrayerTopicsParams) ([]PrayerTopic, error)
 	// Members who asked [linked_user_id] to accompany them, waiting for an answer.
 	ListAuthorityRequests(ctx context.Context, linkedUserID sql.NullInt64) ([]Authority, error)
 	ListBookHymns(ctx context.Context, bookID int64) ([]ListBookHymnsRow, error)
+	// The published topics of [today]: started and not over, the latest first.
+	ListCurrentPrayerTopics(ctx context.Context, today time.Time) ([]PrayerTopic, error)
 	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 	// Archived items still show here: past values are never lost.
 	ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error)
+	// The members whose disciple maker is [fd], accepted links only.
+	ListDisciplesOf(ctx context.Context, linkedUserID sql.NullInt64) ([]int64, error)
+	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
+	// Pinned first, then the latest.
+	ListEventPosts(ctx context.Context, eventID int64) ([]EventPost, error)
+	ListEventRegistrations(ctx context.Context, eventID int64) ([]EventRegistration, error)
+	ListEventSeriesEditions(ctx context.Context, seriesID sql.NullInt64) ([]Event, error)
+	ListEventSessions(ctx context.Context, eventID int64) ([]EventSession, error)
 	ListHymnBooks(ctx context.Context) ([]ListHymnBooksRow, error)
 	ListHymnNumbers(ctx context.Context, bookID int64) ([]int32, error)
+	// Who joined, in order. No counts: each member only sees their own.
+	ListImportunityParticipants(ctx context.Context, importunityID int64) ([]int64, error)
+	ListMediaByIDs(ctx context.Context, ids []int64) ([]Medium, error)
 	// What members show of themselves, the profile first (the user row has the
 	// names of the sign-up). Contact fields are for the handlers to give or hide.
 	ListMemberCards(ctx context.Context, ids []int64) ([]ListMemberCardsRow, error)
+	// The topics a member prays for or is invited to: invitations first.
+	ListMyImportunities(ctx context.Context, userID int64) ([]ListMyImportunitiesRow, error)
+	ListMyPrayedPoints(ctx context.Context, arg ListMyPrayedPointsParams) ([]ListMyPrayedPointsRow, error)
+	ListPastEvents(ctx context.Context, arg ListPastEventsParams) ([]Event, error)
+	ListPastPrayerTopics(ctx context.Context, arg ListPastPrayerTopicsParams) ([]PrayerTopic, error)
+	// ----- the members' own lists -----
+	ListPrayerPeople(ctx context.Context, userID int64) ([]PrayerPerson, error)
+	// ----- the 15-minute retreats -----
+	ListPrayerRetreats(ctx context.Context, arg ListPrayerRetreatsParams) ([]PrayerRetreat, error)
+	ListPrayerTopicPoints(ctx context.Context, topicIds []int64) ([]PrayerTopicPoint, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	// Among the candidates, the pseudos already used.
 	ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error)
+	// Not over yet (an event in progress is upcoming), the soonest first.
+	ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error)
+	ListUserRegistrations(ctx context.Context, arg ListUserRegistrationsParams) ([]EventRegistration, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListUsersByRoles(ctx context.Context, roles []string) ([]User, error)
+	// Taken before counting the registrations, so two people can't pass the
+	// capacity at the same time.
+	LockEvent(ctx context.Context, id int64) (Event, error)
+	LockImportunity(ctx context.Context, id int64) (Importunity, error)
+	// A retreat prayed for them on [day]: the next retreats take the others first.
+	MarkPrayerPeoplePrayed(ctx context.Context, arg MarkPrayerPeoplePrayedParams) (int64, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
+	SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error
+	SumOtherRegistrationsPeople(ctx context.Context, arg SumOtherRegistrationsPeopleParams) (int32, error)
 	// A new version of the book: the apps download it again.
 	TouchHymnBook(ctx context.Context, id int64) error
 	// Only the user's own active item can change; standard items never match (user_id IS NULL).
 	// tracks_quantity / tracks_duration stay fixed: past entries were saved with them.
 	UpdateActivityType(ctx context.Context, arg UpdateActivityTypeParams) (ActivityType, error)
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
+	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	// Only writes when something differs, so the caller knows if the book changed.
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
+	UpdateImportunity(ctx context.Context, arg UpdateImportunityParams) (Importunity, error)
+	UpdatePrayerPerson(ctx context.Context, arg UpdatePrayerPersonParams) (PrayerPerson, error)
+	UpdatePrayerTopic(ctx context.Context, arg UpdatePrayerTopicParams) (PrayerTopic, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)
 	UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error)
 	// Creates the day, or updates its note when it already exists.
 	UpsertDailyReport(ctx context.Context, arg UpsertDailyReportParams) (DailyReport, error)
+	UpsertEventRegistration(ctx context.Context, arg UpsertEventRegistrationParams) (EventRegistration, error)
 	// 1 row when the hymn is new or changed, 0 when it is already identical.
 	UpsertHymn(ctx context.Context, arg UpsertHymnParams) (int64, error)
+	UpsertPrayerRetreat(ctx context.Context, arg UpsertPrayerRetreatParams) (PrayerRetreat, error)
 }
 
 var _ Querier = (*Queries)(nil)

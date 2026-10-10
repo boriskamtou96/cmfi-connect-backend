@@ -52,3 +52,8 @@ import-hymns:
 .PHONY: promote
 promote:
 	go run ./cmd/promote $(if $(PHONE),-phone $(PHONE)) $(if $(USERNAME),-username $(USERNAME)) -role $(or $(ROLE),superadmin)
+
+# Two editions of a yearly conference with posters, program and news (demo)
+.PHONY: demo-events
+demo-events:
+	go run ./cmd/demo-events
