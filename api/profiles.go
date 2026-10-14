@@ -37,6 +37,8 @@ type profileResponse struct {
 	Assembly    *string    `json:"assembly"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
+	// the profile photo (PUT /v1/users/me/avatar), null without one
+	Avatar *mediaResponse `json:"avatar"`
 }
 
 type userResp struct {
@@ -83,7 +85,7 @@ func (s *Server) createProfile(c *gin.Context) {
 	}
 
 	if payload.Email != nil {
-		params.LastName = sql.NullString{
+		params.Email = sql.NullString{
 			String: *payload.Email,
 			Valid:  true,
 		}
@@ -130,7 +132,7 @@ func (s *Server) createProfile(c *gin.Context) {
 		return
 	}
 
-	apiResponse(c, http.StatusCreated, convertToProfileResponse(profile))
+	s.sendProfile(c, http.StatusCreated, profile)
 }
 
 func (s *Server) getProfile(c *gin.Context) {
@@ -151,7 +153,7 @@ func (s *Server) getProfile(c *gin.Context) {
 		return
 	}
 
-	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
+	s.sendProfile(c, http.StatusOK, profile)
 }
 
 type updateProfileRequest struct {
@@ -240,7 +242,19 @@ func (s *Server) updateProfile(c *gin.Context) {
 		return
 	}
 
-	apiResponse(c, http.StatusOK, convertToProfileResponse(profile))
+	s.sendProfile(c, http.StatusOK, profile)
+}
+
+// sendProfile answers with the profile and the member's photo.
+func (s *Server) sendProfile(c *gin.Context, status int, profile db.Profile) {
+	response := convertToProfileResponse(profile)
+	avatar, err := s.userAvatar(c, profile.UserID)
+	if err != nil {
+		internalServerError(c)
+		return
+	}
+	response.Avatar = avatar
+	apiResponse(c, status, response)
 }
 
 func convertToProfileResponse(profile db.Profile) *profileResponse {

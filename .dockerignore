@@ -1,0 +1,10 @@
+# kept out of the image: secrets, the local build, the images of dev
+.git
+.idea
+.env
+.env.*
+main
+tmp
+data/media
+*.test
+*.out

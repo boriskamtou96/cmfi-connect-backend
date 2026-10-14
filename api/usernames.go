@@ -24,6 +24,8 @@ type memberCard struct {
 	LastName  string `json:"last_name"`
 	Church    string `json:"church"`
 	Assembly  string `json:"assembly"`
+	// the profile photo, null without one
+	Avatar *mediaResponse `json:"avatar"`
 }
 
 func toMemberCard(card db.ListMemberCardsRow) memberCard {
@@ -33,6 +35,13 @@ func toMemberCard(card db.ListMemberCardsRow) memberCard {
 		LastName:  card.LastName,
 		Church:    card.Church,
 		Assembly:  card.Assembly,
+		Avatar: avatarOf(db.Medium{
+			ID:     card.AvatarID,
+			Key:    card.AvatarKey,
+			Width:  card.AvatarWidth,
+			Height: card.AvatarHeight,
+			Color:  card.AvatarColor,
+		}),
 	}
 }
 

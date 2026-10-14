@@ -12,8 +12,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// mediaResponse is an image as the apps show it: [url] is relative to the
-// API host ("/v1/media/…"), [color] is painted while it loads.
+// apiMediaPrefix: the API serves the images itself (development, tests).
+const apiMediaPrefix = "/v1/media/"
+
+// mediaPrefix starts the links of the images: the CDN in front of the bucket
+// when MEDIA_PUBLIC_URL is set ("https://media.cmfi-connect.com/"), else the
+// API. Set once, when the server is made (New).
+var mediaPrefix = apiMediaPrefix
+
+// mediaURL is the link of the file [key], as the apps fetch it.
+func mediaURL(key string) string { return mediaPrefix + key }
+
+// mediaResponse is an image as the apps show it: [url] is the CDN's address,
+// or relative to the API host ("/v1/media/…"); [color] is painted while it
+// loads.
 type mediaResponse struct {
 	ID     int64  `json:"id"`
 	URL    string `json:"url"`
@@ -23,7 +35,7 @@ type mediaResponse struct {
 }
 
 func toMediaResponse(m db.Medium) mediaResponse {
-	return mediaResponse{ID: m.ID, URL: "/v1/media/" + m.Key, Width: m.Width, Height: m.Height, Color: m.Color}
+	return mediaResponse{ID: m.ID, URL: mediaURL(m.Key), Width: m.Width, Height: m.Height, Color: m.Color}
 }
 
 // mediaByIDs loads the images of [ids] (zeros ignored), by id.
@@ -116,9 +128,14 @@ func mediaTooLargeError(c *gin.Context) {
 }
 
 // GET /v1/media/:key: public, like a link to an image. The names are random
-// and never reused, so the apps may keep the file forever.
+// and never reused, so the apps may keep the file forever. With a CDN, the
+// links given before it (still kept by the apps) lead there.
 func (s *Server) serveMedia(c *gin.Context) {
 	key := c.Param("key")
+	if mediaPrefix != apiMediaPrefix && media.ValidKey(key) {
+		c.Redirect(http.StatusMovedPermanently, mediaURL(key))
+		return
+	}
 	file, modTime, err := s.media.Open(key)
 	if err != nil {
 		resourceNotFoundError(c, "media")

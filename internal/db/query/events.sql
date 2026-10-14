@@ -8,6 +8,12 @@ SELECT *
 FROM media
 WHERE id = ANY(@ids::bigint[]);
 
+-- name: DeleteMedia :one
+-- Gives the key of the file to remove from the storage.
+DELETE FROM media
+WHERE id = $1
+RETURNING *;
+
 -- name: CreateEventSeries :one
 INSERT INTO event_series (title)
 VALUES ($1)

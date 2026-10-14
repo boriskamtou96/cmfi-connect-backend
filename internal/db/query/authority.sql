@@ -48,3 +48,24 @@ UPDATE authorities
 SET status = $3
 WHERE id = $1 AND linked_user_id = $2 AND status = 'pending'
 RETURNING *;
+
+-- name: SetAuthoritySharing :one
+-- Whether [user_id] shows their regularity to this authority (their disciple maker).
+UPDATE authorities
+SET shares_regularity = $3
+WHERE id = $1 AND user_id = $2
+RETURNING *;
+
+-- name: ListDisciples :many
+-- The members who chose [maker_id] as their disciple maker and whose link they
+-- accepted, by name (the profile's first, like the member cards).
+SELECT a.id, a.user_id, a.shares_regularity
+FROM authorities a
+JOIN users u ON u.id = a.user_id
+LEFT JOIN profiles p ON p.user_id = u.id
+WHERE a.linked_user_id = @maker_id::bigint
+  AND a.is_disciple_maker
+  AND a.status = 'accepted'
+ORDER BY COALESCE(NULLIF(p.first_name, ''), u.first_name),
+         COALESCE(NULLIF(p.last_name, ''), u.last_name, ''),
+         a.id;

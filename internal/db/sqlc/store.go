@@ -51,7 +51,9 @@ type SaveDailyReportTxParams struct {
 	UserID     int64
 	ReportDate time.Time
 	Note       sql.NullString
-	Entries    []ReportEntryInput
+	// the share of the day's goals reached, NULL without goals
+	GoalPercent sql.NullInt16
+	Entries     []ReportEntryInput
 }
 
 // SaveDailyReportTx replaces the whole day in one transaction: everything is saved or nothing is.
@@ -74,11 +76,12 @@ func (s *SQLStore) SaveDailyReportTx(ctx context.Context, arg SaveDailyReportTxP
 			return err
 		}
 
-		// 2. create the day, or update its note
+		// 2. create the day, or update its note and goals
 		report, err = q.UpsertDailyReport(ctx, UpsertDailyReportParams{
-			UserID:     arg.UserID,
-			ReportDate: arg.ReportDate,
-			Note:       arg.Note,
+			UserID:      arg.UserID,
+			ReportDate:  arg.ReportDate,
+			Note:        arg.Note,
+			GoalPercent: arg.GoalPercent,
 		})
 		if err != nil {
 			return err

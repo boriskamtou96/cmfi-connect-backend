@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -73,8 +74,10 @@ type saveDailyReportEntry struct {
 }
 
 type saveDailyReportPayload struct {
-	Note    *string                `json:"note" binding:"omitempty,max=1000"`
-	Entries []saveDailyReportEntry `json:"entries" binding:"max=50,dive"`
+	Note *string `json:"note" binding:"omitempty,max=1000"`
+	// the share of the day's goals reached (rounded), null or absent without goals
+	GoalPercent *float64               `json:"goal_percent" binding:"omitempty,min=0,max=100"`
+	Entries     []saveDailyReportEntry `json:"entries" binding:"max=50,dive"`
 }
 
 // saveDailyReport replaces the whole day: items left out of entries are removed from that day.
@@ -114,6 +117,13 @@ func (s *Server) saveDailyReport(c *gin.Context) {
 		params.Note = sql.NullString{
 			String: note,
 			Valid:  note != "",
+		}
+	}
+
+	if payload.GoalPercent != nil {
+		params.GoalPercent = sql.NullInt16{
+			Int16: int16(math.Round(*payload.GoalPercent)),
+			Valid: true,
 		}
 	}
 

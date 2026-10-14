@@ -23,26 +23,62 @@ type ActivityType struct {
 	CreatedAt      time.Time      `json:"created_at"`
 }
 
+type Announcement struct {
+	ID              int64           `json:"id"`
+	Title           string          `json:"title"`
+	Body            string          `json:"body"`
+	Audience        json.RawMessage `json:"audience"`
+	AuthorID        sql.NullInt64   `json:"author_id"`
+	RecipientsCount int32           `json:"recipients_count"`
+	PushedCount     int32           `json:"pushed_count"`
+	CreatedAt       time.Time       `json:"created_at"`
+}
+
+type AnnouncementAttachment struct {
+	AnnouncementID int64  `json:"announcement_id"`
+	Position       int32  `json:"position"`
+	MediaID        int64  `json:"media_id"`
+	Name           string `json:"name"`
+}
+
+type AnnouncementRecipient struct {
+	AnnouncementID int64        `json:"announcement_id"`
+	UserID         int64        `json:"user_id"`
+	ReadAt         sql.NullTime `json:"read_at"`
+}
+
 type Authority struct {
-	ID              int64          `json:"id"`
-	FirstName       string         `json:"first_name"`
-	LastName        sql.NullString `json:"last_name"`
-	PhoneNumber     sql.NullString `json:"phone_number"`
-	Email           sql.NullString `json:"email"`
-	IsDiscipleMaker bool           `json:"is_disciple_maker"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UserID          int64          `json:"user_id"`
-	LinkedUserID    sql.NullInt64  `json:"linked_user_id"`
-	Status          string         `json:"status"`
+	ID               int64          `json:"id"`
+	FirstName        string         `json:"first_name"`
+	LastName         sql.NullString `json:"last_name"`
+	PhoneNumber      sql.NullString `json:"phone_number"`
+	Email            sql.NullString `json:"email"`
+	IsDiscipleMaker  bool           `json:"is_disciple_maker"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UserID           int64          `json:"user_id"`
+	LinkedUserID     sql.NullInt64  `json:"linked_user_id"`
+	Status           string         `json:"status"`
+	SharesRegularity bool           `json:"shares_regularity"`
 }
 
 type DailyReport struct {
-	ID         int64          `json:"id"`
-	UserID     int64          `json:"user_id"`
-	ReportDate time.Time      `json:"report_date"`
-	Note       sql.NullString `json:"note"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
+	ID          int64          `json:"id"`
+	UserID      int64          `json:"user_id"`
+	ReportDate  time.Time      `json:"report_date"`
+	Note        sql.NullString `json:"note"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	GoalPercent sql.NullInt16  `json:"goal_percent"`
+}
+
+type Device struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Token     string    `json:"token"`
+	Platform  string    `json:"platform"`
+	Language  string    `json:"language"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Event struct {
@@ -178,6 +214,38 @@ type Medium struct {
 	CreatedAt   time.Time     `json:"created_at"`
 }
 
+type MemberBlock struct {
+	BlockerID int64     `json:"blocker_id"`
+	BlockedID int64     `json:"blocked_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type MemberReport struct {
+	ID               int64         `json:"id"`
+	ReporterID       int64         `json:"reporter_id"`
+	ReportedID       int64         `json:"reported_id"`
+	ImportunityID    sql.NullInt64 `json:"importunity_id"`
+	ImportunityTitle string        `json:"importunity_title"`
+	Reason           string        `json:"reason"`
+	Comment          string        `json:"comment"`
+	Status           string        `json:"status"`
+	CreatedAt        time.Time     `json:"created_at"`
+	ResolvedAt       sql.NullTime  `json:"resolved_at"`
+	ResolvedBy       sql.NullInt64 `json:"resolved_by"`
+}
+
+type MinistryNation struct {
+	ID          int64         `json:"id"`
+	Position    int32         `json:"position"`
+	Name        string        `json:"name"`
+	CountryCode string        `json:"country_code"`
+	Latitude    float64       `json:"latitude"`
+	Longitude   float64       `json:"longitude"`
+	ArrivalYear sql.NullInt32 `json:"arrival_year"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
 type PrayerPerson struct {
 	ID           int64        `json:"id"`
 	UserID       int64        `json:"user_id"`
@@ -250,13 +318,14 @@ type ReportEntry struct {
 }
 
 type User struct {
-	ID           int64          `json:"id"`
-	FirstName    string         `json:"first_name"`
-	LastName     sql.NullString `json:"last_name"`
-	HashPassword []byte         `json:"hash_password"`
-	CreatedAt    time.Time      `json:"created_at"`
-	PhoneNumber  string         `json:"phone_number"`
-	Email        sql.NullString `json:"email"`
-	Role         string         `json:"role"`
-	Username     string         `json:"username"`
+	ID            int64          `json:"id"`
+	FirstName     string         `json:"first_name"`
+	LastName      sql.NullString `json:"last_name"`
+	HashPassword  []byte         `json:"hash_password"`
+	CreatedAt     time.Time      `json:"created_at"`
+	PhoneNumber   string         `json:"phone_number"`
+	Email         sql.NullString `json:"email"`
+	Role          string         `json:"role"`
+	Username      string         `json:"username"`
+	AvatarMediaID sql.NullInt64  `json:"avatar_media_id"`
 }

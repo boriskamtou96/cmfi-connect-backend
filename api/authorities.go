@@ -37,6 +37,10 @@ type authorityResponse struct {
 	Church   *string `json:"church"`
 	Assembly *string `json:"assembly"`
 	Status   string  `json:"status"`
+	// their profile photo, or null
+	Avatar *mediaResponse `json:"avatar"`
+	// whether the owner shows their regularity to them (a disciple maker)
+	SharesRegularity bool `json:"shares_regularity"`
 }
 
 func nullable(value sql.NullString) *string {
@@ -76,15 +80,16 @@ func (s *Server) authorityResponses(c *gin.Context, authorities []db.Authority) 
 	responses := make([]authorityResponse, 0, len(authorities))
 	for _, authority := range authorities {
 		response := authorityResponse{
-			ID:              authority.ID,
-			UserID:          authority.UserID,
-			FirstName:       authority.FirstName,
-			LastName:        nullable(authority.LastName),
-			PhoneNumber:     nullable(authority.PhoneNumber),
-			Email:           nullable(authority.Email),
-			IsDiscipleMaker: authority.IsDiscipleMaker,
-			CreatedAt:       authority.CreatedAt,
-			Status:          authority.Status,
+			ID:               authority.ID,
+			UserID:           authority.UserID,
+			FirstName:        authority.FirstName,
+			LastName:         nullable(authority.LastName),
+			PhoneNumber:      nullable(authority.PhoneNumber),
+			Email:            nullable(authority.Email),
+			IsDiscipleMaker:  authority.IsDiscipleMaker,
+			CreatedAt:        authority.CreatedAt,
+			Status:           authority.Status,
+			SharesRegularity: authority.SharesRegularity,
 		}
 		if card, ok := cards[authority.LinkedUserID.Int64]; ok && authority.LinkedUserID.Valid {
 			response.FirstName = card.FirstName
@@ -92,6 +97,7 @@ func (s *Server) authorityResponses(c *gin.Context, authorities []db.Authority) 
 			response.Username = &card.Username
 			response.Church = nonEmpty(card.Church)
 			response.Assembly = nonEmpty(card.Assembly)
+			response.Avatar = toMemberCard(card).Avatar
 			response.PhoneNumber, response.Email = nil, nil
 			if authority.Status == authorityAccepted {
 				response.PhoneNumber = nonEmpty(card.PhoneNumber)
@@ -275,6 +281,45 @@ func (s *Server) deleteAuthority(c *gin.Context) {
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
+}
+
+type authoritySharingRequest struct {
+	Shares *bool `json:"shares" binding:"required"`
+}
+
+// PUT /v1/authorities/:id/sharing: whether the signed-in member shows their
+// regularity (the days they filled in) to this authority, their disciple maker.
+func (s *Server) setAuthoritySharing(c *gin.Context) {
+	authority, ok := s.ownAuthority(c)
+	if !ok {
+		return
+	}
+	var req authoritySharingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequestError(c, err)
+		return
+	}
+
+	updated, err := s.store.SetAuthoritySharing(c, db.SetAuthoritySharingParams{
+		ID:               authority.ID,
+		UserID:           authority.UserID,
+		SharesRegularity: *req.Shares,
+	})
+	if err != nil {
+		// deleted in the meantime
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "Authority")
+			return
+		}
+		internalServerError(c)
+		return
+	}
+	responses, err := s.authorityResponses(c, []db.Authority{updated})
+	if err != nil {
+		internalServerError(c)
+		return
+	}
+	apiResponse(c, http.StatusOK, responses[0])
 }
 
 // authorityRequestResponse is a member asking the signed-in member to accompany them.

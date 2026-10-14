@@ -390,6 +390,30 @@ func (q *Queries) DeleteEventSessions(ctx context.Context, eventID int64) error 
 	return err
 }
 
+const deleteMedia = `-- name: DeleteMedia :one
+DELETE FROM media
+WHERE id = $1
+RETURNING id, key, content_type, width, height, color, size_bytes, uploaded_by, created_at
+`
+
+// Gives the key of the file to remove from the storage.
+func (q *Queries) DeleteMedia(ctx context.Context, id int64) (Medium, error) {
+	row := q.db.QueryRowContext(ctx, deleteMedia, id)
+	var i Medium
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.ContentType,
+		&i.Width,
+		&i.Height,
+		&i.Color,
+		&i.SizeBytes,
+		&i.UploadedBy,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getEvent = `-- name: GetEvent :one
 SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
 FROM events

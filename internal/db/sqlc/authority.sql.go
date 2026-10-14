@@ -14,7 +14,7 @@ const answerAuthorityRequest = `-- name: AnswerAuthorityRequest :one
 UPDATE authorities
 SET status = $3
 WHERE id = $1 AND linked_user_id = $2 AND status = 'pending'
-RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 `
 
 type AnswerAuthorityRequestParams struct {
@@ -37,6 +37,7 @@ func (q *Queries) AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorit
 		&i.UserID,
 		&i.LinkedUserID,
 		&i.Status,
+		&i.SharesRegularity,
 	)
 	return i, err
 }
@@ -57,7 +58,7 @@ func (q *Queries) CountUserAuthorities(ctx context.Context, userID int64) (int64
 const createUserAuthority = `-- name: CreateUserAuthority :one
 INSERT INTO authorities (first_name, last_name, phone_number, email, is_disciple_maker, user_id, linked_user_id, status)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 `
 
 type CreateUserAuthorityParams struct {
@@ -94,6 +95,7 @@ func (q *Queries) CreateUserAuthority(ctx context.Context, arg CreateUserAuthori
 		&i.UserID,
 		&i.LinkedUserID,
 		&i.Status,
+		&i.SharesRegularity,
 	)
 	return i, err
 }
@@ -114,7 +116,7 @@ func (q *Queries) DeleteAuthority(ctx context.Context, arg DeleteAuthorityParams
 }
 
 const getAuthorityById = `-- name: GetAuthorityById :one
-SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 FROM authorities
 WHERE id = $1
 LIMIT 1
@@ -134,12 +136,13 @@ func (q *Queries) GetAuthorityById(ctx context.Context, id int64) (Authority, er
 		&i.UserID,
 		&i.LinkedUserID,
 		&i.Status,
+		&i.SharesRegularity,
 	)
 	return i, err
 }
 
 const getUserAuthorities = `-- name: GetUserAuthorities :many
-SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 FROM authorities
 WHERE user_id = $1
 ORDER BY id DESC
@@ -173,6 +176,7 @@ func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthorities
 			&i.UserID,
 			&i.LinkedUserID,
 			&i.Status,
+			&i.SharesRegularity,
 		); err != nil {
 			return nil, err
 		}
@@ -188,7 +192,7 @@ func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthorities
 }
 
 const listAuthorityRequests = `-- name: ListAuthorityRequests :many
-SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 FROM authorities
 WHERE linked_user_id = $1 AND status = 'pending'
 ORDER BY created_at DESC
@@ -215,6 +219,7 @@ func (q *Queries) ListAuthorityRequests(ctx context.Context, linkedUserID sql.Nu
 			&i.UserID,
 			&i.LinkedUserID,
 			&i.Status,
+			&i.SharesRegularity,
 		); err != nil {
 			return nil, err
 		}
@@ -229,6 +234,83 @@ func (q *Queries) ListAuthorityRequests(ctx context.Context, linkedUserID sql.Nu
 	return items, nil
 }
 
+const listDisciples = `-- name: ListDisciples :many
+SELECT a.id, a.user_id, a.shares_regularity
+FROM authorities a
+JOIN users u ON u.id = a.user_id
+LEFT JOIN profiles p ON p.user_id = u.id
+WHERE a.linked_user_id = $1::bigint
+  AND a.is_disciple_maker
+  AND a.status = 'accepted'
+ORDER BY COALESCE(NULLIF(p.first_name, ''), u.first_name),
+         COALESCE(NULLIF(p.last_name, ''), u.last_name, ''),
+         a.id
+`
+
+type ListDisciplesRow struct {
+	ID               int64 `json:"id"`
+	UserID           int64 `json:"user_id"`
+	SharesRegularity bool  `json:"shares_regularity"`
+}
+
+// The members who chose [maker_id] as their disciple maker and whose link they
+// accepted, by name (the profile's first, like the member cards).
+func (q *Queries) ListDisciples(ctx context.Context, makerID int64) ([]ListDisciplesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listDisciples, makerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDisciplesRow{}
+	for rows.Next() {
+		var i ListDisciplesRow
+		if err := rows.Scan(&i.ID, &i.UserID, &i.SharesRegularity); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setAuthoritySharing = `-- name: SetAuthoritySharing :one
+UPDATE authorities
+SET shares_regularity = $3
+WHERE id = $1 AND user_id = $2
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
+`
+
+type SetAuthoritySharingParams struct {
+	ID               int64 `json:"id"`
+	UserID           int64 `json:"user_id"`
+	SharesRegularity bool  `json:"shares_regularity"`
+}
+
+// Whether [user_id] shows their regularity to this authority (their disciple maker).
+func (q *Queries) SetAuthoritySharing(ctx context.Context, arg SetAuthoritySharingParams) (Authority, error) {
+	row := q.db.QueryRowContext(ctx, setAuthoritySharing, arg.ID, arg.UserID, arg.SharesRegularity)
+	var i Authority
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.IsDiscipleMaker,
+		&i.CreatedAt,
+		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
+		&i.SharesRegularity,
+	)
+	return i, err
+}
+
 const updateAuthority = `-- name: UpdateAuthority :one
 UPDATE authorities
 SET first_name = COALESCE($2, first_name),
@@ -237,7 +319,7 @@ SET first_name = COALESCE($2, first_name),
     email = COALESCE($5, email),
     is_disciple_maker = COALESCE($6, is_disciple_maker)
 WHERE user_id = $1
-RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 `
 
 type UpdateAuthorityParams struct {
@@ -270,6 +352,7 @@ func (q *Queries) UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams
 		&i.UserID,
 		&i.LinkedUserID,
 		&i.Status,
+		&i.SharesRegularity,
 	)
 	return i, err
 }

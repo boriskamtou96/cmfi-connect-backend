@@ -14,11 +14,11 @@ WHERE (at.user_id IS NULL OR at.user_id = sqlc.arg(user_id)::bigint)
 ORDER BY at.position, at.code;
 
 -- name: UpsertDailyReport :one
--- Creates the day, or updates its note when it already exists.
-INSERT INTO daily_reports (user_id, report_date, note)
-VALUES (sqlc.arg(user_id), sqlc.arg(report_date), sqlc.narg(note))
+-- Creates the day, or updates its note and goals when it already exists.
+INSERT INTO daily_reports (user_id, report_date, note, goal_percent)
+VALUES (sqlc.arg(user_id), sqlc.arg(report_date), sqlc.narg(note), sqlc.narg(goal_percent))
 ON CONFLICT (user_id, report_date)
-DO UPDATE SET note = EXCLUDED.note, updated_at = NOW()
+DO UPDATE SET note = EXCLUDED.note, goal_percent = EXCLUDED.goal_percent, updated_at = NOW()
 RETURNING *;
 
 -- name: DeleteReportEntries :exec
@@ -66,3 +66,12 @@ ORDER BY at.position, at.code;
 SELECT COUNT(*) FROM daily_reports
 WHERE user_id = sqlc.arg(user_id)::bigint
   AND report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date;
+
+-- name: ListReportDays :many
+-- The days with a report of several members between two dates, newest first,
+-- with the share of their goals reached.
+SELECT user_id, report_date, goal_percent
+FROM daily_reports
+WHERE user_id = ANY(sqlc.arg(user_ids)::bigint[])
+  AND report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date
+ORDER BY user_id, report_date DESC;

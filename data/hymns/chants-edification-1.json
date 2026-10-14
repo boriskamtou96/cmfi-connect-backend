@@ -1,0 +1,1450 @@
+{
+  "book": {
+    "code": "chants-edification-1",
+    "title": "Chants d'édification, volume 1",
+    "language": "fr",
+    "position": 4
+  },
+  "hymns": [
+    {
+      "number": 1,
+      "title": "Donnons-Lui la gloire",
+      "author": "Henriette Mbarga, Université Mondiale de Prière et de Jeûne (UMPJ), Koumé, 10 juillet 2015 · Sur l'air de « A la croix où mourut mon Sauveur »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Alléluia, lou-ez no-tre Dieu,",
+            "Le Tout-Puissant qui a pris Son règne.",
+            "Tout est à présent en-tre Ses mains",
+            "Donnons-Lui la gloire.",
+            "(Apocalypse 19:6)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "lines": [
+            "Donnons-Lui la gloi-re (2x)",
+            "Réjouissons-nous, soyons dans la joie",
+            "Donnons-Lui la gloire."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Réjouissons-nous, soyons dans la joie,",
+            "Soyons heureux, et donnons-Lui gloire.",
+            "Et tous, apportons-Lui notr' hommage ;",
+            "Au Roi sur le trône.",
+            "(Apocalypse 19:7)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Les no-ces de l'Agneau sont venues,",
+            "Et Son épou-se s'est préparée,",
+            "Et d'un fin lin ell' s'est revêtue.",
+            "Eclatant et pur.",
+            "(Apocalypse 19:7-8)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Le fin lin, ce sont les œuvr' des saints",
+            "Heureux ceux qui seront au festin",
+            "Des noc' de l'Agneau, qui n'auront point",
+            "Travaillé en vain.",
+            "(Apocalypse 19:9)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "Heureux tous ceux qui la-vent leurs robes",
+            "Pour avoir droit à l'ar-bre de vie",
+            "Et d'entrer par la port' de la ville ;",
+            "Nous dit le Seigneur.",
+            "(Apocalypse 22:14)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Dehors les chiens, et les magiciens",
+            "Les débauchés et les meurtriers",
+            "Quiconqu'aime et pratiqu' le mensong',",
+            "Nous dit le Seigneur.",
+            "(Apocalypse 122:15)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "Moi, Jésus, j'ai envoyé mon ange",
+            "Pour vous attester tou-tes ces choses",
+            "Je suis le rejeton de David",
+            "Nous dit le Seigneur.",
+            "(Apocalypse 22:16)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Je suis l'Alpha, je suis l'Oméga",
+            "Je suis le Premier et le Dernier.",
+            "Je suis le commencement, la fin.",
+            "Et je viens bientôt.",
+            "(Apocalypse 22:12)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "L'Esprit et l'Epou-se di-sent : Viens !",
+            "Que celui qui entend di-se : Viens !",
+            "Aussi, que celui qui a soif vienn'",
+            "Nous dit le Seigneur.",
+            "(Apocalypse 22:17)"
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Béni sois-Tu, Seigneur Jésus",
+      "author": "Henriette Mbarga, UMPJ, Koumé, 27 juillet 2013 · Sur l'air de « Béni sois-Tu » de PROCCL",
+      "parts": [
+        {
+          "kind": "chorus",
+          "lines": [
+            "Béni sois-Tu Seigneur Jésus,",
+            "Béni sois-Tu,",
+            "Pour tout' Tes promesses,",
+            "Nous Te bénissons,",
+            "Pour le ci-el, béni sois-Tu,",
+            "Pour la demeur' céleste."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Au ciel est la maison du Père",
+            "Etincelan-te de beauté,",
+            "Plei-ne de gloir' et plein-ne de lumière,",
+            "Ineffabl' félicité."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Là le bonheur est sans mélange",
+            "Là le péché n'existe plus",
+            "Là-bas c'est l'amour et c'est la lou-ange",
+            "C'est la présenc' de Jésus."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Dans nos fati-gues sur la terre",
+            "Dans nos combats et nos douleurs,",
+            "C'est toi dou-ce maison de notre Père",
+            "Que cherch' nos yeux et nos cœurs."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Bienvenue dans notre cité.",
+            "Dans la demeu-re paternelle",
+            "Jésus dira à tous les rachetés",
+            "Entrez dans la joie du Père."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "Tu es l'Alpha et l'Oméga",
+            "Le commencement et la fin.",
+            "Tu donneras à celui qui a soif",
+            "La sourc' de l'eau de la vie."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Jésus, c'est Toi qui es le Christ",
+            "Jésus-Christ, Tu es le Messie",
+            "C'est Toi seul, Seigneur qui nous rassasie",
+            "Car, Tu es le Pain de vie."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "O c'est Toi que nous attendons",
+            "C'est Toi, Seigneur, que nous aimons,",
+            "O Seigneur après Toi, nous languissons",
+            "Viens nous prendr' auprès de Toi."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Comme l'Eternel a ordonné à Moïse",
+      "author": "Henriette Mbarga, Croisade des 30 jours pour la descente du Quartier Général à Koumé, Yaoundé, 05 novembre 2010 · Sur l'air de « Semons dès l'aurore »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Dieu dit à Moïse (2x)",
+            "Fait'-Moi un sanctuaire",
+            "Où j'habiterai",
+            "Fait' le tabernacle,",
+            "tous ses ustensiles",
+            "D'après le model'",
+            "Que je vais te montrer.",
+            "(Exode 25:8-9)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "1",
+          "lines": [
+            "Tout devait se faire (2x)",
+            "Comm' l'Eternel a ordonné à Moïse."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Il mit en pratique (2x)",
+            "Tout' les ordonnances",
+            "Qu'il avait reçues",
+            "Il construisit l'arche",
+            "Fit tous les ouvrages",
+            "Et le tabernacle",
+            "Fut ainsi dressé",
+            "(Exode 40:1-32)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "2",
+          "lines": [
+            "Ils avaient tout fait (2x)",
+            "Comm' l'Eternel a ordonné à Moïse."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Pour bâtir le temple (2x)",
+            "David aussi reçut",
+            "De Dieu le modèle",
+            "Pour les ustensiles",
+            "De chaque service",
+            "En or, en argent,",
+            "Et le poids de chacun",
+            "(1 Chron 28:14-21)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "3",
+          "lines": [
+            "Tout devait se faire (2x)",
+            "Comm' l'Eternel a ordonné à David."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Dieu agit encore (2x)",
+            "Comm' avec Moise",
+            "Comm' avec David",
+            "Il bâtit encore",
+            "Accomplit son œuvre",
+            "D'après la maquette",
+            "Qu'il a révélée"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "4",
+          "lines": [
+            "Tout doit donc se faire (2x)",
+            "Comm' l'Eternel a ordonné au leader."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "Les homm' et les fem-mes (2x)",
+            "Qui fur' animés",
+            "De bon-ne volonté",
+            "Apportèr' l'offrande",
+            "Pour l'œuvr' de la tente",
+            "Tous ceux dont le cœur",
+            "Était bien disposé",
+            "(Exode 35:21-29)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "5",
+          "lines": [
+            "Ils avaient donné (2x)",
+            "Plus qu'il n'en fallait pour tout' l'oeuvre de Dieu"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Pour bâtir le temple (2x)",
+            "David avait donné",
+            "Et il avait dit :",
+            "J'ai mis tout' mes forces",
+            "Gardé pour le temple",
+            "L'or, l'argent, l'airain",
+            "Le fer, le bois, les pierres",
+            "(1 Chron 29:1-4)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "6",
+          "lines": [
+            "Qui voudrait donner ? (2x)",
+            "Qui veut donner ses offrand' à l'Eternel ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "Les hommes et les femmes (2x)",
+            "Qui sont animés",
+            "De bonne volonté",
+            "Vont donner l'offrande",
+            "Pour l'œuvr' de la Base",
+            "Tous ceux dont le cœur",
+            "Sera bien disposé",
+            "(1 Chron 29:1-4)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "7",
+          "lines": [
+            "Nous devons donner (2x)",
+            "Les individus et les églises aussi"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Soixant' dix mill' hommes",
+            "Pour porter les fardeaux",
+            "Quatre – vingt mill' hommes",
+            "Pour tailler les pierres",
+            "Trois mill' six cents hommes",
+            "Pour la surveillance",
+            "Voilà la main d'œuvre",
+            "Qu'avait Salomon",
+            "(2 Chron 2:18)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "8",
+          "lines": [
+            "Envoie-nous des hommes",
+            "Envoie-nous des femmes",
+            "Donn' nous la main d'œuvre",
+            "Pour la base de l'œuvre"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "La tâche est immense (2x)",
+            "Un milliard de discipl'",
+            "A Lui présenter",
+            "Deux cent cinquant' nations",
+            "Tout ce grand ouvrage",
+            "N'est pas pour un homm'",
+            "Mais pour l'Eternel Dieu",
+            "(1 Chron 29:1)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "9",
+          "lines": [
+            "Envoie-nous des hommes",
+            "Envoie-nous des femmes",
+            "Donn' nous la main d'œuvre",
+            "Pour Ton œuvre O Dieu"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "10",
+          "lines": [
+            "Seigneur, c'est Ton œuvre",
+            "La vision est grande",
+            "Pourvois pour Ton œuvre",
+            "Nous T'en supplions",
+            "Tout l'or et tout l'argent",
+            "Ainsi que les hommes",
+            "Jusqu' à ce que notre but",
+            "soit accompli"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "10",
+          "lines": [
+            "A Toi la grandeur",
+            "À Toi tout l'honneur",
+            "À Toi forc' et gloire",
+            "Seigneur à jamais",
+            "À Toi la puissance",
+            "La magnificence",
+            "À Toi seul le règne",
+            "Pour l'éternité"
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Vous serez saints car Je suis saint",
+      "author": "Henriette Mbarga, 5ème Croisade de Prière et de Jeûne de 40 jours à Koumé, 02 novembre 2013 · Sur l'air de « En Christ seul est mon espérance »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Béni soit le Dieu et le Père",
+            "Du Seigneur Jésus-Christ par qui,",
+            "Tout' bénédiction spirituelle",
+            "Est dans les lieux célest' en Christ.",
+            "(Ephésiens 1:3-4)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "1",
+          "lines": [
+            "Avant la fondation du monde,",
+            "Dieu nous avait élus en Christ,",
+            "O mes frèr' pour que nous soyons,",
+            "Irréprocha-bles devant Lui."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Nous somm' l'ouvrag' de Dieu en Christ,",
+            "Pour accomplir de bon-nes œuvres,",
+            "Que Dieu a préparées d'avance !",
+            "Afin que nous les pratiquions",
+            "(Ephésiens 2:10)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Le peupl' de la CMCI",
+            "Dans les nations est Son ouvrage,",
+            "Créé en Christ pour de bonn' œuvres,",
+            "Qu'il accomplira pour Sa gloire"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Ainsi vou-mêm' regardez-vous,",
+            "Com-me des homm' morts au péché,",
+            "Considérez-vous morts au mal",
+            "Vivant pour Dieu en Jésus-Christ.",
+            "(Romains 6:11-13)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "Que le péché ne rè-gne point",
+            "Dans votre corps mortel, O frères",
+            "N'obéissez pas aux désirs",
+            "De votre corps, ses convoitises.",
+            "(Romains 6:12; 1 Pierre 1:16)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "2",
+          "lines": [
+            "Vous serez saints, car Je suis Saint",
+            "Je suis l'Eternel votre Dieu",
+            "Vous serez saints, car Je suis Saint",
+            "Je suis l'Eternel votre Dieu."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Ne livrez pas vos membr' au mal",
+            "Comm' des instruments de péché",
+            "Le péché n'aura point sur vous",
+            "De pouvoir O mes biens-aimés.",
+            "(Romains 6:14)"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "Offrez-vous à Dieu comm' des hommes",
+            "Passés de la mort à la vie",
+            "Donnez-vous tout' entiers à Dieu",
+            "Comm' des instruments de justice.",
+            "(Romains 6:14)"
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "La nuit du berger",
+      "author": "Henriette Mbarga, Ecole de la Connaissance et du Service de Dieu (ECSD), Première Session à Bertoua, 20.02.2011 · Sur l'air de « Tu es le Berger nous ne manquerons de rien »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Souverain Berger",
+            "Tu sauves parfaitement",
+            "Ceux qui s'approchent de Dieu",
+            "Par Ton précieux sang",
+            "Etant toujours vivant",
+            "Pour sauver les pécheurs",
+            "Et pour intercéder en leur faveur",
+            "Oui, Tu es le garant",
+            "D'un' allianc' excellente",
+            "Alléluia, amen.",
+            "(Hébreux 7:25)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "1",
+          "lines": [
+            "Alléluia, Alléluia,",
+            "Alléluia, Alléluia,",
+            "Alléluia, Alléluia,",
+            "Alléluia, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Com-me sous bergers",
+            "Nous devons aussi prier",
+            "Afin de paître",
+            "Ceux que Tu nous as donnés",
+            "Nous devons T'imiter",
+            "Dans l'art d'intercéder",
+            "Nous devons porter les saints devant Dieu",
+            "Priant tout' u-ne nuit",
+            "Pour qu'ils soient transformés :",
+            "C'est la nuit du berger.",
+            "(1 Pierre 2:21)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "2",
+          "lines": [
+            "Nous prierons, nous prierons,",
+            "Nous prierons, comm' Toi, Seigneur,",
+            "Nous prierons, nous prierons,",
+            "Nous prierons, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "La nuit du berger",
+            "Revient pour nous comm' jadis",
+            "Qui nous séparera",
+            "Désormais des brebis",
+            "Qui nous séparera",
+            "Désormais des brebis",
+            "Quel loup pourra de nos mains les ravir",
+            "Les pasteurs prieront",
+            "Et intercéderont",
+            "Ils seront des bergers."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "3",
+          "lines": [
+            "Ils prieront, ils prieront,",
+            "Ils prieront, pour les brebis",
+            "Ils prieront, ils prieront,",
+            "Ils prieront, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "La nuit du berger",
+            "Est u-ne nuit de prière",
+            "Pendant laquell'",
+            "Le berger prie nom après nom",
+            "Pour chacun' des brebis",
+            "Etant en agonie",
+            "Déracinant de son cœur tout péché",
+            "Le moi, l'amour du monde",
+            "Et les choses du monde",
+            "Pour qu'elle soit sainte pour Dieu."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "4",
+          "lines": [
+            "Le berger prie, le berger prie,",
+            "Le berger prie, pour les brebis,",
+            "Le berger prie, le berger prie,",
+            "Le berger prie, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "La nuit du berger",
+            "Est u-ne nuit de prière",
+            "Pendant laquell'",
+            "Le berger prie nom après nom",
+            "Pour chacun' des brebis",
+            "Etant en agonie",
+            "Lui imposant la volonté de Dieu",
+            "Lui impartissant Christ",
+            "Pour qu'ell' devienn' utile",
+            "Au Seigneur, à Son œuvre."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "5",
+          "lines": [
+            "Le berger prie, le berger prie,",
+            "Le berger prie, pour le troupeau",
+            "Le berger prie, le berger prie,",
+            "Le berger prie, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "La nuit du berger",
+            "Est u-ne nuit de prière",
+            "Pendant laquell'",
+            "Le berger est seul à genoux",
+            "Pendant six ou huit heures",
+            "Pendant dix ou douze heures :",
+            "Ce sont les douleurs de l'enfantement",
+            "Il entre en labeur",
+            "Pour ses petits enfants",
+            "Pour former Christ en eux.",
+            "(Galates 4:19)"
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "6",
+          "lines": [
+            "Le berger prie, le berger prie,",
+            "Pendant six heures, pendant huit heures",
+            "Le berger prie pendant dix heures,",
+            "Pendant douze heures ou plus."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "La nuit du berger",
+            "Est un' nuit hebdomadaire",
+            "Pendant laquell'",
+            "Le berger est seul en prière",
+            "Il porte dans son cœur",
+            "Les brebis du Seigneur",
+            "Il porte les bien portantes et les grasses",
+            "Il porte les malades,",
+            "Il porte les blessées",
+            "Il port' tout le troupeau."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "7",
+          "lines": [
+            "Le berger prie, le berger prie,",
+            "Le berger prie, pour le troupeau",
+            "Le berger prie, le berger prie,",
+            "Le berger prie, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Souverain Berger",
+            "Exau-ce cet-te prière :",
+            "Que les sous-bergers",
+            "Dans tout notre ministère",
+            "Soient des homm' de prière",
+            "Et non des mercenaires",
+            "O impartis-leur Ton cœur de Berger",
+            "Qu'ils pais-sent Ton troupeau",
+            "En portant Ton fardeau",
+            "Fais-le, fais-le, Seigneur."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "8",
+          "lines": [
+            "Fais-le, Seigneur, fais-le Seigneur,",
+            "Fais-le, Seigneur, nous Te prions",
+            "Fais-le, Seigneur, fais-le, Seigneur,",
+            "Fais-le, Seigneur, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "Souverain Berger",
+            "O ! Que notre ministère",
+            "Partant de Koumé",
+            "Aux extrémités d' la terre",
+            "Soit caractérisé",
+            "Par la nuit du berger",
+            "Par des pasteurs qui portent le troupeau",
+            "Qui veillent en prière",
+            "Pour vaincre l'adversaire",
+            "Fais-le, fais-le Seigneur."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "9",
+          "lines": [
+            "Fais-le, Seigneur, (2x)",
+            "Fais-le, Seigneur, par Ton Esprit,",
+            "Fais-le, Seigneur, (2x)",
+            "Fais-le, Seigneur, amen."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "10",
+          "lines": [
+            "La nuit du berger",
+            "Est revenue pour rester",
+            "Nous T'exaltons, Seigneur",
+            "Et nous Te célébrons",
+            "Nous T'exaltons Seigneur",
+            "Et nous Te célébrons",
+            "Car désormais les saints seront gardés",
+            "Ton troupeau, O Seigneur",
+            "Est en sécurité",
+            "Alléluia, amen."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "10",
+          "lines": [
+            "Alléluia, Alléluia,",
+            "Alléluia, Alléluia",
+            "Alléluia, Alléluia,",
+            "Alléluia, amen."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Dieu exauce les prières",
+      "author": "Henriette Mbarga et Les étudiants de l'UMPJ, Koumé, 2 novembre 2012 · Sur l'air de « Dieu fait toutes choses en Son temps »",
+      "parts": [
+        {
+          "kind": "chorus",
+          "lines": [
+            "Dieu exauc' les prier' en Son temps,",
+            "Et lorsqu'il fait, que c'est beau."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Mêm' s'il faut prier pendant 10 ans,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Mêm' s'il faut prier pendant 20 ans,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Mêm' s'il faut prier com-me la veuve,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Mêm' s'il faut prier-plus longtemps,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "S'il nous faut prier comm' Georges Mûller,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Mêm' si pendant qu'on prie, tout va mal,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "Mêm' s'il faut prier-sans rien voir,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Il nous a dit de prier sans cesse,",
+            "Dieu exauc', exauc'."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "Il nous a dit de L'importuner,",
+            "Dieu exauc', exauc'."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "La Parole de Dieu",
+      "author": "Psaumes 19:8-15 · Henriette Mbarga, Université Mondiale de Prière et de Jeûne, Koumé, le 07 Avril 2015 · Sur l'air de « Plus précieuse que l'or »",
+      "parts": [
+        {
+          "kind": "chorus",
+          "label": "1",
+          "lines": [
+            "Plus précieus' que l'or (x2)",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "La paro-le est parfai-te",
+            "La parol' de Dieu éclai-re",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "La parol' restau-re l'â-me",
+            "La paro-le nous rend sa-ges",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "La parol' de Dieu libè-re",
+            "La parol' nous rend intègre",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "La parol' de Dieu est pure",
+            "La parol' de Dieu est dou-ce",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "La parol' de Dieu est droi-te",
+            "La parol' ôt' l'ignoran-ce",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "La parol' réjouit le cœur",
+            "La parole éclair' les yeux",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "La parol' de Dieu est jus-te",
+            "Et à toujours, ell' subsiste",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "La parol' de Dieu est vraie",
+            "Ell' est plus douc' que le miel",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "La parol' est un trésor",
+            "Ell' vaut plus que beaucoup d'or",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "10",
+          "lines": [
+            "On en reçoit instruction",
+            "Et un' grande récompen-se",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Est plus précieus' que l'or."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "11",
+          "lines": [
+            "O Seigneur, je viens à Toi",
+            "Oui mon Dieu, transforme-moi",
+            "Que la parol' de Dieu reçue dans mon cœur",
+            "Me rend' agréable à Dieu."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "2",
+          "lines": [
+            "Agréable à Dieu (x2)",
+            "La parol' de Dieu dans le cœur de l'homme",
+            "Rend agréable à Dieu."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "title": "La Province Spirituelle du Quartier Général",
+      "author": "Henriette Mbarga, Ecole de la Connaissance et du Service de Dieu (ECSD), Première Session à Bertoua, 03 avril 2011 · Sur l'air de « l'Eglise est fondée »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "La provinc' spirituelle",
+            "Du Quartier Général",
+            "Est de cent kilomètres",
+            "Tout autour de Koumé",
+            "Dans toute cette sphère",
+            "Il y'a un' seul' église",
+            "Que notre ministère",
+            "Pour la vision bâtit."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Et dans cette province",
+            "Du Quartier Général",
+            "Nous imposons le règne",
+            "De Christ notre Monarque",
+            "Et pour Lui être loyaux",
+            "Nous avons démoli",
+            "Tous nos petits royaumes",
+            "Pour Son règne béni."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Cet' provinc' spirituelle",
+            "Est un' localité",
+            "Dont les vil-les actuelles",
+            "Sont toutes des quartiers",
+            "Bertoua, Doumé, Belabo",
+            "Batouri, Nomedjoh",
+            "Abong-Mbang ou Dimako",
+            "Ndiang et bien d'autr' encore."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Tous ceux qui vienn' avec nous",
+            "Pour en fai-re partie",
+            "Y vien-nent comm' dirigeants",
+            "Et se font tout petits",
+            "Quiquonqu' veut le contrôle",
+            "De ses églises, ses gens",
+            "Est libre de le faire",
+            "Mais il en est exclu."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "L'eglis' dans la province",
+            "Du Quartier General",
+            "A trois parties majeures",
+            "Trois grands départements",
+            "Il y a tout d'abord l'œuvre",
+            "D'implantation d'églises",
+            "L'œuvre d'édification",
+            "Et enfin la vision."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "L'œuvre c'est l'implantation",
+            "Des églis' en tout lieu",
+            "Mêm' s'il n'y a que deux maisons",
+            "Dans un endroit donné",
+            "Nous irons, implanterons",
+            "L'église de Jésus",
+            "Et ainsi nous obtiendrons",
+            "Les effectifs voulus."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "Certains de nous aurons donc",
+            "Pour tâ-che assignée",
+            "De prêcher sans exception",
+            "A chaque maisonnée",
+            "Ils seront un' équipe",
+            "D'évangélist' de feu",
+            "Qui prient, chant' et guérissent",
+            "Donnant Christ en tout lieu."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Un autr' aspect de l'œuvre",
+            "C'est l'édification",
+            "Des églis' implanté-es",
+            "Leur sanctification",
+            "Certains se concentreront",
+            "Les saints à édifier",
+            "Jusqu'à ce qu'ils parviennent",
+            "A la maturité."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "La mission de l'Eglise",
+            "Du Quartier Général'",
+            "Ce pourquoi elle existe:",
+            "Pouvoir à une base",
+            "Un' ba-se numéri-que",
+            "Un' ba-se de ressources",
+            "Afin que notre vision",
+            "Puiss' être accomplie."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "10",
+          "lines": [
+            "Le budget d'un' église",
+            "Reflète sa vision",
+            "Cet-te méga église",
+            "Par sa contribution",
+            "A la conquêt' du monde",
+            "Droit crier sa passion",
+            "Et démontrer en force",
+            "Son fardeau, sa vision."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "11",
+          "lines": [
+            "En plus des dîmes qu'ils donnent",
+            "A l'églis' chaque mois",
+            "Tous les dirigeants forment",
+            "Des équipes de dons",
+            "Pour la conquête du monde",
+            "Il nous faut 100 équipes,",
+            "Puis mille équip' qui donnent",
+            "Tous les mois sans faillir."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "12",
+          "lines": [
+            "Notre leader fondateur",
+            "Rêvait tant d'un' église",
+            "Qui porterait la vision",
+            "Et dont les revenus",
+            "A quatre vingt dix pour cent",
+            "Seraient tous, investis",
+            "Comm' ses propres revenus",
+            "Pour la conquête du monde."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "13",
+          "lines": [
+            "Susci-te pour Toi-Même",
+            "Maître de la moisson",
+            "Des égli-ses qui T'aiment",
+            "Qui portent Ta vision",
+            "Dont le budget le montre",
+            "Chaqu' mois sans exception",
+            "Suscite-les d'urgenc'dans",
+            "La nation, les nations."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "title": "J'ai l'assurance de mon salut",
+      "author": "Sur l'air de « Blessed Assurance »",
+      "parts": [
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "J'ai l'assurance de mon salut",
+            "Quel avant-goût de gloire divine",
+            "Racheté de Dieu ! Son héritier !",
+            "Né de l'Esprit, lavé dans Son sang."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "lines": [
+            "C'est mon histoire, c'est là mon chant",
+            "Louer mon Sauveur à chaqu'instant",
+            "C'est mon histoire, c'est là mon chant",
+            "Louer mon Sauveur à chaqu'instant."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Soumission parfaite, bonheur parfait",
+            "Visions célestes sur mon chemin",
+            "Échos d'amour, de miséricorde",
+            "Les anges apportent pour moi d'en haut."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Soumission parfaite, c'est le repos",
+            "En mon Sauveur je suis si béni",
+            "Veillant attendant, fixant le ciel",
+            "Plein de Sa bonté, de Son amour."
+          ]
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Vanité",
+      "author": "Matthieu 16:26 · Henriette Mbarga, Koumé, le 04 septembre 2015",
+      "parts": [
+        {
+          "kind": "chorus",
+          "label": "1",
+          "repeat": 2,
+          "lines": [
+            "Vanité, tout est vanité,",
+            "A quoi sert-il à un homm'",
+            "De gagner le monde s'il perd son âme ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "1",
+          "lines": [
+            "Si l'on pouvait te donner,",
+            "Tout' les richesses de ce monde,",
+            "Si l'on pouvait te donner,",
+            "Ses voitures et ses maisons,",
+            "Quand tu seras dans la tom-be,",
+            "Où seront tout' ces richesses ?",
+            "Quand tu seras au cimetière,",
+            "Où seront tout' ces maisons ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "2",
+          "lines": [
+            "Si l'on pouvait te donner,",
+            "Tout' les bell' femmes de ce monde,",
+            "Si l'on pouvait te donner,",
+            "Tous les beaux homm' de ce monde,",
+            "Quand tu seras dans la tom-be,",
+            "Où seront tout' ces bell' femmes ?",
+            "Quand tu seras au cimetière,",
+            "Où seront tous ces beaux hommes ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "3",
+          "lines": [
+            "Si l'on pouvait te donner,",
+            "Tous les diplômes de ce monde,",
+            "Si l'on pouvait te donner,",
+            "Tous les grands post' de ce monde,",
+            "Quand tu seras dans la tom-be,",
+            "Où seront tous ces diplômes ?",
+            "Quand tu seras au cimetière,",
+            "Où seront tous ces grands postes ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "4",
+          "lines": [
+            "Mais si tu viens à Jésus,",
+            "Jésus te pardonnera,",
+            "O oui si tu viens à Christ,",
+            "Jésus-Christ te sauvera,",
+            "Ainsi lors-que tu vas mourir,",
+            "Tu iras auprès de Dieu,",
+            "O oui lors-que ton jour viendra,",
+            "Il t'accueillera au ciel."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "2",
+          "lines": [
+            "Jésus-Christ, est le seul chemin,",
+            "Jésus-Christ, est le chemin du ciel",
+            "Jésus-Christ, est le seul Sauveur,",
+            "Jésus-Christ, est le Sauveur du monde"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "5",
+          "lines": [
+            "O si tu viens à Jésus,",
+            "Il te donnera la vie,",
+            "Si tu viens à Jésus-Christ,",
+            "Il te donnera la paix,",
+            "Et mêm' dans ta vie sur ter-re,",
+            "Il sera ton compagnon,",
+            "O oui dans ta vie sur ter-re,",
+            "Il sera l'Ami Fidèle."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "6",
+          "lines": [
+            "Il ne faut pas seulement,",
+            "Devenir enfant de Dieu ;",
+            "Il ne faut pas seulement,",
+            "Recevoir la vie de Dieu ;",
+            "Il faut que tu t'investis-ses",
+            "Pour accomplir Ses desseins,",
+            "Il faudrait que tu t'impli-ques",
+            "Dans la conquê-te du monde."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "3",
+          "repeat": 2,
+          "lines": [
+            "Aie un but, dans ta vie pour Dieu,",
+            "Aie un but, pour servir ton Dieu."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "7",
+          "lines": [
+            "O oui il ne suffit pas,",
+            "D'échapper au lac de feu,",
+            "O oui il ne suffit pas,",
+            "D'obtenir l'entrée au ciel,",
+            "Il faut que en plus par ta vie,",
+            "Tu avan-ces Son royaume.",
+            "Il faut que en plus par ta vie,",
+            "Tu impo-ses Son royaume."
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "8",
+          "lines": [
+            "Il se lève le matin",
+            "Sans un but particulier,",
+            "Et s'il établit un but,",
+            "C'est pour des chos' passagères,",
+            "Comm'aller chercher de l'argent,",
+            "Trouver de la nourriture,",
+            "Ou bien pour acquérir des biens,",
+            "Qu'il laissera en mourant."
+          ]
+        },
+        {
+          "kind": "chorus",
+          "label": "4",
+          "repeat": 2,
+          "lines": [
+            "Vanité, tout est vanité,",
+            "A quoi sert-il à un homm'",
+            "De vi-vre, s'il n'a pas de but ?"
+          ]
+        },
+        {
+          "kind": "verse",
+          "label": "9",
+          "lines": [
+            "Don-ne-toi à servir Dieu,",
+            "A gagner le mond' pour Lui,",
+            "Don-ne-toi à servir Dieu,",
+            "A gagner le monde pour Lui,",
+            "Alors ta vie aura un sens,",
+            "Dans le temps, l'éternité,",
+            "Alors ta vie aura un sens,",
+            "Dans le temps, l'éternité."
+          ]
+        }
+      ]
+    }
+  ]
+}

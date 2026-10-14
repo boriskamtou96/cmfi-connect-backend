@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -58,8 +59,89 @@ func (q *Queries) DeleteUserReports(ctx context.Context, userID int64) error {
 	return err
 }
 
+const getAdminMember = `-- name: GetAdminMember :one
+SELECT u.id,
+       u.username,
+       u.role,
+       u.created_at,
+       COALESCE(NULLIF(p.first_name, ''), u.first_name)::text AS first_name,
+       COALESCE(NULLIF(p.last_name, ''), u.last_name, '')::text AS last_name,
+       COALESCE(NULLIF(p.phone_number, ''), u.phone_number)::text AS phone_number,
+       COALESCE(NULLIF(p.email, ''), u.email, '')::text AS email,
+       COALESCE(p.country, '')::text AS country,
+       COALESCE(p.city, '')::text AS city,
+       COALESCE(p.church, '')::text AS church,
+       COALESCE(p.assembly, '')::text AS assembly,
+       dv.last_seen_at,
+       dv.phones,
+       COALESCE(m.id, 0)::bigint AS avatar_id,
+       COALESCE(m.key, '')::text AS avatar_key,
+       COALESCE(m.width, 0)::int AS avatar_width,
+       COALESCE(m.height, 0)::int AS avatar_height,
+       COALESCE(m.color, '')::text AS avatar_color
+FROM users u
+LEFT JOIN profiles p ON p.user_id = u.id
+LEFT JOIN media m ON m.id = u.avatar_media_id
+LEFT JOIN LATERAL (
+    SELECT max(d.updated_at) AS last_seen_at, count(*)::int AS phones
+    FROM devices d
+    WHERE d.user_id = u.id
+) dv ON TRUE
+WHERE u.id = $1
+`
+
+type GetAdminMemberRow struct {
+	ID           int64       `json:"id"`
+	Username     string      `json:"username"`
+	Role         string      `json:"role"`
+	CreatedAt    time.Time   `json:"created_at"`
+	FirstName    string      `json:"first_name"`
+	LastName     string      `json:"last_name"`
+	PhoneNumber  string      `json:"phone_number"`
+	Email        string      `json:"email"`
+	Country      string      `json:"country"`
+	City         string      `json:"city"`
+	Church       string      `json:"church"`
+	Assembly     string      `json:"assembly"`
+	LastSeenAt   interface{} `json:"last_seen_at"`
+	Phones       int32       `json:"phones"`
+	AvatarID     int64       `json:"avatar_id"`
+	AvatarKey    string      `json:"avatar_key"`
+	AvatarWidth  int32       `json:"avatar_width"`
+	AvatarHeight int32       `json:"avatar_height"`
+	AvatarColor  string      `json:"avatar_color"`
+}
+
+// One account as the back office shows it (see ListAdminMembers).
+func (q *Queries) GetAdminMember(ctx context.Context, id int64) (GetAdminMemberRow, error) {
+	row := q.db.QueryRowContext(ctx, getAdminMember, id)
+	var i GetAdminMemberRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Role,
+		&i.CreatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.Country,
+		&i.City,
+		&i.Church,
+		&i.Assembly,
+		&i.LastSeenAt,
+		&i.Phones,
+		&i.AvatarID,
+		&i.AvatarKey,
+		&i.AvatarWidth,
+		&i.AvatarHeight,
+		&i.AvatarColor,
+	)
+	return i, err
+}
+
 const getByPhoneNumber = `-- name: GetByPhoneNumber :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 FROM users
 WHERE phone_number = $1 LIMIT 1
 `
@@ -77,12 +159,38 @@ func (q *Queries) GetByPhoneNumber(ctx context.Context, phoneNumber string) (Use
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
+	)
+	return i, err
+}
+
+const getUserAvatar = `-- name: GetUserAvatar :one
+SELECT m.id, m.key, m.content_type, m.width, m.height, m.color, m.size_bytes, m.uploaded_by, m.created_at
+FROM users u
+JOIN media m ON m.id = u.avatar_media_id
+WHERE u.id = $1
+`
+
+// The profile photo of a member (no row without one).
+func (q *Queries) GetUserAvatar(ctx context.Context, id int64) (Medium, error) {
+	row := q.db.QueryRowContext(ctx, getUserAvatar, id)
+	var i Medium
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.ContentType,
+		&i.Width,
+		&i.Height,
+		&i.Color,
+		&i.SizeBytes,
+		&i.UploadedBy,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 FROM users
 WHERE id = $1 LIMIT 1
 `
@@ -100,12 +208,13 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 FROM users
 WHERE username = $1 LIMIT 1
 `
@@ -123,6 +232,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
 }
@@ -140,6 +250,105 @@ func (q *Queries) GetUserRole(ctx context.Context, id int64) (string, error) {
 	return role, err
 }
 
+const listAdminMembers = `-- name: ListAdminMembers :many
+SELECT u.id,
+       u.username,
+       u.role,
+       u.created_at,
+       COALESCE(NULLIF(p.first_name, ''), u.first_name)::text AS first_name,
+       COALESCE(NULLIF(p.last_name, ''), u.last_name, '')::text AS last_name,
+       COALESCE(NULLIF(p.phone_number, ''), u.phone_number)::text AS phone_number,
+       COALESCE(NULLIF(p.email, ''), u.email, '')::text AS email,
+       COALESCE(p.country, '')::text AS country,
+       COALESCE(p.city, '')::text AS city,
+       COALESCE(p.church, '')::text AS church,
+       COALESCE(p.assembly, '')::text AS assembly,
+       dv.last_seen_at,
+       dv.phones,
+       COALESCE(m.id, 0)::bigint AS avatar_id,
+       COALESCE(m.key, '')::text AS avatar_key,
+       COALESCE(m.width, 0)::int AS avatar_width,
+       COALESCE(m.height, 0)::int AS avatar_height,
+       COALESCE(m.color, '')::text AS avatar_color
+FROM users u
+LEFT JOIN profiles p ON p.user_id = u.id
+LEFT JOIN media m ON m.id = u.avatar_media_id
+LEFT JOIN LATERAL (
+    SELECT max(d.updated_at) AS last_seen_at, count(*)::int AS phones
+    FROM devices d
+    WHERE d.user_id = u.id
+) dv ON TRUE
+ORDER BY u.created_at DESC, u.id DESC
+`
+
+type ListAdminMembersRow struct {
+	ID           int64       `json:"id"`
+	Username     string      `json:"username"`
+	Role         string      `json:"role"`
+	CreatedAt    time.Time   `json:"created_at"`
+	FirstName    string      `json:"first_name"`
+	LastName     string      `json:"last_name"`
+	PhoneNumber  string      `json:"phone_number"`
+	Email        string      `json:"email"`
+	Country      string      `json:"country"`
+	City         string      `json:"city"`
+	Church       string      `json:"church"`
+	Assembly     string      `json:"assembly"`
+	LastSeenAt   interface{} `json:"last_seen_at"`
+	Phones       int32       `json:"phones"`
+	AvatarID     int64       `json:"avatar_id"`
+	AvatarKey    string      `json:"avatar_key"`
+	AvatarWidth  int32       `json:"avatar_width"`
+	AvatarHeight int32       `json:"avatar_height"`
+	AvatarColor  string      `json:"avatar_color"`
+}
+
+// Every account as the back office shows it (no spiritual data): the
+// profile first, the last time the app was opened on a phone, how many
+// phones get the push and the profile photo. The newest first.
+func (q *Queries) ListAdminMembers(ctx context.Context) ([]ListAdminMembersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAdminMembers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAdminMembersRow{}
+	for rows.Next() {
+		var i ListAdminMembersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Role,
+			&i.CreatedAt,
+			&i.FirstName,
+			&i.LastName,
+			&i.PhoneNumber,
+			&i.Email,
+			&i.Country,
+			&i.City,
+			&i.Church,
+			&i.Assembly,
+			&i.LastSeenAt,
+			&i.Phones,
+			&i.AvatarID,
+			&i.AvatarKey,
+			&i.AvatarWidth,
+			&i.AvatarHeight,
+			&i.AvatarColor,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listMemberCards = `-- name: ListMemberCards :many
 SELECT u.id,
        u.username,
@@ -148,21 +357,33 @@ SELECT u.id,
        COALESCE(NULLIF(p.phone_number, ''), u.phone_number)::text AS phone_number,
        COALESCE(NULLIF(p.email, ''), u.email, '')::text AS email,
        COALESCE(p.church, '')::text AS church,
-       COALESCE(p.assembly, '')::text AS assembly
+       COALESCE(p.assembly, '')::text AS assembly,
+       -- the profile photo, avatar_id 0 without one
+       COALESCE(m.id, 0)::bigint AS avatar_id,
+       COALESCE(m.key, '')::text AS avatar_key,
+       COALESCE(m.width, 0)::int AS avatar_width,
+       COALESCE(m.height, 0)::int AS avatar_height,
+       COALESCE(m.color, '')::text AS avatar_color
 FROM users u
 LEFT JOIN profiles p ON p.user_id = u.id
+LEFT JOIN media m ON m.id = u.avatar_media_id
 WHERE u.id = ANY($1::bigint[])
 `
 
 type ListMemberCardsRow struct {
-	ID          int64  `json:"id"`
-	Username    string `json:"username"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	PhoneNumber string `json:"phone_number"`
-	Email       string `json:"email"`
-	Church      string `json:"church"`
-	Assembly    string `json:"assembly"`
+	ID           int64  `json:"id"`
+	Username     string `json:"username"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	PhoneNumber  string `json:"phone_number"`
+	Email        string `json:"email"`
+	Church       string `json:"church"`
+	Assembly     string `json:"assembly"`
+	AvatarID     int64  `json:"avatar_id"`
+	AvatarKey    string `json:"avatar_key"`
+	AvatarWidth  int32  `json:"avatar_width"`
+	AvatarHeight int32  `json:"avatar_height"`
+	AvatarColor  string `json:"avatar_color"`
 }
 
 // What members show of themselves, the profile first (the user row has the
@@ -185,6 +406,11 @@ func (q *Queries) ListMemberCards(ctx context.Context, ids []int64) ([]ListMembe
 			&i.Email,
 			&i.Church,
 			&i.Assembly,
+			&i.AvatarID,
+			&i.AvatarKey,
+			&i.AvatarWidth,
+			&i.AvatarHeight,
+			&i.AvatarColor,
 		); err != nil {
 			return nil, err
 		}
@@ -230,7 +456,7 @@ func (q *Queries) ListTakenUsernames(ctx context.Context, candidates []string) (
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 FROM users
 ORDER BY id DESC
 LIMIT $1
@@ -261,6 +487,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Email,
 			&i.Role,
 			&i.Username,
+			&i.AvatarMediaID,
 		); err != nil {
 			return nil, err
 		}
@@ -276,7 +503,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 }
 
 const listUsersByRoles = `-- name: ListUsersByRoles :many
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 FROM users
 WHERE role = ANY($1::text[])
 ORDER BY role DESC, username
@@ -301,6 +528,7 @@ func (q *Queries) ListUsersByRoles(ctx context.Context, roles []string) ([]User,
 			&i.Email,
 			&i.Role,
 			&i.Username,
+			&i.AvatarMediaID,
 		); err != nil {
 			return nil, err
 		}
@@ -325,7 +553,7 @@ INSERT INTO users(
                   username
 )
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 `
 
 type RegisterUserParams struct {
@@ -357,8 +585,36 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
+}
+
+const setUserAvatar = `-- name: SetUserAvatar :one
+UPDATE users u
+SET avatar_media_id = $1
+FROM (
+    SELECT o.id, o.avatar_media_id
+    FROM users o
+    WHERE o.id = $2
+    FOR UPDATE
+) previous
+WHERE u.id = previous.id
+RETURNING previous.avatar_media_id AS previous_media_id
+`
+
+type SetUserAvatarParams struct {
+	AvatarMediaID sql.NullInt64 `json:"avatar_media_id"`
+	ID            int64         `json:"id"`
+}
+
+// Puts a profile photo (NULL takes it off) and gives the one it replaces,
+// for its file to go. No row when the member doesn't exist.
+func (q *Queries) SetUserAvatar(ctx context.Context, arg SetUserAvatarParams) (sql.NullInt64, error) {
+	row := q.db.QueryRowContext(ctx, setUserAvatar, arg.AvatarMediaID, arg.ID)
+	var previous_media_id sql.NullInt64
+	err := row.Scan(&previous_media_id)
+	return previous_media_id, err
 }
 
 const updateUser = `-- name: UpdateUser :one
@@ -370,7 +626,7 @@ SET
     email = COALESCE($5, email),
     hash_password = COALESCE($6, hash_password)
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 `
 
 type UpdateUserParams struct {
@@ -402,15 +658,32 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET hash_password = $2
+WHERE id = $1
+`
+
+type UpdateUserPasswordParams struct {
+	ID           int64  `json:"id"`
+	HashPassword []byte `json:"hash_password"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.HashPassword)
+	return err
 }
 
 const updateUserRole = `-- name: UpdateUserRole :one
 UPDATE users
 SET role = $2
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 `
 
 type UpdateUserRoleParams struct {
@@ -431,6 +704,7 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
 }
@@ -439,7 +713,7 @@ const updateUsername = `-- name: UpdateUsername :one
 UPDATE users
 SET username = $2
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
 `
 
 type UpdateUsernameParams struct {
@@ -460,6 +734,7 @@ func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) 
 		&i.Email,
 		&i.Role,
 		&i.Username,
+		&i.AvatarMediaID,
 	)
 	return i, err
 }

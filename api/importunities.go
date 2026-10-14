@@ -484,10 +484,16 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 		}
 		invited = append(invited, members...)
 	}
-	count := int64(0)
+	// those who blocked the inviter get nothing (and the inviter isn't told)
+	invited, err := s.withoutBlockers(c, authUser.ID, invited)
+	if err != nil {
+		internalServerError(c)
+		return
+	}
+	newcomers := []int64{}
 	if len(invited) > 0 {
 		var err error
-		count, err = s.store.InviteToImportunity(c, db.InviteToImportunityParams{
+		newcomers, err = s.store.InviteToImportunity(c, db.InviteToImportunityParams{
 			ImportunityID: importunity.ID, InvitedBy: authUser.ID, UserIds: invited,
 		})
 		if err != nil {
@@ -495,7 +501,11 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 			return
 		}
 	}
-	apiResponse(c, http.StatusOK, invitationsResponse{Invited: count})
+	if len(newcomers) > 0 {
+		inviter := s.firstNameOf(c, authUser.ID)
+		s.pushInvitation(importunity, inviter, newcomers)
+	}
+	apiResponse(c, http.StatusOK, invitationsResponse{Invited: int64(len(newcomers))})
 }
 
 type answerRequest struct {

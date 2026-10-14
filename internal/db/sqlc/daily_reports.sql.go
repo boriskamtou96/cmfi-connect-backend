@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 const countReportedDays = `-- name: CountReportedDays :one
@@ -63,7 +65,7 @@ func (q *Queries) DeleteReportEntries(ctx context.Context, reportID int64) error
 }
 
 const getDailyReport = `-- name: GetDailyReport :one
-SELECT id, user_id, report_date, note, created_at, updated_at FROM daily_reports
+SELECT id, user_id, report_date, note, created_at, updated_at, goal_percent FROM daily_reports
 WHERE user_id = $1 AND report_date = $2
 `
 
@@ -82,6 +84,7 @@ func (q *Queries) GetDailyReport(ctx context.Context, arg GetDailyReportParams) 
 		&i.Note,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoalPercent,
 	)
 	return i, err
 }
@@ -281,23 +284,74 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 	return items, nil
 }
 
+const listReportDays = `-- name: ListReportDays :many
+SELECT user_id, report_date, goal_percent
+FROM daily_reports
+WHERE user_id = ANY($1::bigint[])
+  AND report_date BETWEEN $2::date AND $3::date
+ORDER BY user_id, report_date DESC
+`
+
+type ListReportDaysParams struct {
+	UserIds  []int64   `json:"user_ids"`
+	FromDate time.Time `json:"from_date"`
+	ToDate   time.Time `json:"to_date"`
+}
+
+type ListReportDaysRow struct {
+	UserID      int64         `json:"user_id"`
+	ReportDate  time.Time     `json:"report_date"`
+	GoalPercent sql.NullInt16 `json:"goal_percent"`
+}
+
+// The days with a report of several members between two dates, newest first,
+// with the share of their goals reached.
+func (q *Queries) ListReportDays(ctx context.Context, arg ListReportDaysParams) ([]ListReportDaysRow, error) {
+	rows, err := q.db.QueryContext(ctx, listReportDays, pq.Array(arg.UserIds), arg.FromDate, arg.ToDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListReportDaysRow{}
+	for rows.Next() {
+		var i ListReportDaysRow
+		if err := rows.Scan(&i.UserID, &i.ReportDate, &i.GoalPercent); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertDailyReport = `-- name: UpsertDailyReport :one
-INSERT INTO daily_reports (user_id, report_date, note)
-VALUES ($1, $2, $3)
+INSERT INTO daily_reports (user_id, report_date, note, goal_percent)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (user_id, report_date)
-DO UPDATE SET note = EXCLUDED.note, updated_at = NOW()
-RETURNING id, user_id, report_date, note, created_at, updated_at
+DO UPDATE SET note = EXCLUDED.note, goal_percent = EXCLUDED.goal_percent, updated_at = NOW()
+RETURNING id, user_id, report_date, note, created_at, updated_at, goal_percent
 `
 
 type UpsertDailyReportParams struct {
-	UserID     int64          `json:"user_id"`
-	ReportDate time.Time      `json:"report_date"`
-	Note       sql.NullString `json:"note"`
+	UserID      int64          `json:"user_id"`
+	ReportDate  time.Time      `json:"report_date"`
+	Note        sql.NullString `json:"note"`
+	GoalPercent sql.NullInt16  `json:"goal_percent"`
 }
 
-// Creates the day, or updates its note when it already exists.
+// Creates the day, or updates its note and goals when it already exists.
 func (q *Queries) UpsertDailyReport(ctx context.Context, arg UpsertDailyReportParams) (DailyReport, error) {
-	row := q.db.QueryRowContext(ctx, upsertDailyReport, arg.UserID, arg.ReportDate, arg.Note)
+	row := q.db.QueryRowContext(ctx, upsertDailyReport,
+		arg.UserID,
+		arg.ReportDate,
+		arg.Note,
+		arg.GoalPercent,
+	)
 	var i DailyReport
 	err := row.Scan(
 		&i.ID,
@@ -306,6 +360,7 @@ func (q *Queries) UpsertDailyReport(ctx context.Context, arg UpsertDailyReportPa
 		&i.Note,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoalPercent,
 	)
 	return i, err
 }

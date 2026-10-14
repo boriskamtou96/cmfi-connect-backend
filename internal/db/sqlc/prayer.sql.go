@@ -567,11 +567,12 @@ func (q *Queries) GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, er
 	return i, err
 }
 
-const inviteToImportunity = `-- name: InviteToImportunity :execrows
+const inviteToImportunity = `-- name: InviteToImportunity :many
 INSERT INTO importunity_members (importunity_id, user_id, invited_by)
 SELECT $1::bigint, invited, $2::bigint
 FROM unnest($3::bigint[]) AS invited
 ON CONFLICT (importunity_id, user_id) DO NOTHING
+RETURNING user_id
 `
 
 type InviteToImportunityParams struct {
@@ -580,13 +581,29 @@ type InviteToImportunityParams struct {
 	UserIds       []int64 `json:"user_ids"`
 }
 
-// Already invited, joined or declined: left as they are.
-func (q *Queries) InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, inviteToImportunity, arg.ImportunityID, arg.InvitedBy, pq.Array(arg.UserIds))
+// Already invited, joined or declined: left as they are. Gives the members
+// invited now (they get a push).
+func (q *Queries) InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, inviteToImportunity, arg.ImportunityID, arg.InvitedBy, pq.Array(arg.UserIds))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var user_id int64
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const leaveImportunity = `-- name: LeaveImportunity :execrows

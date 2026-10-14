@@ -213,6 +213,10 @@ func (s *Server) deleteMe(c *gin.Context) {
 		invalidCredentialsError(c)
 		return
 	}
+	avatar, ok := s.avatarToDrop(c, user.ID)
+	if !ok {
+		return
+	}
 
 	err = s.store.DeleteAccountTx(c, user.ID)
 	switch {
@@ -222,6 +226,9 @@ func (s *Server) deleteMe(c *gin.Context) {
 	case err != nil:
 		internalServerError(c)
 		return
+	}
+	if avatar != 0 {
+		s.dropMedia(c, avatar)
 	}
 	apiResponse(c, http.StatusNoContent, nil)
 }
@@ -358,10 +365,17 @@ func (s *Server) deleteUser(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
+	avatar, ok := s.avatarToDrop(c, id)
+	if !ok {
+		return
+	}
 
 	if err := s.store.DeleteUser(c, id); err != nil {
 		internalServerError(c)
 		return
+	}
+	if avatar != 0 {
+		s.dropMedia(c, avatar)
 	}
 
 	apiResponse(c, http.StatusNoContent, nil)

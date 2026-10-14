@@ -162,7 +162,7 @@ func (s *Server) prayerTopicResponses(c *gin.Context, topics []db.PrayerTopic, u
 		slices.Sort(response.PrayedToday)
 		if document, ok := documents[topic.DocumentID.Int64]; ok {
 			response.Document = &documentResponse{
-				URL:       "/v1/media/" + document.Key,
+				URL:       mediaURL(document.Key),
 				Name:      topic.DocumentName,
 				SizeBytes: document.SizeBytes,
 			}

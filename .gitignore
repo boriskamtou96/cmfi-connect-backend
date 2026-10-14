@@ -1,2 +1,6 @@
 # images sent by the admins (MEDIA_DIR)
 /data/media/
+# local settings and their secrets (production uses the platform's variables)
+.env
+# the binary of `go build`
+/main

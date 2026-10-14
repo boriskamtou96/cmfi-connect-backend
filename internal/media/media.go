@@ -10,8 +10,9 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/draw"
 	// the formats accepted: the apps send JPEG (compressed on the phone) or PNG
-	_ "image/jpeg"
+	"image/jpeg"
 	_ "image/png"
 	"io"
 	"net/http"
@@ -27,8 +28,25 @@ const MaxSize = 8 << 20
 // MaxDocumentSize is the largest PDF accepted.
 const MaxDocumentSize = 10 << 20
 
+// MaxAvatarSize is the largest profile photo accepted. The apps crop and
+// compress it before sending.
+const MaxAvatarSize = 2 << 20
+
+// The side of a profile photo, in pixels.
+const (
+	MinAvatarSide = 128
+	MaxAvatarSide = 2048
+)
+
 // ErrUnsupported: not a JPEG, a PNG nor a PDF, or an image that can't be read.
 var ErrUnsupported = errors.New("unsupported file: JPEG, PNG or PDF only")
+
+var (
+	// ErrAvatarShape: a profile photo is square (2 pixels of difference at most).
+	ErrAvatarShape = errors.New("profile photo: the picture must be square")
+	// ErrAvatarSize: a profile photo too small to be sharp, or too large.
+	ErrAvatarSize = fmt.Errorf("profile photo: %d to %d pixels a side", MinAvatarSide, MaxAvatarSide)
+)
 
 // Info is what is kept about an image. A document has no size nor color.
 type Info struct {
@@ -70,6 +88,57 @@ func Inspect(data []byte) (Info, error) {
 	}, nil
 }
 
+// Avatar checks a profile photo (a square JPEG or PNG) and makes it again as
+// a JPEG: what the phone wrote in the file (EXIF: place, camera) stays out.
+// A transparent PNG gets a white background.
+func Avatar(data []byte) ([]byte, Info, error) {
+	contentType := http.DetectContentType(data)
+	if contentType != "image/jpeg" && contentType != "image/png" {
+		return nil, Info{}, ErrUnsupported
+	}
+	// the size first, read from the header: no pixels decoded for a picture
+	// refused anyway
+	config, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return nil, Info{}, fmt.Errorf("%w: %v", ErrUnsupported, err)
+	}
+	if abs(config.Width-config.Height) > 2 {
+		return nil, Info{}, ErrAvatarShape
+	}
+	if min(config.Width, config.Height) < MinAvatarSide || max(config.Width, config.Height) > MaxAvatarSide {
+		return nil, Info{}, ErrAvatarSize
+	}
+	picture, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, Info{}, fmt.Errorf("%w: %v", ErrUnsupported, err)
+	}
+	bounds := picture.Bounds()
+	if contentType == "image/png" {
+		flat := image.NewRGBA(image.Rect(0, 0, bounds.Dx(), bounds.Dy()))
+		draw.Draw(flat, flat.Bounds(), image.White, image.Point{}, draw.Src)
+		draw.Draw(flat, flat.Bounds(), picture, bounds.Min, draw.Over)
+		picture = flat
+	}
+	var out bytes.Buffer
+	if err := jpeg.Encode(&out, picture, &jpeg.Options{Quality: 85}); err != nil {
+		return nil, Info{}, err
+	}
+	return out.Bytes(), Info{
+		ContentType: "image/jpeg",
+		Width:       bounds.Dx(),
+		Height:      bounds.Dy(),
+		Color:       averageColor(picture),
+		Ext:         ".jpg",
+	}, nil
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
 // averageColor reads a grid of about 48×48 points: enough for a background color.
 func averageColor(picture image.Image) string {
 	bounds := picture.Bounds()
@@ -108,6 +177,8 @@ type Store interface {
 	Save(key string, data []byte) error
 	// Open gives the file to serve, and when it was written.
 	Open(key string) (io.ReadSeekCloser, time.Time, error)
+	// Delete removes a file; one already gone is not an error.
+	Delete(key string) error
 }
 
 // DiskStore keeps the files in a folder of the server.
@@ -144,4 +215,15 @@ func (s *DiskStore) Open(key string) (io.ReadSeekCloser, time.Time, error) {
 		return nil, time.Time{}, err
 	}
 	return file, stat.ModTime(), nil
+}
+
+func (s *DiskStore) Delete(key string) error {
+	if !ValidKey(key) {
+		return fmt.Errorf("invalid media key %q", key)
+	}
+	err := os.Remove(filepath.Join(s.Dir, key))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }

@@ -206,12 +206,14 @@ WHERE id = $1;
 INSERT INTO importunity_members (importunity_id, user_id, status, joined_at)
 VALUES ($1, $2, 'joined', now());
 
--- name: InviteToImportunity :execrows
--- Already invited, joined or declined: left as they are.
+-- name: InviteToImportunity :many
+-- Already invited, joined or declined: left as they are. Gives the members
+-- invited now (they get a push).
 INSERT INTO importunity_members (importunity_id, user_id, invited_by)
 SELECT @importunity_id::bigint, invited, @invited_by::bigint
 FROM unnest(@user_ids::bigint[]) AS invited
-ON CONFLICT (importunity_id, user_id) DO NOTHING;
+ON CONFLICT (importunity_id, user_id) DO NOTHING
+RETURNING user_id;
 
 -- name: GetImportunityMember :one
 SELECT *
