@@ -176,7 +176,7 @@ func (s *Server) sendPrayerTopic(c *gin.Context, status int, topic db.PrayerTopi
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	responses, err := s.prayerTopicResponses(c, []db.PrayerTopic{topic}, authUser.ID, day)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, status, responses[0])
@@ -203,13 +203,13 @@ func (s *Server) listPrayerTopics(c *gin.Context) {
 		topics, err = s.store.ListCurrentPrayerTopics(c, day)
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	responses, err := s.prayerTopicResponses(c, topics, authUser.ID, day)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses)
@@ -227,7 +227,7 @@ func (s *Server) loadPrayerTopic(c *gin.Context, allowDraft bool) (db.PrayerTopi
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "Prayer topic")
 		} else {
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return db.PrayerTopic{}, false
 	}
@@ -276,7 +276,7 @@ func (s *Server) setPrayedPoints(c *gin.Context) {
 	}
 	points, err := s.store.ListPrayerTopicPoints(c, []int64{topic.ID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	positions := []int32{}
@@ -291,7 +291,7 @@ func (s *Server) setPrayedPoints(c *gin.Context) {
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if err := s.store.SetMyPrayedPointsTx(c, topic.ID, authUser.ID, day, positions); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendPrayerTopic(c, http.StatusOK, topic, day)
@@ -309,13 +309,13 @@ func (s *Server) adminListPrayerTopics(c *gin.Context) {
 	limit, offset := page.limits()
 	topics, err := s.store.ListAllPrayerTopics(c, db.ListAllPrayerTopicsParams{Lim: limit, Off: offset})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	responses, err := s.prayerTopicResponses(c, topics, authUser.ID, todayIn())
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses)
@@ -401,9 +401,7 @@ func (s *Server) prayerTopicParams(c *gin.Context, req prayerTopicRequest) (db.C
 		}
 		points = append(points, point)
 	}
-	if len(points) == 0 {
-		return params, nil, fmt.Errorf("a topic needs at least one point")
-	}
+	// the points are optional: the app shows the title and the PDF
 	if len(points) > 100 {
 		return params, nil, fmt.Errorf("100 points at most")
 	}
@@ -426,7 +424,7 @@ func (s *Server) createPrayerTopic(c *gin.Context) {
 	params.CreatedBy = nullID(authUser.ID)
 	topic, err := s.store.SavePrayerTopicTx(c, 0, params, points)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendPrayerTopic(c, http.StatusCreated, topic, todayIn())
@@ -450,7 +448,7 @@ func (s *Server) updatePrayerTopic(c *gin.Context) {
 	}
 	updated, err := s.store.SavePrayerTopicTx(c, topic.ID, params, points)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendPrayerTopic(c, http.StatusOK, updated, todayIn())
@@ -463,7 +461,7 @@ func (s *Server) deletePrayerTopic(c *gin.Context) {
 		return
 	}
 	if _, err := s.store.DeletePrayerTopic(c, topic.ID); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
@@ -498,7 +496,7 @@ func (s *Server) listPrayerPeople(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	people, err := s.store.ListPrayerPeople(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses := make([]prayerPersonResponse, 0, len(people))
@@ -553,7 +551,7 @@ func (s *Server) createPrayerPerson(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	count, err := s.store.CountPrayerPeople(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if count >= maxPrayerPeople {
@@ -568,7 +566,7 @@ func (s *Server) createPrayerPerson(c *gin.Context) {
 		Note:   note,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusCreated, toPrayerPerson(person))
@@ -605,7 +603,7 @@ func (s *Server) updatePrayerPerson(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, toPrayerPerson(person))
@@ -621,7 +619,7 @@ func (s *Server) deletePrayerPerson(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	deleted, err := s.store.DeletePrayerPerson(c, db.DeletePrayerPersonParams{ID: uri.ID, UserID: authUser.ID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if deleted == 0 {
@@ -653,7 +651,7 @@ func (s *Server) markPrayerPeoplePrayed(c *gin.Context) {
 		if _, err := s.store.MarkPrayerPeoplePrayed(c, db.MarkPrayerPeoplePrayedParams{
 			Day: day, UserID: authUser.ID, Ids: req.IDs,
 		}); err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 	}
@@ -688,7 +686,7 @@ func (s *Server) listPrayerRetreats(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	retreats, err := s.store.ListPrayerRetreats(c, db.ListPrayerRetreatsParams{UserID: authUser.ID, FromDay: from, ToDay: to})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses := make([]prayerRetreatResponse, 0, len(retreats))
@@ -750,7 +748,7 @@ func (s *Server) savePrayerRetreat(c *gin.Context) {
 		UserID: authUser.ID, Day: day, Moment: moment, Minutes: req.Minutes,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, toPrayerRetreat(retreat))
@@ -764,7 +762,7 @@ func (s *Server) deletePrayerRetreat(c *gin.Context) {
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if _, err := s.store.DeletePrayerRetreat(c, db.DeletePrayerRetreatParams{UserID: authUser.ID, Day: day, Moment: moment}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)

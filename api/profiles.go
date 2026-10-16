@@ -128,7 +128,7 @@ func (s *Server) createProfile(c *gin.Context) {
 
 	profile, err := s.store.CreateProfile(c, params)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -144,7 +144,7 @@ func (s *Server) getProfile(c *gin.Context) {
 			resourceNotFoundError(c, "Profile")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -238,7 +238,7 @@ func (s *Server) updateProfile(c *gin.Context) {
 			resourceNotFoundError(c, "Profile")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -250,7 +250,7 @@ func (s *Server) sendProfile(c *gin.Context, status int, profile db.Profile) {
 	response := convertToProfileResponse(profile)
 	avatar, err := s.userAvatar(c, profile.UserID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	response.Avatar = avatar

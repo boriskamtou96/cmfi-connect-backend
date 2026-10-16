@@ -39,7 +39,8 @@ type authorityResponse struct {
 	Status   string  `json:"status"`
 	// their profile photo, or null
 	Avatar *mediaResponse `json:"avatar"`
-	// whether the owner shows their regularity to them (a disciple maker)
+	// whether the owner shares their reports with them (a member, disciple
+	// maker or not): the items filled in and the percentages, never the note
 	SharesRegularity bool `json:"shares_regularity"`
 }
 
@@ -140,7 +141,7 @@ func (s *Server) createAuthority(c *gin.Context) {
 				resourceNotFoundError(c, "member")
 				return
 			}
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		if card.ID == authUser.ID {
@@ -173,14 +174,14 @@ func (s *Server) createAuthority(c *gin.Context) {
 			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "DISCIPLE_MAKER_EXISTS",
 				fmt.Errorf("you already have a disciple maker")))
 		default:
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return
 	}
 
 	responses, err := s.authorityResponses(c, []db.Authority{authority})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusCreated, responses[0])
@@ -207,18 +208,18 @@ func (s *Server) listAuthorities(c *gin.Context) {
 	}
 	authorities, err := s.store.GetUserAuthorities(c, params)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses, err := s.authorityResponses(c, authorities)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
 	total, err := s.store.CountUserAuthorities(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -248,7 +249,7 @@ func (s *Server) ownAuthority(c *gin.Context) (db.Authority, bool) {
 		if err == nil || errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "Authority")
 		} else {
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return db.Authority{}, false
 	}
@@ -263,7 +264,7 @@ func (s *Server) getAuthorityById(c *gin.Context) {
 	}
 	responses, err := s.authorityResponses(c, []db.Authority{authority})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses[0])
@@ -277,7 +278,7 @@ func (s *Server) deleteAuthority(c *gin.Context) {
 	}
 	err := s.store.DeleteAuthority(c, db.DeleteAuthorityParams{ID: authority.ID, UserID: authority.UserID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
@@ -287,8 +288,8 @@ type authoritySharingRequest struct {
 	Shares *bool `json:"shares" binding:"required"`
 }
 
-// PUT /v1/authorities/:id/sharing: whether the signed-in member shows their
-// regularity (the days they filled in) to this authority, their disciple maker.
+// PUT /v1/authorities/:id/sharing: whether the signed-in member shares their
+// reports with this authority (see GET /v1/disciples/:id/reports).
 func (s *Server) setAuthoritySharing(c *gin.Context) {
 	authority, ok := s.ownAuthority(c)
 	if !ok {
@@ -311,12 +312,12 @@ func (s *Server) setAuthoritySharing(c *gin.Context) {
 			resourceNotFoundError(c, "Authority")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses, err := s.authorityResponses(c, []db.Authority{updated})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses[0])
@@ -364,12 +365,12 @@ func (s *Server) listAuthorityRequests(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	requests, err := s.store.ListAuthorityRequests(c, sql.NullInt64{Int64: authUser.ID, Valid: true})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses, err := s.authorityRequestResponses(c, requests)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses)
@@ -396,12 +397,12 @@ func (s *Server) answerAuthorityRequest(status string) gin.HandlerFunc {
 				resourceNotFoundError(c, "Request")
 				return
 			}
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		responses, err := s.authorityRequestResponses(c, []db.Authority{answered})
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		apiResponse(c, http.StatusOK, responses[0])

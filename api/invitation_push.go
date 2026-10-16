@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -57,7 +57,11 @@ func (s *Server) pushInvitation(importunity db.Importunity, inviter string, invi
 	defer cancel()
 
 	devices, err := s.store.ListDevicesOfUsers(ctx, invited)
-	if err != nil || len(devices) == 0 {
+	if err != nil {
+		slog.Error("cannot read the phones of the invited members", "importunity_id", importunity.ID, "error", err)
+		return
+	}
+	if len(devices) == 0 {
 		return
 	}
 	byLanguage := map[string][]string{}
@@ -79,13 +83,13 @@ func (s *Server) pushInvitation(importunity db.Importunity, inviter string, invi
 			},
 		})
 		if err != nil {
-			log.Printf("push of the invitation to importunity %d: %v", importunity.ID, err)
+			slog.Error("push of an invitation failed", "importunity_id", importunity.ID, "language", language, "error", err)
 		}
 		dead = append(dead, result.Dead...)
 	}
 	if len(dead) > 0 {
 		if err := s.store.DeleteDevicesByTokens(ctx, dead); err != nil {
-			log.Printf("forget dead tokens: %v", err)
+			slog.Error("cannot forget the dead phones", "count", len(dead), "error", err)
 		}
 	}
 }

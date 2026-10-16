@@ -145,8 +145,15 @@ func TestOnlyAdminsPublishPrayerTopicsAndDraftsStayHidden(t *testing.T) {
 	require.Equal(t, []string{"Premier point corrigé", "Deuxième point"}, decode[prayerTopicResponse](t, published).Points)
 	require.NotNil(t, findTopic(currentTopics(t, router, boris.Token), draft.ID))
 
+	// the points are optional: the app shows the title and the PDF
+	pointless := send(t, router, http.MethodPost, admin.Token, "/v1/admin/prayer/topics",
+		map[string]any{"title": "Sans point", "starts_on": day(0), "points": []string{" "}})
+	require.Equal(t, http.StatusCreated, pointless.Code, pointless.Body.String())
+	require.Empty(t, decode[prayerTopicResponse](t, pointless).Points)
+	send(t, router, http.MethodDelete, admin.Token,
+		fmt.Sprintf("/v1/admin/prayer/topics/%d", decode[prayerTopicResponse](t, pointless).ID), nil)
+
 	mistakes := []map[string]any{
-		{"title": "Sans point", "starts_on": day(0), "points": []string{" "}},
 		{"title": "Catégorie", "starts_on": day(0), "category": "sport", "points": []string{"Un point"}},
 		{"title": "Dates", "starts_on": day(2), "ends_on": day(1), "points": []string{"Un point"}},
 		{"title": "Pas un PDF", "starts_on": day(0), "document_id": 999999999, "points": []string{"Un point"}},

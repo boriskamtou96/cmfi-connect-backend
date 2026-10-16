@@ -223,7 +223,7 @@ func (q *Queries) GetReportSummary(ctx context.Context, arg GetReportSummaryPara
 }
 
 const listDailyReportEntries = `-- name: ListDailyReportEntries :many
-SELECT dr.report_date, dr.note,
+SELECT dr.report_date, dr.note, dr.goal_percent,
        re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes
 FROM daily_reports dr
 LEFT JOIN report_entries re ON re.report_id = dr.id
@@ -242,6 +242,7 @@ type ListDailyReportEntriesParams struct {
 type ListDailyReportEntriesRow struct {
 	ReportDate      time.Time      `json:"report_date"`
 	Note            sql.NullString `json:"note"`
+	GoalPercent     sql.NullInt16  `json:"goal_percent"`
 	ActivityTypeID  sql.NullInt64  `json:"activity_type_id"`
 	Code            sql.NullString `json:"code"`
 	Label           sql.NullString `json:"label"`
@@ -264,6 +265,7 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 		if err := rows.Scan(
 			&i.ReportDate,
 			&i.Note,
+			&i.GoalPercent,
 			&i.ActivityTypeID,
 			&i.Code,
 			&i.Label,
@@ -285,11 +287,12 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 }
 
 const listReportDays = `-- name: ListReportDays :many
-SELECT user_id, report_date, goal_percent
-FROM daily_reports
-WHERE user_id = ANY($1::bigint[])
-  AND report_date BETWEEN $2::date AND $3::date
-ORDER BY user_id, report_date DESC
+SELECT dr.user_id, dr.report_date, dr.goal_percent,
+       (SELECT COUNT(*) FROM report_entries re WHERE re.report_id = dr.id) AS filled
+FROM daily_reports dr
+WHERE dr.user_id = ANY($1::bigint[])
+  AND dr.report_date BETWEEN $2::date AND $3::date
+ORDER BY dr.user_id, dr.report_date DESC
 `
 
 type ListReportDaysParams struct {
@@ -302,10 +305,11 @@ type ListReportDaysRow struct {
 	UserID      int64         `json:"user_id"`
 	ReportDate  time.Time     `json:"report_date"`
 	GoalPercent sql.NullInt16 `json:"goal_percent"`
+	Filled      int64         `json:"filled"`
 }
 
 // The days with a report of several members between two dates, newest first,
-// with the share of their goals reached.
+// with the share of their goals reached and the number of items filled in.
 func (q *Queries) ListReportDays(ctx context.Context, arg ListReportDaysParams) ([]ListReportDaysRow, error) {
 	rows, err := q.db.QueryContext(ctx, listReportDays, pq.Array(arg.UserIds), arg.FromDate, arg.ToDate)
 	if err != nil {
@@ -315,7 +319,12 @@ func (q *Queries) ListReportDays(ctx context.Context, arg ListReportDaysParams) 
 	items := []ListReportDaysRow{}
 	for rows.Next() {
 		var i ListReportDaysRow
-		if err := rows.Scan(&i.UserID, &i.ReportDate, &i.GoalPercent); err != nil {
+		if err := rows.Scan(
+			&i.UserID,
+			&i.ReportDate,
+			&i.GoalPercent,
+			&i.Filled,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

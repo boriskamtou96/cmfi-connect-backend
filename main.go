@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,8 +28,13 @@ func main() {
 	// Load configuration
 	cfg, err := utils.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
 	}
+
+	// Logs: one JSON line per event in release (read by the host), plain text
+	// in development
+	slog.SetDefault(newLogger(cfg.Server))
 
 	// Configure the db connection using the loaded configuration
 	conn := db.New(cfg.DB)
@@ -41,7 +46,8 @@ func main() {
 	store := dbs.NewSQLStore(conn)
 	srv, err := api.New(store, cfg)
 	if err != nil {
-		log.Fatalf("Failed to load server: %v", err)
+		slog.Error("failed to load server", "error", err)
+		os.Exit(1)
 	}
 	router := srv.SetupRouter()
 
@@ -53,10 +59,11 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Server running on port: %s", cfg.Server.Port)
+		slog.Info("server running", "port", cfg.Server.Port, "mode", cfg.Server.GinMode)
 		if listenServerErr := httpServer.ListenAndServe(); listenServerErr != nil &&
 			!errors.Is(listenServerErr, http.ErrServerClosed) {
-			log.Fatal("failed to start server")
+			slog.Error("failed to start server", "error", listenServerErr)
+			os.Exit(1)
 		}
 	}()
 
@@ -64,12 +71,26 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("shutting down server")
+	slog.Info("shutting down server")
 	ctx, cancel := context.WithTimeout(context.Background(), cancelTimeOut*time.Second)
 	defer cancel()
 
 	if shutDownErr := httpServer.Shutdown(ctx); shutDownErr != nil {
-		fmt.Println("failed to shutdown http server....")
+		slog.Error("failed to shut down the http server", "error", shutDownErr)
 		return
 	}
+}
+
+// newLogger writes JSON in release mode, text otherwise, from the level of
+// LOG_LEVEL (info when unknown).
+func newLogger(server utils.ServerConfig) *slog.Logger {
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(server.LogLevel)); err != nil {
+		level = slog.LevelInfo
+	}
+	options := &slog.HandlerOptions{Level: level}
+	if server.GinMode == gin.ReleaseMode {
+		return slog.New(slog.NewJSONHandler(os.Stdout, options))
+	}
+	return slog.New(slog.NewTextHandler(os.Stdout, options))
 }

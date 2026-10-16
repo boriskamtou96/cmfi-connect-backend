@@ -32,6 +32,21 @@ func (q *Queries) ArchiveActivityType(ctx context.Context, arg ArchiveActivityTy
 	return result.RowsAffected()
 }
 
+const countPersonalItemsWithCode = `-- name: CountPersonalItemsWithCode :one
+SELECT COUNT(*)::bigint FROM activity_types
+WHERE user_id IS NOT NULL
+  AND code = $1
+  AND archived_at IS NULL
+`
+
+// Members whose own active item already has [code].
+func (q *Queries) CountPersonalItemsWithCode(ctx context.Context, code string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPersonalItemsWithCode, code)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createActivityType = `-- name: CreateActivityType :one
 INSERT INTO activity_types (user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position)
 VALUES (
@@ -83,6 +98,72 @@ func (q *Queries) CreateActivityType(ctx context.Context, arg CreateActivityType
 	return i, err
 }
 
+const createStandardActivityType = `-- name: CreateStandardActivityType :one
+INSERT INTO activity_types (user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position)
+VALUES (
+    NULL,
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    (SELECT LEAST(COALESCE(MAX(position), 0) + 1, 99)
+     FROM activity_types
+     WHERE user_id IS NULL AND position < 100)
+)
+RETURNING id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at
+`
+
+type CreateStandardActivityTypeParams struct {
+	Code           string         `json:"code"`
+	Label          string         `json:"label"`
+	TracksQuantity bool           `json:"tracks_quantity"`
+	QuantityUnit   sql.NullString `json:"quantity_unit"`
+	TracksDuration bool           `json:"tracks_duration"`
+}
+
+// After the other standard items (positions under 100: the personal items
+// come from 101).
+func (q *Queries) CreateStandardActivityType(ctx context.Context, arg CreateStandardActivityTypeParams) (ActivityType, error) {
+	row := q.db.QueryRowContext(ctx, createStandardActivityType,
+		arg.Code,
+		arg.Label,
+		arg.TracksQuantity,
+		arg.QuantityUnit,
+		arg.TracksDuration,
+	)
+	var i ActivityType
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Code,
+		&i.Label,
+		&i.TracksQuantity,
+		&i.QuantityUnit,
+		&i.TracksDuration,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const deleteActivityGoal = `-- name: DeleteActivityGoal :exec
+DELETE FROM activity_goals
+WHERE user_id = $1
+  AND activity_type_id = $2
+`
+
+type DeleteActivityGoalParams struct {
+	UserID         int64 `json:"user_id"`
+	ActivityTypeID int64 `json:"activity_type_id"`
+}
+
+func (q *Queries) DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error {
+	_, err := q.db.ExecContext(ctx, deleteActivityGoal, arg.UserID, arg.ActivityTypeID)
+	return err
+}
+
 const getUserActivityTypes = `-- name: GetUserActivityTypes :many
 SELECT id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at FROM activity_types
 WHERE (user_id IS NULL OR user_id = $1::bigint)
@@ -125,6 +206,37 @@ func (q *Queries) GetUserActivityTypes(ctx context.Context, userID int64) ([]Act
 	return items, nil
 }
 
+const getVisibleActivityType = `-- name: GetVisibleActivityType :one
+SELECT id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at FROM activity_types
+WHERE id = $1
+  AND (user_id IS NULL OR user_id = $2::bigint)
+  AND archived_at IS NULL
+`
+
+type GetVisibleActivityTypeParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+// A standard item or one of the user's own, still active.
+func (q *Queries) GetVisibleActivityType(ctx context.Context, arg GetVisibleActivityTypeParams) (ActivityType, error) {
+	row := q.db.QueryRowContext(ctx, getVisibleActivityType, arg.ID, arg.UserID)
+	var i ActivityType
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Code,
+		&i.Label,
+		&i.TracksQuantity,
+		&i.QuantityUnit,
+		&i.TracksDuration,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const isStandardActivityCode = `-- name: IsStandardActivityCode :one
 SELECT EXISTS (
     SELECT 1 FROM activity_types
@@ -137,6 +249,156 @@ func (q *Queries) IsStandardActivityCode(ctx context.Context, code string) (bool
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const listActivityGoals = `-- name: ListActivityGoals :many
+SELECT user_id, activity_type_id, quantity, minutes, updated_at FROM activity_goals
+WHERE user_id = $1
+`
+
+// The user's daily goals, by item.
+func (q *Queries) ListActivityGoals(ctx context.Context, userID int64) ([]ActivityGoal, error) {
+	rows, err := q.db.QueryContext(ctx, listActivityGoals, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityGoal{}
+	for rows.Next() {
+		var i ActivityGoal
+		if err := rows.Scan(
+			&i.UserID,
+			&i.ActivityTypeID,
+			&i.Quantity,
+			&i.Minutes,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStandardActivityTypes = `-- name: ListStandardActivityTypes :many
+
+SELECT id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at FROM activity_types
+WHERE user_id IS NULL
+ORDER BY archived_at IS NOT NULL, position, code
+`
+
+// ----- the standard items, kept by the admins -----
+// Every standard item, the archived ones last.
+func (q *Queries) ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error) {
+	rows, err := q.db.QueryContext(ctx, listStandardActivityTypes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityType{}
+	for rows.Next() {
+		var i ActivityType
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Code,
+			&i.Label,
+			&i.TracksQuantity,
+			&i.QuantityUnit,
+			&i.TracksDuration,
+			&i.Position,
+			&i.ArchivedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setActivityGoal = `-- name: SetActivityGoal :one
+INSERT INTO activity_goals (user_id, activity_type_id, quantity, minutes)
+VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+ON CONFLICT (user_id, activity_type_id) DO UPDATE
+SET quantity = EXCLUDED.quantity,
+    minutes = EXCLUDED.minutes,
+    updated_at = NOW()
+RETURNING user_id, activity_type_id, quantity, minutes, updated_at
+`
+
+type SetActivityGoalParams struct {
+	UserID         int64         `json:"user_id"`
+	ActivityTypeID int64         `json:"activity_type_id"`
+	Quantity       sql.NullInt32 `json:"quantity"`
+	Minutes        sql.NullInt32 `json:"minutes"`
+}
+
+func (q *Queries) SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error) {
+	row := q.db.QueryRowContext(ctx, setActivityGoal,
+		arg.UserID,
+		arg.ActivityTypeID,
+		arg.Quantity,
+		arg.Minutes,
+	)
+	var i ActivityGoal
+	err := row.Scan(
+		&i.UserID,
+		&i.ActivityTypeID,
+		&i.Quantity,
+		&i.Minutes,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const setStandardActivityTypeArchived = `-- name: SetStandardActivityTypeArchived :one
+UPDATE activity_types
+SET archived_at = CASE WHEN $1::bool THEN COALESCE(archived_at, NOW()) ELSE NULL END
+WHERE id = $2
+  AND user_id IS NULL
+RETURNING id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at
+`
+
+type SetStandardActivityTypeArchivedParams struct {
+	Archived bool  `json:"archived"`
+	ID       int64 `json:"id"`
+}
+
+// Archived: no longer offered in the reports; the past entries stay.
+func (q *Queries) SetStandardActivityTypeArchived(ctx context.Context, arg SetStandardActivityTypeArchivedParams) (ActivityType, error) {
+	row := q.db.QueryRowContext(ctx, setStandardActivityTypeArchived, arg.Archived, arg.ID)
+	var i ActivityType
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Code,
+		&i.Label,
+		&i.TracksQuantity,
+		&i.QuantityUnit,
+		&i.TracksDuration,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const updateActivityType = `-- name: UpdateActivityType :one
@@ -170,6 +432,48 @@ func (q *Queries) UpdateActivityType(ctx context.Context, arg UpdateActivityType
 		arg.Position,
 		arg.ID,
 		arg.UserID,
+	)
+	var i ActivityType
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Code,
+		&i.Label,
+		&i.TracksQuantity,
+		&i.QuantityUnit,
+		&i.TracksDuration,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateStandardActivityType = `-- name: UpdateStandardActivityType :one
+UPDATE activity_types
+SET label = $1,
+    quantity_unit = $2,
+    position = COALESCE($3, position)
+WHERE id = $4
+  AND user_id IS NULL
+RETURNING id, user_id, code, label, tracks_quantity, quantity_unit, tracks_duration, position, archived_at, created_at
+`
+
+type UpdateStandardActivityTypeParams struct {
+	Label        string         `json:"label"`
+	QuantityUnit sql.NullString `json:"quantity_unit"`
+	Position     sql.NullInt32  `json:"position"`
+	ID           int64          `json:"id"`
+}
+
+// The label, the unit and the place; the code and the measures stay (the
+// reports and the app rely on them).
+func (q *Queries) UpdateStandardActivityType(ctx context.Context, arg UpdateStandardActivityTypeParams) (ActivityType, error) {
+	row := q.db.QueryRowContext(ctx, updateStandardActivityType,
+		arg.Label,
+		arg.QuantityUnit,
+		arg.Position,
+		arg.ID,
 	)
 	var i ActivityType
 	err := row.Scan(

@@ -49,7 +49,7 @@ func toNationResponse(nation db.MinistryNation) nationResponse {
 func (s *Server) listNations(c *gin.Context) {
 	nations, err := s.store.ListNations(c)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses := make([]nationResponse, len(nations))
@@ -116,7 +116,7 @@ func (s *Server) createNation(c *gin.Context) {
 	}
 	nation, err := s.store.CreateNationTx(c, params)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusCreated, toNationResponse(nation))
@@ -183,5 +183,5 @@ func (s *Server) nationError(c *gin.Context, err error) {
 		resourceNotFoundError(c, "Nation")
 		return
 	}
-	internalServerError(c)
+	internalServerError(c, err)
 }

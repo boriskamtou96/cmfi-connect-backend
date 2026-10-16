@@ -41,7 +41,7 @@ type hymnBookContentResponse struct {
 func (s *Server) listHymnBooks(c *gin.Context) {
 	books, err := s.store.ListHymnBooks(c)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (s *Server) getHymnBook(c *gin.Context) {
 			resourceNotFoundError(c, "Hymn book")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (s *Server) getHymnBook(c *gin.Context) {
 
 	rows, err := s.store.ListBookHymns(c, book.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (s *Server) getHymnBook(c *gin.Context) {
 	for _, row := range rows {
 		hymn, err := newHymnResponse(row.Number, row.Title, row.Author, row.Parts)
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		content = append(content, hymn)
@@ -139,7 +139,7 @@ func (s *Server) getHymn(c *gin.Context) {
 			resourceNotFoundError(c, "Hymn book")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -149,13 +149,13 @@ func (s *Server) getHymn(c *gin.Context) {
 			resourceNotFoundError(c, "Hymn")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
 	hymn, err := newHymnResponse(row.Number, row.Title, row.Author, row.Parts)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, hymn)

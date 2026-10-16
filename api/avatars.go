@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
@@ -45,12 +44,12 @@ func (s *Server) dropMedia(c *gin.Context, id int64) {
 	row, err := s.store.DeleteMedia(c, id)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			log.Printf("delete media %d: %v", id, err)
+			logFor(c).Error("cannot delete a media", "media_id", id, "error", err)
 		}
 		return
 	}
 	if err := s.media.Delete(row.Key); err != nil {
-		log.Printf("delete media file %s: %v", row.Key, err)
+		logFor(c).Error("cannot delete a media file", "key", row.Key, "error", err)
 	}
 }
 
@@ -59,7 +58,7 @@ func (s *Server) dropMedia(c *gin.Context, id int64) {
 func (s *Server) avatarToDrop(c *gin.Context, userID int64) (int64, bool) {
 	avatar, err := s.store.GetUserAvatar(c, userID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		internalServerError(c)
+		internalServerError(c, err)
 		return 0, false
 	}
 	return avatar.ID, true
@@ -111,13 +110,13 @@ func (s *Server) uploadMyAvatar(c *gin.Context) {
 			fmt.Errorf("profile photo: JPEG or PNG only")))
 		return
 	case err != nil:
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
 	key := media.NewKey(info.Ext)
 	if err := s.media.Save(key, photo); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -132,7 +131,7 @@ func (s *Server) uploadMyAvatar(c *gin.Context) {
 	})
 	if err != nil {
 		_ = s.media.Delete(key)
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -143,7 +142,7 @@ func (s *Server) uploadMyAvatar(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if previous.Valid {
@@ -179,7 +178,7 @@ func (s *Server) deleteMyAvatar(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
@@ -198,7 +197,7 @@ func (s *Server) adminDeleteMemberAvatar(c *gin.Context) {
 			resourceNotFoundError(c, "member")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)

@@ -27,6 +27,13 @@ type activityTypeResponse struct {
 	Position       int32     `json:"position"`
 	IsStandard     bool      `json:"is_standard"`
 	CreatedAt      time.Time `json:"created_at"`
+	// The member's daily goal on the item, in the list only (absent: none).
+	Goal *activityGoalResponse `json:"goal,omitempty"`
+}
+
+type activityGoalResponse struct {
+	Quantity *int32 `json:"quantity"`
+	Minutes  *int32 `json:"minutes"`
 }
 
 func (s *Server) listActivityTypes(c *gin.Context) {
@@ -34,13 +41,26 @@ func (s *Server) listActivityTypes(c *gin.Context) {
 
 	activityTypes, err := s.store.GetUserActivityTypes(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
+	}
+	goals, err := s.store.ListActivityGoals(c, authUser.ID)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	goalsByItem := make(map[int64]db.ActivityGoal, len(goals))
+	for _, goal := range goals {
+		goalsByItem[goal.ActivityTypeID] = goal
 	}
 
 	response := make([]activityTypeResponse, 0, len(activityTypes))
 	for _, activityType := range activityTypes {
-		response = append(response, convertActivityTypeResponse(activityType))
+		item := convertActivityTypeResponse(activityType)
+		if goal, ok := goalsByItem[activityType.ID]; ok {
+			item.Goal = convertActivityGoalResponse(goal)
+		}
+		response = append(response, item)
 	}
 
 	apiResponse(c, http.StatusOK, response)
@@ -103,7 +123,7 @@ func (s *Server) createActivityType(c *gin.Context) {
 			conflictError(c, fmt.Errorf("you already have an item with code %s (it may be archived)", code))
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -184,7 +204,7 @@ func (s *Server) updateActivityType(c *gin.Context) {
 				return
 			}
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -206,7 +226,7 @@ func (s *Server) archiveActivityType(c *gin.Context) {
 		UserID: authUser.ID,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if rows == 0 {
@@ -215,6 +235,96 @@ func (s *Server) archiveActivityType(c *gin.Context) {
 	}
 
 	apiResponse(c, http.StatusNoContent, nil)
+}
+
+// A day's goal: up to 1 000 000 of the item's unit, up to 24 h.
+type setActivityGoalPayload struct {
+	Quantity *int32 `json:"quantity" binding:"omitempty,min=1,max=1000000"`
+	Minutes  *int32 `json:"minutes" binding:"omitempty,min=1,max=1440"`
+}
+
+// setActivityGoal keeps the member's daily goal on a standard item or one of
+// their own; neither quantity nor minutes removes it.
+func (s *Server) setActivityGoal(c *gin.Context) {
+	var uri activityTypeURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		badRequestError(c, err)
+		return
+	}
+
+	var payload setActivityGoalPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		badRequestError(c, err)
+		return
+	}
+
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	activityType, err := s.store.GetVisibleActivityType(c, db.GetVisibleActivityTypeParams{
+		ID:     uri.ID,
+		UserID: authUser.ID,
+	})
+	if err != nil {
+		// unknown, archived, or someone else's item
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "Activity type")
+			return
+		}
+		internalServerError(c, err)
+		return
+	}
+	if payload.Quantity != nil && !activityType.TracksQuantity {
+		badRequestError(c, errors.New("this item does not track a quantity"))
+		return
+	}
+	if payload.Minutes != nil && !activityType.TracksDuration {
+		badRequestError(c, errors.New("this item does not track a duration"))
+		return
+	}
+
+	if payload.Quantity == nil && payload.Minutes == nil {
+		err := s.store.DeleteActivityGoal(c, db.DeleteActivityGoalParams{
+			UserID:         authUser.ID,
+			ActivityTypeID: activityType.ID,
+		})
+		if err != nil {
+			internalServerError(c, err)
+			return
+		}
+		apiResponse(c, http.StatusNoContent, nil)
+		return
+	}
+
+	goal, err := s.store.SetActivityGoal(c, db.SetActivityGoalParams{
+		UserID:         authUser.ID,
+		ActivityTypeID: activityType.ID,
+		Quantity:       nullInt32(payload.Quantity),
+		Minutes:        nullInt32(payload.Minutes),
+	})
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+
+	apiResponse(c, http.StatusOK, convertActivityGoalResponse(goal))
+}
+
+func nullInt32(value *int32) sql.NullInt32 {
+	if value == nil {
+		return sql.NullInt32{}
+	}
+	return sql.NullInt32{Int32: *value, Valid: true}
+}
+
+func convertActivityGoalResponse(goal db.ActivityGoal) *activityGoalResponse {
+	response := &activityGoalResponse{}
+	if goal.Quantity.Valid {
+		response.Quantity = &goal.Quantity.Int32
+	}
+	if goal.Minutes.Valid {
+		response.Minutes = &goal.Minutes.Int32
+	}
+	return response
 }
 
 func validateActivityCodeAndLabel(code, label string) error {
@@ -232,7 +342,7 @@ func validateActivityCodeAndLabel(code, label string) error {
 func (s *Server) checkStandardCodeIsFree(c *gin.Context, code string) bool {
 	isStandard, err := s.store.IsStandardActivityCode(c, code)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return false
 	}
 	if isStandard {

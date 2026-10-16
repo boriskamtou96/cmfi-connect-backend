@@ -136,17 +136,17 @@ func (s *Server) sendImportunity(c *gin.Context, status int, importunity db.Impo
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	responses, err := s.importunityResponses(c, []myImportunity{{importunity, member}}, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	participants, err := s.store.ListImportunityParticipants(c, importunity.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	cards, err := s.memberCards(c, participants)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	detail := importunityDetailResponse{importunityResponse: responses[0], Members: []memberCard{}}
@@ -164,7 +164,7 @@ func (s *Server) listImportunities(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	rows, err := s.store.ListMyImportunities(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	items := make([]myImportunity, 0, len(rows))
@@ -181,7 +181,7 @@ func (s *Server) listImportunities(c *gin.Context) {
 	}
 	responses, err := s.importunityResponses(c, items, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses)
@@ -231,12 +231,12 @@ func (s *Server) createImportunity(c *gin.Context) {
 		OwnerID: authUser.ID, Title: title, Description: description, Goal: goal,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	member, err := s.store.GetImportunityMember(c, db.GetImportunityMemberParams{ImportunityID: importunity.ID, UserID: authUser.ID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendImportunity(c, http.StatusCreated, importunity, member)
@@ -257,12 +257,12 @@ func (s *Server) loadImportunity(c *gin.Context) (db.Importunity, db.Importunity
 		return db.Importunity{}, db.ImportunityMember{}, false
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return db.Importunity{}, db.ImportunityMember{}, false
 	}
 	importunity, err := s.store.GetImportunity(c, uri.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return db.Importunity{}, db.ImportunityMember{}, false
 	}
 	return importunity, member, true
@@ -310,7 +310,7 @@ func (s *Server) updateImportunity(c *gin.Context) {
 		ID: importunity.ID, Title: title, Description: description, Goal: goal, Status: status,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendImportunity(c, http.StatusOK, updated, member)
@@ -328,7 +328,7 @@ func (s *Server) deleteImportunity(c *gin.Context) {
 		return
 	}
 	if _, err := s.store.DeleteImportunity(c, importunity.ID); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
@@ -367,7 +367,7 @@ func (s *Server) countProclamations(c *gin.Context) {
 		c.JSON(http.StatusForbidden, NewErrorResponse(http.StatusForbidden, "NOT_PARTICIPANT", err))
 		return
 	case err != nil:
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendImportunity(c, http.StatusOK, updated, member)
@@ -413,7 +413,7 @@ func (s *Server) getFamily(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	discipleMaker, members, err := s.family(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, familyResponse{DiscipleMaker: discipleMaker, Members: len(members)})
@@ -464,7 +464,7 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 			continue
 		}
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		if user.ID != authUser.ID {
@@ -479,7 +479,7 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 	if req.Family {
 		_, members, err := s.family(c, authUser.ID)
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		invited = append(invited, members...)
@@ -487,7 +487,7 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 	// those who blocked the inviter get nothing (and the inviter isn't told)
 	invited, err := s.withoutBlockers(c, authUser.ID, invited)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	newcomers := []int64{}
@@ -497,7 +497,7 @@ func (s *Server) inviteToImportunity(c *gin.Context) {
 			ImportunityID: importunity.ID, InvitedBy: authUser.ID, UserIds: invited,
 		})
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 	}
@@ -532,7 +532,7 @@ func (s *Server) answerImportunity(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if !*req.Join {
@@ -556,7 +556,7 @@ func (s *Server) leaveImportunity(c *gin.Context) {
 		return
 	}
 	if _, err := s.store.LeaveImportunity(c, db.LeaveImportunityParams{ImportunityID: importunity.ID, UserID: authUser.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)

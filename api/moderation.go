@@ -33,7 +33,7 @@ func (s *Server) memberByUsername(c *gin.Context, self int64) (db.User, bool) {
 		return db.User{}, false
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return db.User{}, false
 	}
 	if user.ID == self {
@@ -52,14 +52,14 @@ func (s *Server) blockMember(c *gin.Context) {
 		return
 	}
 	if err := s.store.BlockMember(c, db.BlockMemberParams{BlockerID: authUser.ID, BlockedID: blocked.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if err := s.store.DropInvitationsFrom(c, db.DropInvitationsFromParams{
 		BlockerID: authUser.ID,
 		BlockedID: sql.NullInt64{Int64: blocked.ID, Valid: true},
 	}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -73,7 +73,7 @@ func (s *Server) unblockMember(c *gin.Context) {
 		return
 	}
 	if err := s.store.UnblockMember(c, db.UnblockMemberParams{BlockerID: authUser.ID, BlockedID: blocked.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -84,12 +84,12 @@ func (s *Server) listBlockedMembers(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	ids, err := s.store.ListBlockedIDs(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	cards, err := s.store.ListMemberCards(c, ids)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	byID := make(map[int64]db.ListMemberCardsRow, len(cards))
@@ -152,7 +152,7 @@ func (s *Server) createReport(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if reported.ID == authUser.ID {
@@ -174,7 +174,7 @@ func (s *Server) createReport(c *gin.Context) {
 	}
 	id, err := s.store.CreateReport(c, params)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusCreated, gin.H{"id": id})
@@ -274,17 +274,17 @@ func (s *Server) adminListReports(c *gin.Context) {
 	limit, offset := req.limits()
 	rows, err := s.store.ListReports(c, db.ListReportsParams{Status: req.Status, Lim: limit, Off: offset})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	total, err := s.store.CountReports(c, req.Status)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	reports, err := s.reportResponses(c, rows)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	paginatedApiResponse(c, http.StatusOK, reports, MetaResponse{Total: total, Limit: limit, Offset: offset})
@@ -307,17 +307,17 @@ func (s *Server) resolveReport(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	row, err := s.store.GetReport(c, uri.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	reports, err := s.reportResponses(c, []db.ListReportsRow{db.ListReportsRow(row)})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, reports[0])

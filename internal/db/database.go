@@ -2,7 +2,8 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 
@@ -13,10 +14,12 @@ import (
 func New(dbConfig utils.DBConfig) *sql.DB {
 	conn, err := sql.Open(dbConfig.Driver, dbConfig.Dsn)
 	if err != nil {
-		log.Fatal("cannot connect to db:", err)
+		slog.Error("cannot connect to the database", "error", err)
+		os.Exit(1)
 	}
 	if err = conn.Ping(); err != nil {
-		log.Fatal("cannot ping db:", err)
+		slog.Error("cannot reach the database", "error", err)
+		os.Exit(1)
 	}
 
 	return conn

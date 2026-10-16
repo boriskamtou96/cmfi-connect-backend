@@ -46,6 +46,24 @@ func (q *Queries) CreateHymnBook(ctx context.Context, arg CreateHymnBookParams) 
 	return i, err
 }
 
+const deleteHymn = `-- name: DeleteHymn :execrows
+DELETE FROM hymns
+WHERE book_id = $1 AND number = $2
+`
+
+type DeleteHymnParams struct {
+	BookID int64 `json:"book_id"`
+	Number int32 `json:"number"`
+}
+
+func (q *Queries) DeleteHymn(ctx context.Context, arg DeleteHymnParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteHymn, arg.BookID, arg.Number)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const deleteHymnBook = `-- name: DeleteHymnBook :exec
 DELETE FROM hymn_books
 WHERE id = $1

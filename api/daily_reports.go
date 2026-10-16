@@ -60,7 +60,7 @@ func (s *Server) getDailyReport(c *gin.Context) {
 
 	form, err := s.buildDailyReportForm(c, authUser.ID, date)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -150,14 +150,14 @@ func (s *Server) saveDailyReport(c *gin.Context) {
 			badRequestError(c, err)
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
 	// send back the saved day, exactly as GET /reports/:date would
 	form, err := s.buildDailyReportForm(c, authUser.ID, date)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -200,7 +200,7 @@ func (s *Server) listDailyReports(c *gin.Context) {
 		ToDate:   to,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -220,17 +220,22 @@ func (s *Server) listDailyReports(c *gin.Context) {
 		}
 
 		day := &days[len(days)-1]
-		day.Entries = append(day.Entries, dailyReportHistoryEntry{
-			ActivityTypeID:  row.ActivityTypeID.Int64,
-			Code:            row.Code.String,
-			Label:           row.Label.String,
-			QuantityUnit:    nullStringPtr(row.QuantityUnit),
-			Quantity:        nullInt32Ptr(row.Quantity),
-			DurationMinutes: nullInt32Ptr(row.DurationMinutes),
-		})
+		day.Entries = append(day.Entries, toHistoryEntry(row))
 	}
 
 	apiResponse(c, http.StatusOK, days)
+}
+
+// toHistoryEntry is one item filled in on a day of the history.
+func toHistoryEntry(row db.ListDailyReportEntriesRow) dailyReportHistoryEntry {
+	return dailyReportHistoryEntry{
+		ActivityTypeID:  row.ActivityTypeID.Int64,
+		Code:            row.Code.String,
+		Label:           row.Label.String,
+		QuantityUnit:    nullStringPtr(row.QuantityUnit),
+		Quantity:        nullInt32Ptr(row.Quantity),
+		DurationMinutes: nullInt32Ptr(row.DurationMinutes),
+	}
 }
 
 type reportSummaryItem struct {
@@ -268,7 +273,7 @@ func (s *Server) getReportSummary(c *gin.Context) {
 		ToDate:   to,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -278,7 +283,7 @@ func (s *Server) getReportSummary(c *gin.Context) {
 		ToDate:   to,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 

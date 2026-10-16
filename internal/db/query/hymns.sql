@@ -66,3 +66,7 @@ ORDER BY number;
 SELECT number, title, author, parts FROM hymns
 WHERE book_id = $1 AND number = $2
 LIMIT 1;
+
+-- name: DeleteHymn :execrows
+DELETE FROM hymns
+WHERE book_id = $1 AND number = $2;

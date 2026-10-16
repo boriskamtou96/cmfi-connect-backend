@@ -311,7 +311,7 @@ func (s *Server) sendEvent(c *gin.Context, status int, event db.Event) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	response, err := s.eventDetail(c, event, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, status, response)
@@ -353,13 +353,13 @@ func (s *Server) listEvents(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	summaries, err := s.eventSummaries(c, events, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, summaries)
@@ -382,7 +382,7 @@ func (s *Server) loadEvent(c *gin.Context, allowDraft bool) (db.Event, bool) {
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "Event")
 		} else {
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return db.Event{}, false
 	}
@@ -461,7 +461,7 @@ func (s *Server) registerForEvent(c *gin.Context) {
 		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "REGISTRATION_CLOSED", err))
 		return
 	case err != nil:
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusOK, event)
@@ -475,7 +475,7 @@ func (s *Server) unregisterFromEvent(c *gin.Context) {
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if _, err := s.store.DeleteEventRegistration(c, db.DeleteEventRegistrationParams{EventID: event.ID, UserID: authUser.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusOK, event)
@@ -493,13 +493,13 @@ func (s *Server) adminListEvents(c *gin.Context) {
 	limit, offset := req.limits()
 	events, err := s.store.ListAllEvents(c, db.ListAllEventsParams{Lim: limit, Off: offset})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	summaries, err := s.eventSummaries(c, events, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, summaries)
@@ -610,7 +610,7 @@ func (s *Server) createEvent(c *gin.Context) {
 	params.CreatedBy = nullID(authUser.ID)
 	event, err := s.store.CreateEvent(c, params)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusCreated, event)
@@ -658,7 +658,7 @@ func (s *Server) updateEvent(c *gin.Context) {
 		Status:               params.Status,
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusOK, updated)
@@ -672,7 +672,7 @@ func (s *Server) deleteEvent(c *gin.Context) {
 		return
 	}
 	if _, err := s.store.DeleteEvent(c, event.ID); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusNoContent, nil)
@@ -745,7 +745,7 @@ func (s *Server) replaceEventSessions(c *gin.Context) {
 		})
 	}
 	if _, err := s.store.ReplaceEventSessionsTx(c, event.ID, sessions); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusOK, event)
@@ -760,7 +760,7 @@ func (s *Server) duplicateEvent(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	next, err := s.store.DuplicateEventTx(c, event.ID, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusCreated, next)
@@ -797,7 +797,7 @@ func (s *Server) listEventRegistrations(c *gin.Context) {
 	}
 	rows, err := s.store.ListEventRegistrations(c, event.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	ids := make([]int64, len(rows))
@@ -808,7 +808,7 @@ func (s *Server) listEventRegistrations(c *gin.Context) {
 	if len(ids) > 0 {
 		found, err := s.store.ListMemberCards(c, ids)
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		for _, card := range found {
@@ -875,7 +875,7 @@ func (s *Server) createEventPost(c *gin.Context) {
 	if req.ImageID != nil && *req.ImageID != 0 {
 		found, err := s.mediaByIDs(c, []int64{*req.ImageID})
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		if _, ok := found[*req.ImageID]; !ok {
@@ -893,7 +893,7 @@ func (s *Server) createEventPost(c *gin.Context) {
 		AuthorID: nullID(authUser.ID),
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendEvent(c, http.StatusCreated, event)
@@ -913,7 +913,7 @@ func (s *Server) deleteEventPost(c *gin.Context) {
 	}
 	deleted, err := s.store.DeleteEventPost(c, db.DeleteEventPostParams{ID: req.ChildID, EventID: req.ID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if deleted == 0 {
@@ -942,7 +942,7 @@ func (s *Server) addEventPhotos(c *gin.Context) {
 	}
 	found, err := s.mediaByIDs(c, req.MediaIDs)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	for _, id := range req.MediaIDs {
@@ -958,7 +958,7 @@ func (s *Server) addEventPhotos(c *gin.Context) {
 			Caption: strings.TrimSpace(req.Caption),
 		})
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 	}
@@ -974,7 +974,7 @@ func (s *Server) deleteEventPhoto(c *gin.Context) {
 	}
 	deleted, err := s.store.DeleteEventPhoto(c, db.DeleteEventPhotoParams{ID: req.ChildID, EventID: req.ID})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if deleted == 0 {

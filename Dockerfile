@@ -40,6 +40,7 @@ COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN mkdir -p /app/data/media && chown app /app/data/media
 
 ENV GIN_MODE=release \
+    LOG_LEVEL=info \
     PORT=8080 \
     MEDIA_DIR=/app/data/media \
     MIGRATIONS_PATH=/app/migrations

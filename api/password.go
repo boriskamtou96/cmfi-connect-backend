@@ -48,20 +48,20 @@ func (s *Server) resetPassword(c *gin.Context) {
 			resourceNotFoundError(c, "User")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if err := s.store.UpdateUserPassword(c, db.UpdateUserPasswordParams{
 		ID:           user.ID,
 		HashPassword: hash,
 	}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

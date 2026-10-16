@@ -50,22 +50,28 @@ WHERE id = $1 AND linked_user_id = $2 AND status = 'pending'
 RETURNING *;
 
 -- name: SetAuthoritySharing :one
--- Whether [user_id] shows their regularity to this authority (their disciple maker).
+-- Whether [user_id] shares their reports with this authority (disciple maker or not).
 UPDATE authorities
 SET shares_regularity = $3
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- name: ListDisciples :many
--- The members who chose [maker_id] as their disciple maker and whose link they
--- accepted, by name (the profile's first, like the member cards).
-SELECT a.id, a.user_id, a.shares_regularity
+-- The members who chose [member_id] as one of their authorities and whose link
+-- they accepted: those who chose them as disciple maker first, then by name
+-- (the profile's first, like the member cards). total_items counts the items
+-- each one can fill in, as their day form lists them.
+SELECT a.id, a.user_id, a.is_disciple_maker, a.shares_regularity,
+       (SELECT COUNT(*)
+        FROM activity_types at
+        WHERE (at.user_id IS NULL OR at.user_id = a.user_id)
+          AND at.archived_at IS NULL) AS total_items
 FROM authorities a
 JOIN users u ON u.id = a.user_id
 LEFT JOIN profiles p ON p.user_id = u.id
-WHERE a.linked_user_id = @maker_id::bigint
-  AND a.is_disciple_maker
+WHERE a.linked_user_id = @member_id::bigint
   AND a.status = 'accepted'
-ORDER BY COALESCE(NULLIF(p.first_name, ''), u.first_name),
+ORDER BY a.is_disciple_maker DESC,
+         COALESCE(NULLIF(p.first_name, ''), u.first_name),
          COALESCE(NULLIF(p.last_name, ''), u.last_name, ''),
          a.id;

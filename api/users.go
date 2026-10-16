@@ -57,7 +57,7 @@ func (s *Server) registerUser(c *gin.Context) {
 	} else {
 		suggestions, err := s.freeSuggestions(c, payload.FirstName, payload.LastName)
 		if err != nil || len(suggestions) == 0 {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		username = suggestions[0]
@@ -65,7 +65,7 @@ func (s *Server) registerUser(c *gin.Context) {
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(payload.HashPassword), bcrypt.DefaultCost)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -97,7 +97,7 @@ func (s *Server) registerUser(c *gin.Context) {
 				return
 			}
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -122,7 +122,7 @@ func (s *Server) registerUser(c *gin.Context) {
 				return
 			}
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (s *Server) login(c *gin.Context) {
 			resourceNotFoundError(c, "User")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -159,12 +159,12 @@ func (s *Server) login(c *gin.Context) {
 
 	duration, err := time.ParseDuration(s.config.Token.Duration)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	accessToken, err := s.jwtAuthenticator.GenerateToken(user.ID, user.PhoneNumber, duration)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -180,7 +180,7 @@ func (s *Server) getMe(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, convertToUserResponse(user))
@@ -206,7 +206,7 @@ func (s *Server) deleteMe(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if err := utils.CheckPassword(req.Password, string(user.HashPassword)); err != nil {
@@ -224,7 +224,7 @@ func (s *Server) deleteMe(c *gin.Context) {
 		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "LAST_SUPERADMIN", err))
 		return
 	case err != nil:
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if avatar != 0 {
@@ -269,7 +269,7 @@ func (s *Server) getUser(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -309,7 +309,7 @@ func (s *Server) updateUser(c *gin.Context) {
 			resourceNotFoundError(c, "user")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -327,7 +327,7 @@ func (s *Server) updateUser(c *gin.Context) {
 	if payload.HashPassword != "" {
 		hashPassword, err := bcrypt.GenerateFromPassword([]byte(payload.HashPassword), bcrypt.DefaultCost)
 		if err != nil {
-			internalServerError(c)
+			internalServerError(c, err)
 			return
 		}
 		arg.HashPassword = hashPassword
@@ -335,7 +335,7 @@ func (s *Server) updateUser(c *gin.Context) {
 
 	updatedUser, err := s.store.UpdateUser(c, arg)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -371,7 +371,7 @@ func (s *Server) deleteUser(c *gin.Context) {
 	}
 
 	if err := s.store.DeleteUser(c, id); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if avatar != 0 {

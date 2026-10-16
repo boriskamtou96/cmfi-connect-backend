@@ -3,7 +3,9 @@ package api
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -63,7 +65,7 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 		}
 		phones = firebasePhones
 	} else {
-		log.Println("FIREBASE_CREDENTIALS_FILE is not set: the notifications reach the apps without push, and a forgotten password can't be reset")
+		slog.Warn("FIREBASE_CREDENTIALS_FILE is not set: the notifications reach the apps without push, and a forgotten password can't be reset")
 	}
 
 	return &Server{
@@ -77,18 +79,10 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 }
 
 func (s *Server) SetupRouter() *gin.Engine {
-	router := gin.Default()
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{},
-		AllowMethods:     []string{"PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return true
-		},
-		MaxAge: 12 * time.Hour,
-	}))
+	// the request id first: every line of a request carries it
+	router := gin.New()
+	router.Use(requestID(), logRequests(), recoverPanics())
+	router.Use(cors.New(corsConfig(s.config.Server)))
 
 	router.NoRoute(func(c *gin.Context) {
 		resourceNotFoundError(c, "ROUTE")
@@ -177,6 +171,28 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.POST("/ministry/nations", s.createNation)
 			admin.PUT("/ministry/nations/:id", s.updateNation)
 			admin.DELETE("/ministry/nations/:id", s.deleteNation)
+
+			// our missionaries and our heroes
+			admin.GET("/ministry/people", s.adminListMinistryPeople)
+			admin.POST("/ministry/people", s.createMinistryPerson)
+			admin.PUT("/ministry/people/:id", s.updateMinistryPerson)
+			admin.DELETE("/ministry/people/:id", s.deleteMinistryPerson)
+
+			// the hymn books: each change gives the book a new version
+			admin.GET("/hymns/books", s.adminListHymnBooks)
+			admin.POST("/hymns/books", s.createHymnBook)
+			admin.PUT("/hymns/books/:code", s.updateHymnBook)
+			admin.PUT("/hymns/books/:code/hymns/:number", s.saveHymn)
+			admin.DELETE("/hymns/books/:code/hymns/:number", s.deleteHymn)
+
+			// the standard items of the report, the same for every member
+			admin.GET("/activity-types", s.adminListActivityTypes)
+			admin.POST("/activity-types", s.adminCreateActivityType)
+			admin.PUT("/activity-types/:id", s.adminUpdateActivityType)
+			admin.PUT("/activity-types/:id/archive", s.adminArchiveActivityType)
+
+			// the dashboard: counts only, never who
+			admin.GET("/stats", s.adminStats)
 		}
 
 		// the images of the events: public links with random names
@@ -208,8 +224,10 @@ func (s *Server) SetupRouter() *gin.Engine {
 			authorities.DELETE("/:id", s.deleteAuthority)
 			authorities.PUT("/:id/sharing", s.setAuthoritySharing)
 		}
-		// the members who chose the signed-in member as their disciple maker
+		// the members who chose the signed-in member as one of their authorities,
+		// and the reports they share
 		r.GET("/disciples", authMiddleware(s.jwtAuthenticator), s.listDisciples)
+		r.GET("/disciples/:id/reports", authMiddleware(s.jwtAuthenticator), s.listDiscipleReports)
 
 		activityTypes := r.Group("/activities").Use(authMiddleware(s.jwtAuthenticator))
 		{
@@ -217,6 +235,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 			activityTypes.POST("/", s.createActivityType)
 			activityTypes.PUT("/:id", s.updateActivityType)
 			activityTypes.DELETE("/:id", s.archiveActivityType)
+			activityTypes.PUT("/:id/goal", s.setActivityGoal)
 		}
 
 		reports := r.Group("/reports").Use(authMiddleware(s.jwtAuthenticator))
@@ -268,6 +287,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		ministry := r.Group("/ministry", authMiddleware(s.jwtAuthenticator))
 		{
 			ministry.GET("/nations", s.listNations)
+			ministry.GET("/people", s.listMinistryPeople)
 		}
 
 		// the phones that receive push notifications, and the member's
@@ -286,4 +306,41 @@ func (s *Server) SetupRouter() *gin.Engine {
 	}
 
 	return router
+}
+
+// corsConfig lets the browsers of the allowed sites call the API (the web back
+// office, on its own domain, with a Bearer token and no cookie). A request from
+// any other site is refused (403); the apps send no Origin and aren't concerned.
+func corsConfig(server utils.ServerConfig) cors.Config {
+	allowed := make(map[string]bool, len(server.CORSOrigins))
+	for _, origin := range server.CORSOrigins {
+		allowed[strings.ToLower(strings.TrimSuffix(origin, "/"))] = true
+	}
+	// without CORS_ORIGINS: the local sites in development, none in release
+	local := len(allowed) == 0 && server.GinMode != gin.ReleaseMode
+	if len(allowed) == 0 && !local {
+		slog.Warn("CORS_ORIGINS is not set: no browser on another site can call the API")
+	}
+	return cors.Config{
+		AllowOriginFunc: func(origin string) bool {
+			return allowed[strings.ToLower(origin)] || (local && isLocalOrigin(origin))
+		},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut,
+			http.MethodPatch, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "Accept-Language"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Disposition", requestIDHeader},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}
+}
+
+// isLocalOrigin tells whether a site runs on this machine:
+// http://localhost or http://127.0.0.1, on any port.
+func isLocalOrigin(origin string) bool {
+	parsed, err := url.Parse(origin)
+	if err != nil || parsed.Scheme != "http" || "http://"+parsed.Host != origin {
+		return false
+	}
+	host := parsed.Hostname()
+	return host == "localhost" || host == "127.0.0.1"
 }

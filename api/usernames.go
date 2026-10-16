@@ -101,7 +101,7 @@ func (s *Server) usernameAvailability(c *gin.Context) {
 			case err == nil:
 				response.Problem = usernames.Taken
 			case !errors.Is(err, sql.ErrNoRows):
-				internalServerError(c)
+				internalServerError(c, err)
 				return
 			}
 		}
@@ -110,7 +110,7 @@ func (s *Server) usernameAvailability(c *gin.Context) {
 
 	suggestions, err := s.freeSuggestions(c, req.FirstName, req.LastName)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	response.Suggestions = suggestions
@@ -136,7 +136,7 @@ func (s *Server) getMemberByUsername(c *gin.Context) {
 			resourceNotFoundError(c, "member")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, toMemberCard(card))
@@ -182,7 +182,7 @@ func (s *Server) updateMyUsername(c *gin.Context) {
 			usernameError(c, usernames.Taken)
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, convertToUserResponse(user))

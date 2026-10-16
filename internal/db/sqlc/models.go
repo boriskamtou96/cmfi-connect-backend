@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+type ActivityGoal struct {
+	UserID         int64         `json:"user_id"`
+	ActivityTypeID int64         `json:"activity_type_id"`
+	Quantity       sql.NullInt32 `json:"quantity"`
+	Minutes        sql.NullInt32 `json:"minutes"`
+	UpdatedAt      time.Time     `json:"updated_at"`
+}
+
 type ActivityType struct {
 	ID             int64          `json:"id"`
 	UserID         sql.NullInt64  `json:"user_id"`
@@ -242,6 +250,22 @@ type MinistryNation struct {
 	Latitude    float64       `json:"latitude"`
 	Longitude   float64       `json:"longitude"`
 	ArrivalYear sql.NullInt32 `json:"arrival_year"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
+type MinistryPerson struct {
+	ID          int64         `json:"id"`
+	Kind        string        `json:"kind"`
+	Name        string        `json:"name"`
+	PhotoID     sql.NullInt64 `json:"photo_id"`
+	CountryCode string        `json:"country_code"`
+	Role        string        `json:"role"`
+	SinceYear   sql.NullInt32 `json:"since_year"`
+	Years       string        `json:"years"`
+	Story       string        `json:"story"`
+	Position    int32         `json:"position"`
+	Published   bool          `json:"published"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 }

@@ -32,7 +32,7 @@ VALUES (sqlc.arg(report_id), sqlc.arg(activity_type_id), sqlc.narg(quantity), sq
 -- name: ListDailyReportEntries :many
 -- History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 -- Archived items still show here: past values are never lost.
-SELECT dr.report_date, dr.note,
+SELECT dr.report_date, dr.note, dr.goal_percent,
        re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes
 FROM daily_reports dr
 LEFT JOIN report_entries re ON re.report_id = dr.id
@@ -69,9 +69,10 @@ WHERE user_id = sqlc.arg(user_id)::bigint
 
 -- name: ListReportDays :many
 -- The days with a report of several members between two dates, newest first,
--- with the share of their goals reached.
-SELECT user_id, report_date, goal_percent
-FROM daily_reports
-WHERE user_id = ANY(sqlc.arg(user_ids)::bigint[])
-  AND report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date
-ORDER BY user_id, report_date DESC;
+-- with the share of their goals reached and the number of items filled in.
+SELECT dr.user_id, dr.report_date, dr.goal_percent,
+       (SELECT COUNT(*) FROM report_entries re WHERE re.report_id = dr.id) AS filled
+FROM daily_reports dr
+WHERE dr.user_id = ANY(sqlc.arg(user_ids)::bigint[])
+  AND dr.report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date
+ORDER BY dr.user_id, dr.report_date DESC;

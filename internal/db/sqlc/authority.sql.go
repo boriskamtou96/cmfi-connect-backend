@@ -235,14 +235,18 @@ func (q *Queries) ListAuthorityRequests(ctx context.Context, linkedUserID sql.Nu
 }
 
 const listDisciples = `-- name: ListDisciples :many
-SELECT a.id, a.user_id, a.shares_regularity
+SELECT a.id, a.user_id, a.is_disciple_maker, a.shares_regularity,
+       (SELECT COUNT(*)
+        FROM activity_types at
+        WHERE (at.user_id IS NULL OR at.user_id = a.user_id)
+          AND at.archived_at IS NULL) AS total_items
 FROM authorities a
 JOIN users u ON u.id = a.user_id
 LEFT JOIN profiles p ON p.user_id = u.id
 WHERE a.linked_user_id = $1::bigint
-  AND a.is_disciple_maker
   AND a.status = 'accepted'
-ORDER BY COALESCE(NULLIF(p.first_name, ''), u.first_name),
+ORDER BY a.is_disciple_maker DESC,
+         COALESCE(NULLIF(p.first_name, ''), u.first_name),
          COALESCE(NULLIF(p.last_name, ''), u.last_name, ''),
          a.id
 `
@@ -250,13 +254,17 @@ ORDER BY COALESCE(NULLIF(p.first_name, ''), u.first_name),
 type ListDisciplesRow struct {
 	ID               int64 `json:"id"`
 	UserID           int64 `json:"user_id"`
+	IsDiscipleMaker  bool  `json:"is_disciple_maker"`
 	SharesRegularity bool  `json:"shares_regularity"`
+	TotalItems       int64 `json:"total_items"`
 }
 
-// The members who chose [maker_id] as their disciple maker and whose link they
-// accepted, by name (the profile's first, like the member cards).
-func (q *Queries) ListDisciples(ctx context.Context, makerID int64) ([]ListDisciplesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listDisciples, makerID)
+// The members who chose [member_id] as one of their authorities and whose link
+// they accepted: those who chose them as disciple maker first, then by name
+// (the profile's first, like the member cards). total_items counts the items
+// each one can fill in, as their day form lists them.
+func (q *Queries) ListDisciples(ctx context.Context, memberID int64) ([]ListDisciplesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listDisciples, memberID)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +272,13 @@ func (q *Queries) ListDisciples(ctx context.Context, makerID int64) ([]ListDisci
 	items := []ListDisciplesRow{}
 	for rows.Next() {
 		var i ListDisciplesRow
-		if err := rows.Scan(&i.ID, &i.UserID, &i.SharesRegularity); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.IsDiscipleMaker,
+			&i.SharesRegularity,
+			&i.TotalItems,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -291,7 +305,7 @@ type SetAuthoritySharingParams struct {
 	SharesRegularity bool  `json:"shares_regularity"`
 }
 
-// Whether [user_id] shows their regularity to this authority (their disciple maker).
+// Whether [user_id] shares their reports with this authority (disciple maker or not).
 func (q *Queries) SetAuthoritySharing(ctx context.Context, arg SetAuthoritySharingParams) (Authority, error) {
 	row := q.db.QueryRowContext(ctx, setAuthoritySharing, arg.ID, arg.UserID, arg.SharesRegularity)
 	var i Authority

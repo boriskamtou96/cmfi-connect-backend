@@ -23,13 +23,19 @@ type Querier interface {
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
+	// Members who filled a report or made a retreat since [since].
+	CountActiveMembers(ctx context.Context, since time.Time) (int64, error)
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
 	CountAnnouncements(ctx context.Context) (int64, error)
 	CountDevicesOfUsers(ctx context.Context, userIds []int64) (int32, error)
 	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
+	// The numbers of the back office's dashboard: counts only, never who.
+	CountMembers(ctx context.Context, arg CountMembersParams) (CountMembersRow, error)
 	CountMyAnnouncements(ctx context.Context, userID int64) (CountMyAnnouncementsRow, error)
 	CountNations(ctx context.Context) (int32, error)
+	// Members whose own active item already has [code].
+	CountPersonalItemsWithCode(ctx context.Context, code string) (int64, error)
 	CountPrayerPeople(ctx context.Context, userID int64) (int64, error)
 	// How many members prayed for each topic, any day: the apps never show who.
 	CountPrayerTopicPeople(ctx context.Context, topicIds []int64) ([]CountPrayerTopicPeopleRow, error)
@@ -50,6 +56,8 @@ type Querier interface {
 	// ----- importunity topics -----
 	CreateImportunity(ctx context.Context, arg CreateImportunityParams) (Importunity, error)
 	CreateMedia(ctx context.Context, arg CreateMediaParams) (Medium, error)
+	// After the others of the same kind.
+	CreateMinistryPerson(ctx context.Context, arg CreateMinistryPersonParams) (MinistryPerson, error)
 	CreateNation(ctx context.Context, arg CreateNationParams) (MinistryNation, error)
 	CreatePrayerPerson(ctx context.Context, arg CreatePrayerPersonParams) (PrayerPerson, error)
 	// ----- prayer topics of the community -----
@@ -59,7 +67,11 @@ type Querier interface {
 	// ----- reports, handled in the back office -----
 	CreateReport(ctx context.Context, arg CreateReportParams) (int64, error)
 	CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error
+	// After the other standard items (positions under 100: the personal items
+	// come from 101).
+	CreateStandardActivityType(ctx context.Context, arg CreateStandardActivityTypeParams) (ActivityType, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
+	DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error
 	// The authorities of other members that point to this member: their copy
 	// of the name and contact goes with the account.
 	DeleteAuthoritiesLinkedTo(ctx context.Context, linkedUserID sql.NullInt64) error
@@ -72,11 +84,13 @@ type Querier interface {
 	DeleteEventPost(ctx context.Context, arg DeleteEventPostParams) (int64, error)
 	DeleteEventRegistration(ctx context.Context, arg DeleteEventRegistrationParams) (int64, error)
 	DeleteEventSessions(ctx context.Context, eventID int64) error
+	DeleteHymn(ctx context.Context, arg DeleteHymnParams) (int64, error)
 	DeleteHymnBook(ctx context.Context, id int64) error
 	DeleteHymnsNotIn(ctx context.Context, arg DeleteHymnsNotInParams) (int64, error)
 	DeleteImportunity(ctx context.Context, id int64) (int64, error)
 	// Gives the key of the file to remove from the storage.
 	DeleteMedia(ctx context.Context, id int64) (Medium, error)
+	DeleteMinistryPerson(ctx context.Context, id int64) (sql.NullInt64, error)
 	DeleteMyPrayedPoints(ctx context.Context, arg DeleteMyPrayedPointsParams) error
 	DeleteNation(ctx context.Context, id int64) error
 	DeletePrayerPerson(ctx context.Context, arg DeletePrayerPersonParams) (int64, error)
@@ -102,6 +116,7 @@ type Querier interface {
 	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
 	GetImportunity(ctx context.Context, id int64) (Importunity, error)
 	GetImportunityMember(ctx context.Context, arg GetImportunityMemberParams) (ImportunityMember, error)
+	GetMinistryPerson(ctx context.Context, id int64) (MinistryPerson, error)
 	GetMyAnnouncement(ctx context.Context, arg GetMyAnnouncementParams) (GetMyAnnouncementRow, error)
 	// The member who is my disciple maker (FD), once they accepted the link.
 	GetMyDiscipleMaker(ctx context.Context, userID int64) (int64, error)
@@ -121,12 +136,16 @@ type Querier interface {
 	GetUserById(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserRole(ctx context.Context, id int64) (string, error)
+	// A standard item or one of the user's own, still active.
+	GetVisibleActivityType(ctx context.Context, arg GetVisibleActivityTypeParams) (ActivityType, error)
 	// Already invited, joined or declined: left as they are. Gives the members
 	// invited now (they get a push).
 	InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) ([]int64, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
 	// Their proclamations stay in the total.
 	LeaveImportunity(ctx context.Context, arg LeaveImportunityParams) (int64, error)
+	// The user's daily goals, by item.
+	ListActivityGoals(ctx context.Context, userID int64) ([]ActivityGoal, error)
 	// Every account as the back office shows it (no spiritual data): the
 	// profile first, the last time the app was opened on a phone, how many
 	// phones get the push and the profile photo. The newest first.
@@ -158,9 +177,11 @@ type Querier interface {
 	// The phones of members with their language, for a push written by the
 	// server (each phone reads it in its language).
 	ListDevicesOfUsers(ctx context.Context, userIds []int64) ([]ListDevicesOfUsersRow, error)
-	// The members who chose [maker_id] as their disciple maker and whose link they
-	// accepted, by name (the profile's first, like the member cards).
-	ListDisciples(ctx context.Context, makerID int64) ([]ListDisciplesRow, error)
+	// The members who chose [member_id] as one of their authorities and whose link
+	// they accepted: those who chose them as disciple maker first, then by name
+	// (the profile's first, like the member cards). total_items counts the items
+	// each one can fill in, as their day form lists them.
+	ListDisciples(ctx context.Context, memberID int64) ([]ListDisciplesRow, error)
 	// The members whose disciple maker is [fd], accepted links only.
 	ListDisciplesOf(ctx context.Context, linkedUserID sql.NullInt64) ([]int64, error)
 	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
@@ -177,6 +198,10 @@ type Querier interface {
 	// What members show of themselves, the profile first (the user row has the
 	// names of the sign-up). Contact fields are for the handlers to give or hide.
 	ListMemberCards(ctx context.Context, ids []int64) ([]ListMemberCardsRow, error)
+	// The countries of the profiles ('' when not given), the largest first.
+	ListMembersByCountry(ctx context.Context, maxRows int32) ([]ListMembersByCountryRow, error)
+	// The people of [kind] in their order; the drafts only for the admins.
+	ListMinistryPeople(ctx context.Context, arg ListMinistryPeopleParams) ([]MinistryPerson, error)
 	// ----- a member's notifications -----
 	ListMyAnnouncements(ctx context.Context, arg ListMyAnnouncementsParams) ([]ListMyAnnouncementsRow, error)
 	// The topics a member prays for or is invited to: invitations first.
@@ -184,6 +209,7 @@ type Querier interface {
 	ListMyPrayedPoints(ctx context.Context, arg ListMyPrayedPointsParams) ([]ListMyPrayedPointsRow, error)
 	// ----- our ministry: the nations -----
 	ListNations(ctx context.Context) ([]MinistryNation, error)
+	ListNewMembersPerDay(ctx context.Context, since time.Time) ([]ListNewMembersPerDayRow, error)
 	ListPastEvents(ctx context.Context, arg ListPastEventsParams) ([]Event, error)
 	ListPastPrayerTopics(ctx context.Context, arg ListPastPrayerTopicsParams) ([]PrayerTopic, error)
 	// ----- the members' own lists -----
@@ -193,11 +219,16 @@ type Querier interface {
 	ListPrayerTopicPoints(ctx context.Context, topicIds []int64) ([]PrayerTopicPoint, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	// The days with a report of several members between two dates, newest first,
-	// with the share of their goals reached.
+	// with the share of their goals reached and the number of items filled in.
 	ListReportDays(ctx context.Context, arg ListReportDaysParams) ([]ListReportDaysRow, error)
 	// [status] empty for all; the newest first. With the role of the reported
 	// member and how many open reports are about them.
 	ListReports(ctx context.Context, arg ListReportsParams) ([]ListReportsRow, error)
+	ListReportsPerDay(ctx context.Context, since time.Time) ([]ListReportsPerDayRow, error)
+	ListRetreatsPerDay(ctx context.Context, since time.Time) ([]ListRetreatsPerDayRow, error)
+	// ----- the standard items, kept by the admins -----
+	// Every standard item, the archived ones last.
+	ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error)
 	// Among the candidates, the pseudos already used.
 	ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error)
 	// Not over yet (an event in progress is upcoming), the soonest first.
@@ -214,10 +245,13 @@ type Querier interface {
 	MarkPrayerPeoplePrayed(ctx context.Context, arg MarkPrayerPeoplePrayedParams) (int64, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
+	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
-	// Whether [user_id] shows their regularity to this authority (their disciple maker).
+	// Whether [user_id] shares their reports with this authority (disciple maker or not).
 	SetAuthoritySharing(ctx context.Context, arg SetAuthoritySharingParams) (Authority, error)
 	SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error
+	// Archived: no longer offered in the reports; the past entries stay.
+	SetStandardActivityTypeArchived(ctx context.Context, arg SetStandardActivityTypeArchivedParams) (ActivityType, error)
 	// Puts a profile photo (NULL takes it off) and gives the one it replaces,
 	// for its file to go. No row when the member doesn't exist.
 	SetUserAvatar(ctx context.Context, arg SetUserAvatarParams) (sql.NullInt64, error)
@@ -236,10 +270,14 @@ type Querier interface {
 	// Only writes when something differs, so the caller knows if the book changed.
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
 	UpdateImportunity(ctx context.Context, arg UpdateImportunityParams) (Importunity, error)
+	UpdateMinistryPerson(ctx context.Context, arg UpdateMinistryPersonParams) (MinistryPerson, error)
 	UpdateNation(ctx context.Context, arg UpdateNationParams) (MinistryNation, error)
 	UpdatePrayerPerson(ctx context.Context, arg UpdatePrayerPersonParams) (PrayerPerson, error)
 	UpdatePrayerTopic(ctx context.Context, arg UpdatePrayerTopicParams) (PrayerTopic, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
+	// The label, the unit and the place; the code and the measures stay (the
+	// reports and the app rely on them).
+	UpdateStandardActivityType(ctx context.Context, arg UpdateStandardActivityTypeParams) (ActivityType, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)

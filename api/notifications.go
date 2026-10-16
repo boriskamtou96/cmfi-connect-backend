@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"slices"
@@ -55,7 +55,7 @@ func (s *Server) registerDevice(c *gin.Context) {
 		Platform: req.Platform,
 		Language: cmp.Or(req.Language, "fr"),
 	}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -74,7 +74,7 @@ func (s *Server) unregisterDevice(c *gin.Context) {
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if _, err := s.store.DeleteDevice(c, db.DeleteDeviceParams{Token: req.Token, UserID: authUser.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -240,12 +240,12 @@ func (s *Server) notificationAudience(c *gin.Context) {
 	filter = filter.trimmed()
 	members, ids, err := s.audienceOf(c, filter)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	phones, err := s.store.CountDevicesOfUsers(c, ids)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	wanted := filter.places()
@@ -375,7 +375,7 @@ func (s *Server) sendAdminNotification(c *gin.Context, status int, id int64) {
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "Notification")
 		} else {
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return
 	}
@@ -383,7 +383,7 @@ func (s *Server) sendAdminNotification(c *gin.Context, status int, id int64) {
 		{Announcement: row.Announcement, Author: row.Author},
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, status, responses[0])
@@ -439,7 +439,7 @@ func (s *Server) sendNotification(c *gin.Context) {
 	}
 	files, err := s.mediaByIDs(c, mediaIDs)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	attachments := make([]db.AnnouncementAttachmentInput, len(req.Attachments))
@@ -454,7 +454,7 @@ func (s *Server) sendNotification(c *gin.Context) {
 	audience := req.Audience.trimmed()
 	_, recipients, err := s.audienceOf(c, audience)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	if len(recipients) == 0 {
@@ -473,7 +473,7 @@ func (s *Server) sendNotification(c *gin.Context) {
 		RecipientsCount: int32(len(recipients)),
 	}, attachments, recipients)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -515,7 +515,11 @@ func (s *Server) pushAnnouncement(announcement db.Announcement, recipients []int
 	defer cancel()
 
 	tokens, err := s.store.ListDeviceTokensOfUsers(ctx, recipients)
-	if err != nil || len(tokens) == 0 {
+	if err != nil {
+		slog.Error("cannot read the phones of the recipients", "announcement_id", announcement.ID, "error", err)
+		return
+	}
+	if len(tokens) == 0 {
 		return
 	}
 	body := announcement.Body
@@ -529,18 +533,19 @@ func (s *Server) pushAnnouncement(announcement db.Announcement, recipients []int
 		Data:     map[string]string{"type": "announcement", "id": strconv.FormatInt(announcement.ID, 10)},
 	})
 	if err != nil {
-		log.Printf("push of announcement %d: %v", announcement.ID, err)
+		slog.Error("push of an announcement failed", "announcement_id", announcement.ID, "error", err)
 	}
+	slog.Info("announcement pushed", "announcement_id", announcement.ID, "phones", len(tokens), "sent", result.Sent, "dead", len(result.Dead))
 	if len(result.Dead) > 0 {
 		if err := s.store.DeleteDevicesByTokens(ctx, result.Dead); err != nil {
-			log.Printf("forget dead tokens: %v", err)
+			slog.Error("cannot forget the dead phones", "count", len(result.Dead), "error", err)
 		}
 	}
 	if err := s.store.SetAnnouncementPushed(ctx, db.SetAnnouncementPushedParams{
 		ID:          announcement.ID,
 		PushedCount: int32(result.Sent),
 	}); err != nil {
-		log.Printf("count pushes of announcement %d: %v", announcement.ID, err)
+		slog.Error("cannot count the pushes of an announcement", "announcement_id", announcement.ID, "error", err)
 	}
 }
 
@@ -563,17 +568,17 @@ func (s *Server) adminListNotifications(c *gin.Context) {
 	limit, offset := req.limits()
 	rows, err := s.store.ListAnnouncements(c, db.ListAnnouncementsParams{Lim: limit, Off: offset})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	total, err := s.store.CountAnnouncements(c)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	responses, err := s.adminNotificationResponses(c, rows)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	paginatedApiResponse(c, http.StatusOK, responses, MetaResponse{Total: total, Limit: limit, Offset: offset})
@@ -640,12 +645,12 @@ func (s *Server) listMyNotifications(c *gin.Context) {
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	rows, err := s.store.ListMyAnnouncements(c, db.ListMyAnnouncementsParams{UserID: authUser.ID, Lim: limit, Off: offset})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	counts, err := s.store.CountMyAnnouncements(c, authUser.ID)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	announcements := make([]db.Announcement, len(rows))
@@ -655,7 +660,7 @@ func (s *Server) listMyNotifications(c *gin.Context) {
 	}
 	items, err := s.notificationResponses(c, announcements, readAt)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	paginatedApiResponse(c, http.StatusOK, myNotificationsResponse{Items: items, Unread: counts.Unread},
@@ -669,13 +674,13 @@ func (s *Server) sendMyNotification(c *gin.Context, userID, id int64) {
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "Notification")
 		} else {
-			internalServerError(c)
+			internalServerError(c, err)
 		}
 		return
 	}
 	responses, err := s.notificationResponses(c, []db.Announcement{row.Announcement}, []sql.NullTime{row.ReadAt})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, responses[0])
@@ -701,7 +706,7 @@ func (s *Server) readNotification(c *gin.Context) {
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if err := s.store.MarkAnnouncementRead(c, db.MarkAnnouncementReadParams{ID: req.ID, UserID: authUser.ID}); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	s.sendMyNotification(c, authUser.ID, req.ID)

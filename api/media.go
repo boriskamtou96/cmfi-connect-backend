@@ -101,7 +101,7 @@ func (s *Server) uploadMedia(c *gin.Context) {
 	}
 	key := media.NewKey(info.Ext)
 	if err := s.media.Save(key, data); err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 
@@ -116,7 +116,7 @@ func (s *Server) uploadMedia(c *gin.Context) {
 		UploadedBy:  nullID(authUser.ID),
 	})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusCreated, toMediaResponse(row))

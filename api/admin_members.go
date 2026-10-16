@@ -113,7 +113,7 @@ func (s *Server) listAdminMembers(c *gin.Context) {
 	}
 	rows, err := s.store.ListAdminMembers(c)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	kept := []adminMemberResponse{}
@@ -144,7 +144,7 @@ func (s *Server) getAdminMember(c *gin.Context) {
 			resourceNotFoundError(c, "member")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, toAdminMember(db.ListAdminMembersRow(row)))

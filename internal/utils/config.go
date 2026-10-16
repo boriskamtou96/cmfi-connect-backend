@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"strings"
 
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/joho/godotenv"
@@ -27,9 +28,17 @@ type DBConfig struct {
 	Dsn      string
 }
 
+// ServerConfig: [CORSOrigins] (CORS_ORIGINS, comma-separated:
+// "https://admin.cmfi-connect.com,https://cmfi-connect.com") are the sites
+// whose browsers may call the API, the web back office on its own domain.
+// Without them, outside release mode, http://localhost and http://127.0.0.1
+// on any port; in release, none (the apps don't need it).
+// [LogLevel] (LOG_LEVEL): debug, info (by default), warn or error.
 type ServerConfig struct {
-	Port    string
-	GinMode string
+	Port        string
+	GinMode     string
+	CORSOrigins []string
+	LogLevel    string
 }
 
 type TokenConfig struct {
@@ -86,8 +95,10 @@ func (c *Config) loadConfig() (*Config, error) {
 			Dsn:      getEnv("DB_DSN", "postgresql://postgres:postgres@localhost:5432/cmfi_connect?sslmode=disable"),
 		},
 		Server: ServerConfig{
-			Port:    getEnv("PORT", "8080"),
-			GinMode: getEnv("GIN_MODE", "debug"),
+			Port:        getEnv("PORT", "8080"),
+			GinMode:     getEnv("GIN_MODE", "debug"),
+			CORSOrigins: getEnvList("CORS_ORIGINS"),
+			LogLevel:    getEnv("LOG_LEVEL", "info"),
 		},
 		Token: TokenConfig{
 			SecretKey: getEnv("TOKEN_SECRET", ""),
@@ -115,6 +126,18 @@ func getEnv(key string, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// getEnvList reads a comma-separated variable, each value trimmed, the empty
+// ones left out.
+func getEnvList(key string) []string {
+	values := []string{}
+	for _, value := range strings.Split(os.Getenv(key), ",") {
+		if value = strings.TrimSpace(value); value != "" {
+			values = append(values, value)
+		}
+	}
+	return values
 }
 
 // S3 is the bucket of the images, if one is set.

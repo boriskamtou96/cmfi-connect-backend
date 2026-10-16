@@ -82,7 +82,13 @@ func forbiddenError(c *gin.Context) {
 	c.JSON(http.StatusForbidden, errorResponse)
 }
 
-func internalServerError(c *gin.Context) {
+// internalServerError answers 500 without the details, and logs [err] (the
+// real cause) with the request id.
+func internalServerError(c *gin.Context, err error) {
+	if err == nil {
+		err = fmt.Errorf("no error given")
+	}
+	logFor(c).Error("internal server error", "error", err.Error())
 	errorResponse := NewErrorResponse(http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", fmt.Errorf("internal server error"))
 	c.JSON(http.StatusInternalServerError, errorResponse)
 }

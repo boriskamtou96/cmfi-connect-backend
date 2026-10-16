@@ -23,7 +23,7 @@ type staffMember struct {
 func (s *Server) listStaff(c *gin.Context) {
 	users, err := s.store.ListUsersByRoles(c, []string{roleAdmin, roleSuperadmin})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	ids := make([]int64, len(users))
@@ -32,7 +32,7 @@ func (s *Server) listStaff(c *gin.Context) {
 	}
 	cards, err := s.store.ListMemberCards(c, ids)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	byID := make(map[int64]db.ListMemberCardsRow, len(cards))
@@ -75,7 +75,7 @@ func (s *Server) setMemberRole(c *gin.Context) {
 			resourceNotFoundError(c, "member")
 			return
 		}
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -86,12 +86,12 @@ func (s *Server) setMemberRole(c *gin.Context) {
 
 	updated, err := s.store.UpdateUserRole(c, db.UpdateUserRoleParams{ID: member.ID, Role: req.Role})
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	card, err := s.memberCardByUsername(c, updated.Username)
 	if err != nil {
-		internalServerError(c)
+		internalServerError(c, err)
 		return
 	}
 	apiResponse(c, http.StatusOK, staffMember{memberCard: toMemberCard(card), Role: updated.Role})
