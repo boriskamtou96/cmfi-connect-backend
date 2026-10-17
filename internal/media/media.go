@@ -1,9 +1,12 @@
 // Package media keeps the images sent by the admins (posters, photos) and
 // reads what the apps need to show them well: size, and a dominant color to
-// paint while the image loads. It keeps PDF documents too (prayer topics).
+// paint while the image loads. It keeps PDF documents too (prayer topics),
+// and Word files for Nos documents (InspectDocument), and the sounds of the
+// Enseignements (InspectAudio).
 package media
 
 import (
+	"archive/zip"
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
@@ -15,10 +18,12 @@ import (
 	"image/jpeg"
 	_ "image/png"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -27,6 +32,10 @@ const MaxSize = 8 << 20
 
 // MaxDocumentSize is the largest PDF accepted.
 const MaxDocumentSize = 10 << 20
+
+// MaxAudioSize is the largest sound accepted: a message of two hours at
+// 96 kbit/s.
+const MaxAudioSize = 100 << 20
 
 // MaxAvatarSize is the largest profile photo accepted. The apps crop and
 // compress it before sending.
@@ -58,10 +67,94 @@ type Info struct {
 	Ext   string
 }
 
-var extensions = map[string]string{"image/jpeg": ".jpg", "image/png": ".png", "application/pdf": ".pdf"}
+// The documents kept: a PDF, or a Word file (only for Nos documents).
+const (
+	PDF  = "application/pdf"
+	DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	DOC  = "application/msword"
+)
 
-// IsDocument: a PDF, not an image.
-func (i Info) IsDocument() bool { return i.ContentType == "application/pdf" }
+// The sounds kept (only for the Enseignements).
+const (
+	MP3 = "audio/mpeg"
+	M4A = "audio/mp4"
+)
+
+var extensions = map[string]string{
+	"image/jpeg": ".jpg", "image/png": ".png",
+	PDF: ".pdf", DOCX: ".docx", DOC: ".doc",
+	MP3: ".mp3", M4A: ".m4a",
+}
+
+// the Word files are served with their own type (http.ServeContent reads it
+// from the extension), not as a zip
+func init() {
+	_ = mime.AddExtensionType(".docx", DOCX)
+	_ = mime.AddExtensionType(".doc", DOC)
+	_ = mime.AddExtensionType(".m4a", M4A)
+}
+
+// ErrUnsupportedDocument: not a PDF nor a Word file.
+var ErrUnsupportedDocument = errors.New("unsupported document: PDF or Word (.docx, .doc) only")
+
+// IsDocument: a PDF or a Word file, not an image.
+func (i Info) IsDocument() bool {
+	return i.ContentType == PDF || i.ContentType == DOCX || i.ContentType == DOC
+}
+
+// ErrUnsupportedAudio: not an MP3 nor an M4A.
+var ErrUnsupportedAudio = errors.New("unsupported sound: MP3 or M4A only")
+
+// IsAudio: an MP3 or an M4A.
+func (i Info) IsAudio() bool {
+	return i.ContentType == MP3 || i.ContentType == M4A
+}
+
+// InspectAudio checks that [data] is a sound the phones play: an MP3 (its
+// ID3 tag, or straight its first MPEG frame: layer III) or an M4A (an MP4
+// box "ftyp" of an audio brand, or any MP4 named .m4a). A video, or AAC
+// without its MP4 box, is refused.
+func InspectAudio(data []byte, name string) (Info, error) {
+	switch {
+	case bytes.HasPrefix(data, []byte("ID3")):
+		return Info{ContentType: MP3, Ext: extensions[MP3]}, nil
+	// the frame sync (11 bits), MPEG 1, 2 or 2.5, layer III
+	case len(data) >= 2 && data[0] == 0xFF && data[1]&0xE0 == 0xE0 && data[1]&0x18 != 0x08 && data[1]&0x06 == 0x02:
+		return Info{ContentType: MP3, Ext: extensions[MP3]}, nil
+	case len(data) >= 12 && string(data[4:8]) == "ftyp":
+		brand := string(data[8:12])
+		if brand == "M4A " || brand == "M4B " || strings.EqualFold(filepath.Ext(name), ".m4a") {
+			return Info{ContentType: M4A, Ext: extensions[M4A]}, nil
+		}
+	}
+	return Info{}, ErrUnsupportedAudio
+}
+
+// oleHeader starts the old Office files (.doc, but .xls and .ppt as well).
+var oleHeader = []byte{0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1}
+
+// InspectDocument checks that [data] is a PDF or a Word file: a .docx (a
+// zip holding word/document.xml) or an old .doc (an Office file whose
+// [name] ends in .doc). Inspect, used for everything else, still refuses
+// Word files: a poster or a photo can't be one.
+func InspectDocument(data []byte, name string) (Info, error) {
+	if http.DetectContentType(data) == PDF {
+		return Info{ContentType: PDF, Ext: extensions[PDF]}, nil
+	}
+	if bytes.HasPrefix(data, []byte("PK\x03\x04")) {
+		if archive, err := zip.NewReader(bytes.NewReader(data), int64(len(data))); err == nil {
+			for _, file := range archive.File {
+				if file.Name == "word/document.xml" {
+					return Info{ContentType: DOCX, Ext: extensions[DOCX]}, nil
+				}
+			}
+		}
+	}
+	if bytes.HasPrefix(data, oleHeader) && strings.EqualFold(filepath.Ext(name), ".doc") {
+		return Info{ContentType: DOC, Ext: extensions[DOC]}, nil
+	}
+	return Info{}, ErrUnsupportedDocument
+}
 
 // Inspect checks that [data] is an image the apps can show and measures it,
 // or a PDF document.
@@ -71,8 +164,12 @@ func Inspect(data []byte) (Info, error) {
 	if !ok {
 		return Info{}, ErrUnsupported
 	}
-	if contentType == "application/pdf" {
+	if contentType == PDF {
 		return Info{ContentType: contentType, Ext: ext}, nil
+	}
+	// a sound goes through InspectAudio, for the Enseignements only
+	if !strings.HasPrefix(contentType, "image/") {
+		return Info{}, ErrUnsupported
 	}
 	picture, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
@@ -164,7 +261,7 @@ func NewKey(ext string) string {
 	return hex.EncodeToString(bytes) + ext
 }
 
-var keyFormat = regexp.MustCompile(`^[0-9a-f]{32}\.(jpg|png|pdf)$`)
+var keyFormat = regexp.MustCompile(`^[0-9a-f]{32}\.(jpg|png|pdf|docx|doc|mp3|m4a)$`)
 
 // ValidKey refuses anything that isn't a name made by NewKey (no "../").
 func ValidKey(key string) bool {

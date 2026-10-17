@@ -177,6 +177,18 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.POST("/ministry/people", s.createMinistryPerson)
 			admin.PUT("/ministry/people/:id", s.updateMinistryPerson)
 			admin.DELETE("/ministry/people/:id", s.deleteMinistryPerson)
+			// Nos documents: a PDF or a Word file each
+			admin.GET("/documents", s.adminListDocuments)
+			admin.POST("/documents/files", s.uploadDocumentFile)
+			admin.POST("/documents", s.createDocument)
+			admin.PUT("/documents/:id", s.updateDocument)
+			admin.DELETE("/documents/:id", s.deleteDocument)
+			// Enseignements: an MP3 or an M4A each
+			admin.GET("/teachings", s.adminListTeachings)
+			admin.POST("/teachings/files", s.uploadTeachingAudio)
+			admin.POST("/teachings", s.createTeaching)
+			admin.PUT("/teachings/:id", s.updateTeaching)
+			admin.DELETE("/teachings/:id", s.deleteTeaching)
 
 			// the hymn books: each change gives the book a new version
 			admin.GET("/hymns/books", s.adminListHymnBooks)
@@ -288,6 +300,18 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			ministry.GET("/nations", s.listNations)
 			ministry.GET("/people", s.listMinistryPeople)
+		}
+
+		documents := r.Group("/documents", authMiddleware(s.jwtAuthenticator))
+		{
+			documents.GET("", s.listDocuments)
+			documents.GET("/categories", s.listDocumentCategories)
+		}
+
+		teachings := r.Group("/teachings", authMiddleware(s.jwtAuthenticator))
+		{
+			teachings.GET("", s.listTeachings)
+			teachings.GET("/categories", s.listTeachingCategories)
 		}
 
 		// the phones that receive push notifications, and the member's

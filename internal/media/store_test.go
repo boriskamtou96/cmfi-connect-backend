@@ -27,3 +27,8 @@ func TestTheTypeOfAFileInTheBucket(t *testing.T) {
 	require.Equal(t, "application/pdf", contentTypeOf("3f91ab.pdf"))
 	require.Equal(t, "application/octet-stream", contentTypeOf("3f91ab"))
 }
+
+func TestWordFilesKeepTheirType(t *testing.T) {
+	require.Equal(t, DOCX, contentTypeOf("3f91ab.docx"))
+	require.Equal(t, DOC, contentTypeOf("3f91ab.doc"))
+}

@@ -89,6 +89,20 @@ type Device struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Document struct {
+	ID          int64         `json:"id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Category    string        `json:"category"`
+	FileID      int64         `json:"file_id"`
+	FileName    string        `json:"file_name"`
+	Published   bool          `json:"published"`
+	PublishedAt sql.NullTime  `json:"published_at"`
+	CreatedBy   sql.NullInt64 `json:"created_by"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
 type Event struct {
 	ID                   int64         `json:"id"`
 	SeriesID             sql.NullInt64 `json:"series_id"`
@@ -339,6 +353,23 @@ type ReportEntry struct {
 	ActivityTypeID  int64         `json:"activity_type_id"`
 	Quantity        sql.NullInt32 `json:"quantity"`
 	DurationMinutes sql.NullInt32 `json:"duration_minutes"`
+}
+
+type Teaching struct {
+	ID              int64         `json:"id"`
+	Title           string        `json:"title"`
+	Speaker         string        `json:"speaker"`
+	Description     string        `json:"description"`
+	Category        string        `json:"category"`
+	RecordedOn      sql.NullTime  `json:"recorded_on"`
+	AudioID         int64         `json:"audio_id"`
+	DurationSeconds int32         `json:"duration_seconds"`
+	CoverID         sql.NullInt64 `json:"cover_id"`
+	Published       bool          `json:"published"`
+	PublishedAt     sql.NullTime  `json:"published_at"`
+	CreatedBy       sql.NullInt64 `json:"created_by"`
+	CreatedAt       time.Time     `json:"created_at"`
+	UpdatedAt       time.Time     `json:"updated_at"`
 }
 
 type User struct {

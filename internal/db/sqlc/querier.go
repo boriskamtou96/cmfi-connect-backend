@@ -28,6 +28,8 @@ type Querier interface {
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
 	CountAnnouncements(ctx context.Context) (int64, error)
 	CountDevicesOfUsers(ctx context.Context, userIds []int64) (int32, error)
+	// A file still listed by another document is kept.
+	CountDocumentsWithFile(ctx context.Context, fileID int64) (int64, error)
 	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
 	// The numbers of the back office's dashboard: counts only, never who.
@@ -42,11 +44,14 @@ type Querier interface {
 	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
 	CountReports(ctx context.Context, status string) (int64, error)
 	CountSuperadmins(ctx context.Context) (int64, error)
+	// A sound or a cover still used by another teaching is kept.
+	CountTeachingsWithMedia(ctx context.Context, mediaID int64) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
 	// Personal items are numbered after the standard ones: 101, 102...
 	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (Announcement, error)
 	CreateAnnouncementAttachment(ctx context.Context, arg CreateAnnouncementAttachmentParams) error
+	CreateDocument(ctx context.Context, arg CreateDocumentParams) (int64, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventPhoto(ctx context.Context, arg CreateEventPhotoParams) (EventPhoto, error)
 	CreateEventPost(ctx context.Context, arg CreateEventPostParams) (EventPost, error)
@@ -70,6 +75,7 @@ type Querier interface {
 	// After the other standard items (positions under 100: the personal items
 	// come from 101).
 	CreateStandardActivityType(ctx context.Context, arg CreateStandardActivityTypeParams) (ActivityType, error)
+	CreateTeaching(ctx context.Context, arg CreateTeachingParams) (int64, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error
 	// The authorities of other members that point to this member: their copy
@@ -79,6 +85,7 @@ type Querier interface {
 	DeleteDevice(ctx context.Context, arg DeleteDeviceParams) (int64, error)
 	// The tokens Firebase no longer knows (app removed, token replaced).
 	DeleteDevicesByTokens(ctx context.Context, tokens []string) error
+	DeleteDocument(ctx context.Context, id int64) (int64, error)
 	DeleteEvent(ctx context.Context, id int64) (int64, error)
 	DeleteEventPhoto(ctx context.Context, arg DeleteEventPhotoParams) (int64, error)
 	DeleteEventPost(ctx context.Context, arg DeleteEventPostParams) (int64, error)
@@ -98,6 +105,7 @@ type Querier interface {
 	DeletePrayerTopic(ctx context.Context, id int64) (int64, error)
 	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
 	DeleteReportEntries(ctx context.Context, reportID int64) error
+	DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingRow, error)
 	DeleteUser(ctx context.Context, id int64) error
 	// Before the account: its personal items can't go while entries use them.
 	DeleteUserReports(ctx context.Context, userID int64) error
@@ -111,6 +119,7 @@ type Querier interface {
 	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
 	// Every item the user can fill in, with the values entered that day (NULL when empty).
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
+	GetDocument(ctx context.Context, id int64) (GetDocumentRow, error)
 	GetEvent(ctx context.Context, id int64) (Event, error)
 	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
 	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
@@ -128,6 +137,7 @@ type Querier interface {
 	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
 	// standard items are shared, joining report_entries directly would mix users.
 	GetReportSummary(ctx context.Context, arg GetReportSummaryParams) ([]GetReportSummaryRow, error)
+	GetTeaching(ctx context.Context, id int64) (GetTeachingRow, error)
 	// Standard items (user_id IS NULL) + the user's own items, archived ones excluded.
 	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
@@ -184,6 +194,9 @@ type Querier interface {
 	ListDisciples(ctx context.Context, memberID int64) ([]ListDisciplesRow, error)
 	// The members whose disciple maker is [fd], accepted links only.
 	ListDisciplesOf(ctx context.Context, linkedUserID sql.NullInt64) ([]int64, error)
+	// Every document with its file, the published ones first by date, then the
+	// drafts; the API filters (category, search) and pages them.
+	ListDocuments(ctx context.Context, withDrafts bool) ([]ListDocumentsRow, error)
 	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
 	// Pinned first, then the latest.
 	ListEventPosts(ctx context.Context, eventID int64) ([]EventPost, error)
@@ -231,6 +244,10 @@ type Querier interface {
 	ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error)
 	// Among the candidates, the pseudos already used.
 	ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error)
+	// Every teaching with its sound, the published ones first, the newest
+	// message first (then the newest sent), then the drafts; the API filters
+	// (category, speaker, search) and pages them.
+	ListTeachings(ctx context.Context, withDrafts bool) ([]ListTeachingsRow, error)
 	// Not over yet (an event in progress is upcoming), the soonest first.
 	ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error)
 	ListUserRegistrations(ctx context.Context, arg ListUserRegistrationsParams) ([]EventRegistration, error)
@@ -266,6 +283,8 @@ type Querier interface {
 	// tracks_quantity / tracks_duration stay fixed: past entries were saved with them.
 	UpdateActivityType(ctx context.Context, arg UpdateActivityTypeParams) (ActivityType, error)
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
+	// published_at stays the date of the first publication.
+	UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (int64, error)
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	// Only writes when something differs, so the caller knows if the book changed.
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
@@ -278,6 +297,8 @@ type Querier interface {
 	// The label, the unit and the place; the code and the measures stay (the
 	// reports and the app rely on them).
 	UpdateStandardActivityType(ctx context.Context, arg UpdateStandardActivityTypeParams) (ActivityType, error)
+	// published_at stays the date of the first publication.
+	UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) (int64, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)
