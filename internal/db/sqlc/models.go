@@ -355,6 +355,19 @@ type ReportEntry struct {
 	DurationMinutes sql.NullInt32 `json:"duration_minutes"`
 }
 
+type ReportSending struct {
+	ID          int64        `json:"id"`
+	AuthorityID int64        `json:"authority_id"`
+	DiscipleID  int64        `json:"disciple_id"`
+	ReceiverID  int64        `json:"receiver_id"`
+	PeriodFrom  time.Time    `json:"period_from"`
+	PeriodTo    time.Time    `json:"period_to"`
+	SentAt      time.Time    `json:"sent_at"`
+	ReadAt      sql.NullTime `json:"read_at"`
+	Reply       string       `json:"reply"`
+	RepliedAt   sql.NullTime `json:"replied_at"`
+}
+
 type Teaching struct {
 	ID              int64         `json:"id"`
 	Title           string        `json:"title"`

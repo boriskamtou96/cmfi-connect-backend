@@ -241,6 +241,17 @@ func (s *Server) SetupRouter() *gin.Engine {
 		r.GET("/disciples", authMiddleware(s.jwtAuthenticator), s.listDisciples)
 		r.GET("/disciples/:id/reports", authMiddleware(s.jwtAuthenticator), s.listDiscipleReports)
 
+		// a period of reports sent in the app to the member authorities, and
+		// their answers
+		sendings := r.Group("/report-sendings", authMiddleware(s.jwtAuthenticator))
+		{
+			sendings.POST("", s.sendReport)
+			sendings.GET("/received", s.listReceivedReports)
+			sendings.GET("/sent", s.listSentReports)
+			sendings.POST("/:id/read", s.readReportSending)
+			sendings.POST("/:id/reply", s.replyReportSending)
+		}
+
 		activityTypes := r.Group("/activities").Use(authMiddleware(s.jwtAuthenticator))
 		{
 			activityTypes.GET("/", s.listActivityTypes)

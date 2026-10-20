@@ -41,8 +41,10 @@ type Querier interface {
 	CountPrayerPeople(ctx context.Context, userID int64) (int64, error)
 	// How many members prayed for each topic, any day: the apps never show who.
 	CountPrayerTopicPeople(ctx context.Context, topicIds []int64) ([]CountPrayerTopicPeopleRow, error)
+	CountReceivedReportSendings(ctx context.Context, receiverID int64) (int64, error)
 	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
 	CountReports(ctx context.Context, status string) (int64, error)
+	CountSentReportSendings(ctx context.Context, discipleID int64) (int64, error)
 	CountSuperadmins(ctx context.Context) (int64, error)
 	// A sound or a cover still used by another teaching is kept.
 	CountTeachingsWithMedia(ctx context.Context, mediaID int64) (int64, error)
@@ -231,6 +233,7 @@ type Querier interface {
 	ListPrayerRetreats(ctx context.Context, arg ListPrayerRetreatsParams) ([]PrayerRetreat, error)
 	ListPrayerTopicPoints(ctx context.Context, topicIds []int64) ([]PrayerTopicPoint, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
+	ListReceivedReportSendings(ctx context.Context, arg ListReceivedReportSendingsParams) ([]ReportSending, error)
 	// The days with a report of several members between two dates, newest first,
 	// with the share of their goals reached and the number of items filled in.
 	ListReportDays(ctx context.Context, arg ListReportDaysParams) ([]ListReportDaysRow, error)
@@ -239,6 +242,10 @@ type Querier interface {
 	ListReports(ctx context.Context, arg ListReportsParams) ([]ListReportsRow, error)
 	ListReportsPerDay(ctx context.Context, since time.Time) ([]ListReportsPerDayRow, error)
 	ListRetreatsPerDay(ctx context.Context, since time.Time) ([]ListRetreatsPerDayRow, error)
+	// The authorities of [user_id] who can receive a report in the app: members
+	// who accepted the link, and to whom the reports are shared.
+	ListSendableAuthorities(ctx context.Context, userID int64) ([]ListSendableAuthoritiesRow, error)
+	ListSentReportSendings(ctx context.Context, arg ListSentReportSendingsParams) ([]ReportSending, error)
 	// ----- the standard items, kept by the admins -----
 	// Every standard item, the archived ones last.
 	ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error)
@@ -260,7 +267,10 @@ type Querier interface {
 	MarkAnnouncementRead(ctx context.Context, arg MarkAnnouncementReadParams) error
 	// A retreat prayed for them on [day]: the next retreats take the others first.
 	MarkPrayerPeoplePrayed(ctx context.Context, arg MarkPrayerPeoplePrayedParams) (int64, error)
+	// Only its receiver; the first reading stays.
+	MarkReportSendingRead(ctx context.Context, arg MarkReportSendingReadParams) (ReportSending, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
+	ReplyReportSending(ctx context.Context, arg ReplyReportSendingParams) (ReportSending, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
@@ -312,6 +322,8 @@ type Querier interface {
 	// 1 row when the hymn is new or changed, 0 when it is already identical.
 	UpsertHymn(ctx context.Context, arg UpsertHymnParams) (int64, error)
 	UpsertPrayerRetreat(ctx context.Context, arg UpsertPrayerRetreatParams) (PrayerRetreat, error)
+	// Sent again for the same period: new again (unread), the answer kept.
+	UpsertReportSending(ctx context.Context, arg UpsertReportSendingParams) (ReportSending, error)
 }
 
 var _ Querier = (*Queries)(nil)

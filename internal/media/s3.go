@@ -37,6 +37,12 @@ type S3Store struct {
 // one request to the storage at most this long
 const s3Timeout = 30 * time.Second
 
+// saveTimeout gives a file of [size] bytes the time to reach the bucket even
+// at 0.5 MB/s: 30 s, then 2 s per MB (a sound of 100 MB: about 4 minutes).
+func saveTimeout(size int) time.Duration {
+	return s3Timeout + time.Duration(size>>20)*2*time.Second
+}
+
 // NewS3Store connects to the bucket of [cfg] and checks that it can be
 // reached.
 func NewS3Store(cfg S3Config) (*S3Store, error) {
@@ -82,7 +88,7 @@ func (s *S3Store) Save(key string, data []byte) error {
 	if !ValidKey(key) {
 		return fmt.Errorf("invalid media key %q", key)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), s3Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), saveTimeout(len(data)))
 	defer cancel()
 	_, err := s.client.PutObject(ctx, s.bucket, key, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{
 		ContentType: contentTypeOf(key),

@@ -57,3 +57,8 @@ promote:
 .PHONY: demo-events
 demo-events:
 	go run ./cmd/demo-events
+
+.PHONY: migrate-neon
+migrate-neon:
+	@test -n "$(NEON_DSN)" || (echo "NEON_DSN is not set in .env" && exit 1)
+	@migrate -path=$(MIGRATIONS_PATH) -database="$(NEON_DSN)" up

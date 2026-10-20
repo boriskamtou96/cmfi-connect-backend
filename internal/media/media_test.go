@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -199,4 +200,10 @@ func TestInspectAudio(t *testing.T) {
 	require.ErrorIs(t, err, ErrUnsupported)
 	require.True(t, ValidKey(NewKey(".mp3")))
 	require.True(t, ValidKey(NewKey(".m4a")))
+}
+
+func TestSaveTimeoutGrowsWithTheFile(t *testing.T) {
+	require.Equal(t, 30*time.Second, saveTimeout(200<<10))
+	require.Equal(t, 50*time.Second, saveTimeout(10<<20))
+	require.Equal(t, 230*time.Second, saveTimeout(MaxAudioSize))
 }
