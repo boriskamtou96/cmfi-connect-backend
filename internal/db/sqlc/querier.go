@@ -32,6 +32,8 @@ type Querier interface {
 	// Marks a published teaching as announced: no row when it is a draft or
 	// was announced already (two clicks at once: only one gets it).
 	ClaimTeachingNotification(ctx context.Context, id int64) (ClaimTeachingNotificationRow, error)
+	// The disciple maker of [user_id] stays one of their authorities.
+	ClearDiscipleMaker(ctx context.Context, userID int64) error
 	// The money arrived. No row when it was already known: done once.
 	CompletePayment(ctx context.Context, arg CompletePaymentParams) (Payment, error)
 	CompletePaymentRefund(ctx context.Context, refundID uuid.NullUUID) (Payment, error)
@@ -130,12 +132,16 @@ type Querier interface {
 	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
 	DeleteRegistrationOfPayment(ctx context.Context, paymentID uuid.NullUUID) (int64, error)
 	DeleteReportEntries(ctx context.Context, reportID int64) error
+	DeleteSoul(ctx context.Context, arg DeleteSoulParams) error
 	DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingRow, error)
 	DeleteUser(ctx context.Context, id int64) error
 	// Before the account: its personal items can't go while entries use them.
 	DeleteUserReports(ctx context.Context, userID int64) error
 	// Blocking: the invitations of [blocked_id] to [blocker_id] not answered yet go.
 	DropInvitationsFrom(ctx context.Context, arg DropInvitationsFromParams) error
+	// The Premium a member bought on the website ends now (tests): the payments
+	// stay, their Premium is over.
+	EndUserPremiumPayments(ctx context.Context, userID sql.NullInt64) (int64, error)
 	FailPayment(ctx context.Context, arg FailPaymentParams) (int64, error)
 	FailPaymentRefund(ctx context.Context, arg FailPaymentRefundParams) (int64, error)
 	FailPayout(ctx context.Context, arg FailPayoutParams) (Payout, error)
@@ -300,6 +306,7 @@ type Querier interface {
 	// who accepted the link, and to whom the reports are shared.
 	ListSendableAuthorities(ctx context.Context, userID int64) ([]ListSendableAuthoritiesRow, error)
 	ListSentReportSendings(ctx context.Context, arg ListSentReportSendingsParams) ([]ReportSending, error)
+	ListSouls(ctx context.Context, userID int64) ([]Soul, error)
 	// ----- the standard items, kept by the admins -----
 	// Every standard item, the archived ones last.
 	ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error)
@@ -321,6 +328,8 @@ type Querier interface {
 	// capacity at the same time.
 	LockEvent(ctx context.Context, id int64) (Event, error)
 	LockImportunity(ctx context.Context, id int64) (Importunity, error)
+	// One of [user_id]'s authorities (not declined) becomes their disciple maker.
+	MakeDiscipleMaker(ctx context.Context, arg MakeDiscipleMakerParams) (Authority, error)
 	MarkAnnouncementRead(ctx context.Context, arg MarkAnnouncementReadParams) error
 	// KPAY took it (its id given): the member is asked for their PIN.
 	MarkPaymentAccepted(ctx context.Context, arg MarkPaymentAcceptedParams) error
@@ -338,6 +347,8 @@ type Querier interface {
 	// Taken back: its gifts go (given ones are taken back in RevenueCat by the
 	// caller), and the members they were given to are answered.
 	RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error)
+	// All the Premium offered to a member, taken back.
+	RevokeUserGifts(ctx context.Context, userID int64) (int64, error)
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
 	// Whether [user_id] shares their reports with this authority (disciple maker or not).
@@ -404,6 +415,7 @@ type Querier interface {
 	UpsertPrayerRetreat(ctx context.Context, arg UpsertPrayerRetreatParams) (PrayerRetreat, error)
 	// Sent again for the same period: new again (unread), the answer kept.
 	UpsertReportSending(ctx context.Context, arg UpsertReportSendingParams) (ReportSending, error)
+	UpsertSoul(ctx context.Context, arg UpsertSoulParams) (Soul, error)
 }
 
 var _ Querier = (*Queries)(nil)

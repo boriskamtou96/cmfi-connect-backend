@@ -179,6 +179,16 @@ func (s *Server) createAuthority(c *gin.Context) {
 		return
 	}
 
+	// the member asked is told
+	if authority.LinkedUserID.Valid && authority.Status == authorityPending {
+		bodies := authorityRequestBodies
+		if authority.IsDiscipleMaker {
+			bodies = discipleMakerRequestBodies
+		}
+		s.pushToMember(authority.LinkedUserID.Int64, authorityRequestTitles, bodies,
+			s.firstNameOf(c, authUser.ID), "authority_request", authority.ID)
+	}
+
 	responses, err := s.authorityResponses(c, []db.Authority{authority})
 	if err != nil {
 		internalServerError(c, err)
@@ -263,6 +273,37 @@ func (s *Server) getAuthorityById(c *gin.Context) {
 		return
 	}
 	responses, err := s.authorityResponses(c, []db.Authority{authority})
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	apiResponse(c, http.StatusOK, responses[0])
+}
+
+// PUT /v1/authorities/:id/disciple-maker: this authority becomes the
+// member's disciple maker; the former one stays among their authorities.
+// The new one, a member of the app, is told.
+func (s *Server) chooseDiscipleMaker(c *gin.Context) {
+	authority, ok := s.ownAuthority(c)
+	if !ok {
+		return
+	}
+	if authority.Status == authorityDeclined {
+		resourceNotFoundError(c, "Authority")
+		return
+	}
+	wasMaker := authority.IsDiscipleMaker
+	chosen, err := s.store.ChooseDiscipleMakerTx(c, authority.UserID, authority.ID)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	// an accepted member learns it; a pending request now asks for it
+	if !wasMaker && chosen.LinkedUserID.Valid && chosen.Status == authorityAccepted {
+		s.pushToMember(chosen.LinkedUserID.Int64, discipleMakerChosenTitles, discipleMakerChosenBodies,
+			s.firstNameOf(c, chosen.UserID), "disciple_maker_chosen", chosen.ID)
+	}
+	responses, err := s.authorityResponses(c, []db.Authority{chosen})
 	if err != nil {
 		internalServerError(c, err)
 		return
@@ -399,6 +440,15 @@ func (s *Server) answerAuthorityRequest(status string) gin.HandlerFunc {
 			}
 			internalServerError(c, err)
 			return
+		}
+		// « yes »: who asked is told
+		if status == authorityAccepted {
+			bodies := authorityAcceptedBodies
+			if answered.IsDiscipleMaker {
+				bodies = discipleMakerAcceptedBodies
+			}
+			s.pushToMember(answered.UserID, authorityAcceptedTitles, bodies,
+				s.firstNameOf(c, authUser.ID), "authority_accepted", answered.ID)
 		}
 		responses, err := s.authorityRequestResponses(c, []db.Authority{answered})
 		if err != nil {

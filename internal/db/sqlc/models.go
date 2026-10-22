@@ -451,6 +451,20 @@ type ReportSending struct {
 	RepliedAt   sql.NullTime `json:"replied_at"`
 }
 
+type Soul struct {
+	UserID      int64           `json:"user_id"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Phone       string          `json:"phone"`
+	Place       string          `json:"place"`
+	MetOn       time.Time       `json:"met_on"`
+	Stage       string          `json:"stage"`
+	NextContact sql.NullTime    `json:"next_contact"`
+	Notes       json.RawMessage `json:"notes"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
+}
+
 type Teaching struct {
 	ID              int64         `json:"id"`
 	Title           string        `json:"title"`

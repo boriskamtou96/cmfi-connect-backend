@@ -124,3 +124,66 @@ func TestAuthoritiesTypedByHandAndOwnedByOne(t *testing.T) {
 	require.Equal(t, "+237677554433", *decode[authorityResponse](t, got).PhoneNumber)
 	require.Equal(t, http.StatusNoContent, send(t, router, http.MethodDelete, marc.Token, path, nil).Code)
 }
+
+func TestAskingAndAcceptingAnAuthorityArePushed(t *testing.T) {
+	router, sender := newPushRouter(t, "")
+	boris := registerMember(t, router, nil)
+	marc := registerMember(t, router, nil)
+	addPhone(t, router, boris, "phone-"+uniqueName())
+	addPhone(t, router, marc, "phone-"+uniqueName())
+
+	created := send(t, router, http.MethodPost, boris.Token, "/v1/authorities/",
+		map[string]any{"username": marc.Username, "is_disciple_maker": true})
+	require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
+	authority := decode[authorityResponse](t, created)
+	require.Len(t, sender.messages, 1)
+	require.Equal(t, "Nouvelle demande", sender.messages[0].Title)
+	require.Equal(t, boris.FirstName+" te demande d'être son faiseur de disciples", sender.messages[0].Body)
+	require.Equal(t, "authority_request", sender.messages[0].Data["type"])
+
+	accepted := send(t, router, http.MethodPost, marc.Token, fmt.Sprintf("/v1/authorities/requests/%d/accept", authority.ID), nil)
+	require.Equal(t, http.StatusOK, accepted.Code, accepted.Body.String())
+	require.Len(t, sender.messages, 2)
+	require.Equal(t, "Demande acceptée", sender.messages[1].Title)
+	require.Equal(t, marc.FirstName+" est maintenant ton faiseur de disciples", sender.messages[1].Body)
+	require.Equal(t, "authority_accepted", sender.messages[1].Data["type"])
+}
+
+func TestAnotherAuthorityBecomesTheDiscipleMaker(t *testing.T) {
+	router, sender := newPushRouter(t, "")
+	boris := registerMember(t, router, nil)
+	marc := registerMember(t, router, nil)
+	paul := registerMember(t, router, nil)
+	addPhone(t, router, paul, "phone-"+uniqueName())
+
+	ask := func(m member, maker bool) authorityResponse {
+		created := send(t, router, http.MethodPost, boris.Token, "/v1/authorities/",
+			map[string]any{"username": m.Username, "is_disciple_maker": maker})
+		require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
+		authority := decode[authorityResponse](t, created)
+		accepted := send(t, router, http.MethodPost, m.Token, fmt.Sprintf("/v1/authorities/requests/%d/accept", authority.ID), nil)
+		require.Equal(t, http.StatusOK, accepted.Code, accepted.Body.String())
+		return authority
+	}
+	ask(marc, true)
+	withPaul := ask(paul, false)
+	before := len(sender.messages)
+
+	chosen := send(t, router, http.MethodPut, boris.Token, fmt.Sprintf("/v1/authorities/%d/disciple-maker", withPaul.ID), nil)
+	require.Equal(t, http.StatusOK, chosen.Code, chosen.Body.String())
+	require.True(t, decode[authorityResponse](t, chosen).IsDiscipleMaker)
+
+	// Marc stays an authority, not the disciple maker any more
+	mine := listMyAuthorities(t, router, boris.Token)
+	require.Len(t, mine, 2)
+	for _, authority := range mine {
+		require.Equal(t, authority.ID == withPaul.ID, authority.IsDiscipleMaker, authority.FirstName)
+	}
+	// Paul is told
+	require.Len(t, sender.messages, before+1)
+	require.Equal(t, boris.FirstName+" t'a choisi comme faiseur de disciples", sender.messages[before].Body)
+
+	// someone else's authority: not found
+	other := send(t, router, http.MethodPut, marc.Token, fmt.Sprintf("/v1/authorities/%d/disciple-maker", withPaul.ID), nil)
+	require.Equal(t, http.StatusNotFound, other.Code)
+}

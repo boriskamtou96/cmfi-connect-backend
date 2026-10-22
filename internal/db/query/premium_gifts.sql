@@ -67,3 +67,20 @@ UPDATE premium_gifts
 SET status = 'revoked', updated_at = now()
 WHERE offer_id IN (SELECT id FROM offer) AND status IN ('pending', 'given', 'failed')
 RETURNING user_id, status;
+
+-- name: RevokeUserGifts :execrows
+-- All the Premium offered to a member, taken back.
+UPDATE premium_gifts
+SET status = 'revoked', updated_at = now()
+WHERE user_id = $1 AND status IN ('pending', 'given', 'failed');
+
+-- name: EndUserPremiumPayments :execrows
+-- The Premium a member bought on the website ends now (tests): the payments
+-- stay, their Premium is over.
+UPDATE payments
+SET premium_until = now(), updated_at = now()
+WHERE user_id = $1
+  AND purpose = 'premium'
+  AND status = 'completed'
+  AND settled_at IS NOT NULL
+  AND (premium_until IS NULL OR premium_until > now());

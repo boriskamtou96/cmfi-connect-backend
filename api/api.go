@@ -255,6 +255,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.GET("/premium/offers", s.adminListPremiumOffers)
 			admin.POST("/premium/offers", s.offerPremium)
 			admin.DELETE("/premium/offers/:id", s.revokePremiumOffer)
+			admin.POST("/premium/members/:username/revoke", s.revokeMemberPremium)
 		}
 
 		// the images of the events: public links with random names
@@ -307,6 +308,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 			authorities.GET("/:id", s.getAuthorityById)
 			authorities.DELETE("/:id", s.deleteAuthority)
 			authorities.PUT("/:id/sharing", s.setAuthoritySharing)
+			authorities.PUT("/:id/disciple-maker", s.chooseDiscipleMaker)
 		}
 		// the members who chose the signed-in member as one of their authorities,
 		// and the reports they share
@@ -403,6 +405,13 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			devices.PUT("", s.registerDevice)
 			devices.DELETE("/:token", s.unregisterDevice)
+		}
+		// Suivi des âmes, each member's own
+		souls := r.Group("/souls", authMiddleware(s.jwtAuthenticator))
+		{
+			souls.GET("", s.listSouls)
+			souls.PUT("/:id", s.saveSoul)
+			souls.DELETE("/:id", s.deleteSoul)
 		}
 		notifications := r.Group("/notifications", authMiddleware(s.jwtAuthenticator))
 		{

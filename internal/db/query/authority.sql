@@ -75,3 +75,16 @@ ORDER BY a.is_disciple_maker DESC,
          COALESCE(NULLIF(p.first_name, ''), u.first_name),
          COALESCE(NULLIF(p.last_name, ''), u.last_name, ''),
          a.id;
+
+-- name: ClearDiscipleMaker :exec
+-- The disciple maker of [user_id] stays one of their authorities.
+UPDATE authorities
+SET is_disciple_maker = false
+WHERE user_id = $1 AND is_disciple_maker;
+
+-- name: MakeDiscipleMaker :one
+-- One of [user_id]'s authorities (not declined) becomes their disciple maker.
+UPDATE authorities
+SET is_disciple_maker = true
+WHERE id = $1 AND user_id = $2 AND status <> 'declined'
+RETURNING *;

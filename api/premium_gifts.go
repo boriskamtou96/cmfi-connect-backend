@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -376,4 +377,63 @@ func (s *Server) regrantPremium(ctx context.Context, userID int64) {
 	if err := s.premium.Grant(ctx, appUser, until); err != nil {
 		slog.Error("cannot give back the rest of a premium", "user", userID, "error", err)
 	}
+}
+
+type revokeMemberPremiumRequest struct {
+	// also what the member bought on the website (tests); superadmins only
+	IncludePaid bool `json:"include_paid"`
+}
+
+type revokeMemberPremiumResponse struct {
+	Username     string `json:"username"`
+	GiftsRevoked int64  `json:"gifts_revoked"`
+	PaidEnded    int64  `json:"paid_ended"`
+}
+
+// POST /v1/admin/premium/members/:username/revoke: the member loses all the
+// Premium offered to them, and with include_paid (a superadmin) the Premium
+// bought on the website too. A subscription of the App Store or Google Play
+// is not ours: it ends in the store (or in RevenueCat).
+func (s *Server) revokeMemberPremium(c *gin.Context) {
+	if !s.premiumGiftsEnabled(c) {
+		return
+	}
+	var req revokeMemberPremiumRequest
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		badRequestError(c, err)
+		return
+	}
+	if req.IncludePaid {
+		authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+		role, err := s.store.GetUserRole(c, authUser.ID)
+		if err != nil || role != roleSuperadmin {
+			forbiddenError(c)
+			return
+		}
+	}
+	username := strings.ToLower(strings.TrimPrefix(strings.TrimSpace(c.Param("username")), "@"))
+	user, err := s.store.GetUserByUsername(c, username)
+	if errors.Is(err, sql.ErrNoRows) {
+		c.JSON(http.StatusNotFound, NewErrorResponse(http.StatusNotFound, "USERNAME_NOT_FOUND", err))
+		return
+	}
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	gifts, err := s.store.RevokeUserGifts(c, user.ID)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	var paid int64
+	if req.IncludePaid {
+		if paid, err = s.store.EndUserPremiumPayments(c, nullID(user.ID)); err != nil {
+			internalServerError(c, err)
+			return
+		}
+	}
+	s.regrantPremium(c, user.ID)
+	logFor(c).Info("premium of a member taken back", "user", user.ID, "gifts", gifts, "paid", paid)
+	apiResponse(c, http.StatusOK, revokeMemberPremiumResponse{Username: user.Username, GiftsRevoked: gifts, PaidEnded: paid})
 }

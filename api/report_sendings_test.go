@@ -38,6 +38,10 @@ func TestADiscipleSendsTheWeekToTheirAuthorityWhoAnswers(t *testing.T) {
 	addPhone(t, router, paul, "paul-phone-"+paul.Username)
 	addPhone(t, router, grace, "grace-phone-"+grace.Username)
 	link := chooseDiscipleMaker(t, router, grace, paul)
+	// the pushes of the request and its answer are not what is looked at
+	sender.mu.Lock()
+	sender.messages, sender.tokens = nil, nil
+	sender.mu.Unlock()
 
 	week := map[string]any{"from": daysAgo(6), "to": daysAgo(0)}
 	sent := sendPeriod(t, router, grace.Token, week)

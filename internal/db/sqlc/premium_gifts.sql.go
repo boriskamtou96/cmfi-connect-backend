@@ -70,6 +70,26 @@ func (q *Queries) CreatePremiumOffer(ctx context.Context, arg CreatePremiumOffer
 	return i, err
 }
 
+const endUserPremiumPayments = `-- name: EndUserPremiumPayments :execrows
+UPDATE payments
+SET premium_until = now(), updated_at = now()
+WHERE user_id = $1
+  AND purpose = 'premium'
+  AND status = 'completed'
+  AND settled_at IS NOT NULL
+  AND (premium_until IS NULL OR premium_until > now())
+`
+
+// The Premium a member bought on the website ends now (tests): the payments
+// stay, their Premium is over.
+func (q *Queries) EndUserPremiumPayments(ctx context.Context, userID sql.NullInt64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, endUserPremiumPayments, userID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getPremiumOffer = `-- name: GetPremiumOffer :one
 SELECT id, months, audience, note, notify, members_count, created_by, created_at, revoked_at
 FROM premium_offers
@@ -322,4 +342,19 @@ func (q *Queries) RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePre
 		return nil, err
 	}
 	return items, nil
+}
+
+const revokeUserGifts = `-- name: RevokeUserGifts :execrows
+UPDATE premium_gifts
+SET status = 'revoked', updated_at = now()
+WHERE user_id = $1 AND status IN ('pending', 'given', 'failed')
+`
+
+// All the Premium offered to a member, taken back.
+func (q *Queries) RevokeUserGifts(ctx context.Context, userID int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, revokeUserGifts, userID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

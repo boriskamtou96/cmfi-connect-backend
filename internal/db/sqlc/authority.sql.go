@@ -42,6 +42,18 @@ func (q *Queries) AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorit
 	return i, err
 }
 
+const clearDiscipleMaker = `-- name: ClearDiscipleMaker :exec
+UPDATE authorities
+SET is_disciple_maker = false
+WHERE user_id = $1 AND is_disciple_maker
+`
+
+// The disciple maker of [user_id] stays one of their authorities.
+func (q *Queries) ClearDiscipleMaker(ctx context.Context, userID int64) error {
+	_, err := q.db.ExecContext(ctx, clearDiscipleMaker, userID)
+	return err
+}
+
 const countUserAuthorities = `-- name: CountUserAuthorities :one
 SELECT COUNT(*)
 FROM authorities
@@ -290,6 +302,38 @@ func (q *Queries) ListDisciples(ctx context.Context, memberID int64) ([]ListDisc
 		return nil, err
 	}
 	return items, nil
+}
+
+const makeDiscipleMaker = `-- name: MakeDiscipleMaker :one
+UPDATE authorities
+SET is_disciple_maker = true
+WHERE id = $1 AND user_id = $2 AND status <> 'declined'
+RETURNING id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
+`
+
+type MakeDiscipleMakerParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+// One of [user_id]'s authorities (not declined) becomes their disciple maker.
+func (q *Queries) MakeDiscipleMaker(ctx context.Context, arg MakeDiscipleMakerParams) (Authority, error) {
+	row := q.db.QueryRowContext(ctx, makeDiscipleMaker, arg.ID, arg.UserID)
+	var i Authority
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Email,
+		&i.IsDiscipleMaker,
+		&i.CreatedAt,
+		&i.UserID,
+		&i.LinkedUserID,
+		&i.Status,
+		&i.SharesRegularity,
+	)
+	return i, err
 }
 
 const setAuthoritySharing = `-- name: SetAuthoritySharing :one
