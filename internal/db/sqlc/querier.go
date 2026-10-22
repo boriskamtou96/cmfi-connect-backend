@@ -8,6 +8,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -30,6 +32,13 @@ type Querier interface {
 	// Marks a published teaching as announced: no row when it is a draft or
 	// was announced already (two clicks at once: only one gets it).
 	ClaimTeachingNotification(ctx context.Context, id int64) (ClaimTeachingNotificationRow, error)
+	// The money arrived. No row when it was already known: done once.
+	CompletePayment(ctx context.Context, arg CompletePaymentParams) (Payment, error)
+	CompletePaymentRefund(ctx context.Context, refundID uuid.NullUUID) (Payment, error)
+	// No row when it was already known: done once.
+	CompletePayout(ctx context.Context, id uuid.UUID) (Payout, error)
+	// Only when the account is still the one tested.
+	ConfirmEventPayoutAccount(ctx context.Context, arg ConfirmEventPayoutAccountParams) error
 	// Members who filled a report or made a retreat since [since].
 	CountActiveMembers(ctx context.Context, since time.Time) (int64, error)
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
@@ -38,6 +47,8 @@ type Querier interface {
 	// A file still listed by another document is kept.
 	CountDocumentsWithFile(ctx context.Context, fileID int64) (int64, error)
 	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
+	// Money kept for an event: it can't be deleted before they are refunded.
+	CountHeldEventPayments(ctx context.Context, eventID sql.NullInt64) (int32, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
 	// The numbers of the back office's dashboard: counts only, never who.
 	CountMembers(ctx context.Context, arg CountMembersParams) (CountMembersRow, error)
@@ -73,10 +84,14 @@ type Querier interface {
 	// After the others of the same kind.
 	CreateMinistryPerson(ctx context.Context, arg CreateMinistryPersonParams) (MinistryPerson, error)
 	CreateNation(ctx context.Context, arg CreateNationParams) (MinistryNation, error)
+	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
+	CreatePayout(ctx context.Context, arg CreatePayoutParams) (Payout, error)
 	CreatePrayerPerson(ctx context.Context, arg CreatePrayerPersonParams) (PrayerPerson, error)
 	// ----- prayer topics of the community -----
 	CreatePrayerTopic(ctx context.Context, arg CreatePrayerTopicParams) (PrayerTopic, error)
 	CreatePrayerTopicPoint(ctx context.Context, arg CreatePrayerTopicPointParams) error
+	CreatePremiumGifts(ctx context.Context, arg CreatePremiumGiftsParams) error
+	CreatePremiumOffer(ctx context.Context, arg CreatePremiumOfferParams) (PremiumOffer, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	// ----- reports, handled in the back office -----
 	CreateReport(ctx context.Context, arg CreateReportParams) (int64, error)
@@ -113,6 +128,7 @@ type Querier interface {
 	DeletePrayerRetreat(ctx context.Context, arg DeletePrayerRetreatParams) (int64, error)
 	DeletePrayerTopic(ctx context.Context, id int64) (int64, error)
 	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
+	DeleteRegistrationOfPayment(ctx context.Context, paymentID uuid.NullUUID) (int64, error)
 	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingRow, error)
 	DeleteUser(ctx context.Context, id int64) error
@@ -120,6 +136,9 @@ type Querier interface {
 	DeleteUserReports(ctx context.Context, userID int64) error
 	// Blocking: the invitations of [blocked_id] to [blocker_id] not answered yet go.
 	DropInvitationsFrom(ctx context.Context, arg DropInvitationsFromParams) error
+	FailPayment(ctx context.Context, arg FailPaymentParams) (int64, error)
+	FailPaymentRefund(ctx context.Context, arg FailPaymentRefundParams) (int64, error)
+	FailPayout(ctx context.Context, arg FailPayoutParams) (Payout, error)
 	// One account as the back office shows it (see ListAdminMembers).
 	GetAdminMember(ctx context.Context, id int64) (GetAdminMemberRow, error)
 	GetAnnouncement(ctx context.Context, id int64) (GetAnnouncementRow, error)
@@ -130,6 +149,7 @@ type Querier interface {
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
 	GetDocument(ctx context.Context, id int64) (GetDocumentRow, error)
 	GetEvent(ctx context.Context, id int64) (Event, error)
+	GetEventRegistration(ctx context.Context, arg GetEventRegistrationParams) (EventRegistration, error)
 	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
 	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
 	GetImportunity(ctx context.Context, id int64) (Importunity, error)
@@ -139,7 +159,14 @@ type Querier interface {
 	// The member who is my disciple maker (FD), once they accepted the link.
 	GetMyDiscipleMaker(ctx context.Context, userID int64) (int64, error)
 	GetNation(ctx context.Context, id int64) (MinistryNation, error)
+	GetPayment(ctx context.Context, id uuid.UUID) (Payment, error)
+	GetPaymentByProviderID(ctx context.Context, providerPaymentID string) (Payment, error)
+	GetPaymentByProviderRefundID(ctx context.Context, providerRefundID string) (Payment, error)
+	GetPaymentByRefundID(ctx context.Context, refundID uuid.NullUUID) (Payment, error)
+	GetPayout(ctx context.Context, id uuid.UUID) (Payout, error)
+	GetPayoutByProviderID(ctx context.Context, providerPayoutID string) (Payout, error)
 	GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, error)
+	GetPremiumOffer(ctx context.Context, id int64) (PremiumOffer, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
 	// One report, as ListReports gives it.
 	GetReport(ctx context.Context, id int64) (GetReportRow, error)
@@ -157,12 +184,16 @@ type Querier interface {
 	GetUserRole(ctx context.Context, id int64) (string, error)
 	// A standard item or one of the user's own, still active.
 	GetVisibleActivityType(ctx context.Context, arg GetVisibleActivityTypeParams) (ActivityType, error)
+	// After 5 attempts it stays failed.
+	GiftAttemptFailed(ctx context.Context, id int64) error
+	GiveGift(ctx context.Context, arg GiveGiftParams) error
 	// Already invited, joined or declined: left as they are. Gives the members
 	// invited now (they get a push).
 	InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) ([]int64, error)
 	IsStandardActivityCode(ctx context.Context, code string) (bool, error)
 	// Their proclamations stay in the total.
 	LeaveImportunity(ctx context.Context, arg LeaveImportunityParams) (int64, error)
+	LinkPaymentsToPayout(ctx context.Context, arg LinkPaymentsToPayoutParams) error
 	// The user's daily goals, by item.
 	ListActivityGoals(ctx context.Context, userID int64) ([]ActivityGoal, error)
 	// Every account as the back office shows it (no spiritual data): the
@@ -208,6 +239,7 @@ type Querier interface {
 	// Every document with its file, the published ones first by date, then the
 	// drafts; the API filters (category, search) and pages them.
 	ListDocuments(ctx context.Context, withDrafts bool) ([]ListDocumentsRow, error)
+	ListEventPayouts(ctx context.Context, eventID sql.NullInt64) ([]Payout, error)
 	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
 	// Pinned first, then the latest.
 	ListEventPosts(ctx context.Context, eventID int64) ([]EventPost, error)
@@ -234,13 +266,26 @@ type Querier interface {
 	// ----- our ministry: the nations -----
 	ListNations(ctx context.Context) ([]MinistryNation, error)
 	ListNewMembersPerDay(ctx context.Context, since time.Time) ([]ListNewMembersPerDayRow, error)
+	// What the reconciler checks: the answers still awaited from KPAY, and
+	// the completed payments whose work is not done yet.
+	ListOpenPayments(ctx context.Context, before time.Time) ([]Payment, error)
 	ListPastEvents(ctx context.Context, arg ListPastEventsParams) ([]Event, error)
 	ListPastPrayerTopics(ctx context.Context, arg ListPastPrayerTopicsParams) ([]PrayerTopic, error)
+	// For the admins, latest first; event_id and purpose filter when given.
+	ListPayments(ctx context.Context, arg ListPaymentsParams) ([]Payment, error)
+	// The money of an event still in the wallet: its paid registrations not sent
+	// yet, oldest first.
+	ListPaymentsToForward(ctx context.Context, eventID sql.NullInt64) ([]Payment, error)
+	// The gifts to give, of one offer (offer_id) or of all of them, oldest
+	// first; the failed ones wait a minute before another attempt.
+	ListPendingGifts(ctx context.Context, arg ListPendingGiftsParams) ([]PremiumGift, error)
 	// ----- the members' own lists -----
 	ListPrayerPeople(ctx context.Context, userID int64) ([]PrayerPerson, error)
 	// ----- the 15-minute retreats -----
 	ListPrayerRetreats(ctx context.Context, arg ListPrayerRetreatsParams) ([]PrayerRetreat, error)
 	ListPrayerTopicPoints(ctx context.Context, topicIds []int64) ([]PrayerTopicPoint, error)
+	// Latest first, with how far their gifts went.
+	ListPremiumOffers(ctx context.Context, arg ListPremiumOffersParams) ([]ListPremiumOffersRow, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListReceivedReportSendings(ctx context.Context, arg ListReceivedReportSendingsParams) ([]ReportSending, error)
 	// The days with a report of several members between two dates, newest first,
@@ -266,6 +311,9 @@ type Querier interface {
 	ListTeachings(ctx context.Context, withDrafts bool) ([]ListTeachingsRow, error)
 	// Not over yet (an event in progress is upcoming), the soonest first.
 	ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error)
+	ListUserGivenGifts(ctx context.Context, userID int64) ([]PremiumGift, error)
+	// The Premium a member bought here, latest end first.
+	ListUserPremiumPayments(ctx context.Context, userID sql.NullInt64) ([]Payment, error)
 	ListUserRegistrations(ctx context.Context, arg ListUserRegistrationsParams) ([]EventRegistration, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListUsersByRoles(ctx context.Context, roles []string) ([]User, error)
@@ -274,6 +322,9 @@ type Querier interface {
 	LockEvent(ctx context.Context, id int64) (Event, error)
 	LockImportunity(ctx context.Context, id int64) (Importunity, error)
 	MarkAnnouncementRead(ctx context.Context, arg MarkAnnouncementReadParams) error
+	// KPAY took it (its id given): the member is asked for their PIN.
+	MarkPaymentAccepted(ctx context.Context, arg MarkPaymentAcceptedParams) error
+	MarkPayoutPending(ctx context.Context, arg MarkPayoutPendingParams) error
 	// A retreat prayed for them on [day]: the next retreats take the others first.
 	MarkPrayerPeoplePrayed(ctx context.Context, arg MarkPrayerPeoplePrayedParams) (int64, error)
 	// Only its receiver; the first reading stays.
@@ -284,23 +335,40 @@ type Querier interface {
 	ReplaceMediaFile(ctx context.Context, arg ReplaceMediaFileParams) (int64, error)
 	ReplyReportSending(ctx context.Context, arg ReplyReportSendingParams) (ReportSending, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
+	// Taken back: its gifts go (given ones are taken back in RevenueCat by the
+	// caller), and the members they were given to are answered.
+	RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error)
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
 	// Whether [user_id] shares their reports with this authority (disciple maker or not).
 	SetAuthoritySharing(ctx context.Context, arg SetAuthoritySharingParams) (Authority, error)
+	// A new account is not confirmed until its test arrives.
+	SetEventPayoutAccount(ctx context.Context, arg SetEventPayoutAccountParams) (Event, error)
 	SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error
+	// The id KPAY gave, learnt from its webhook when its first answer was lost.
+	SetPaymentProviderID(ctx context.Context, arg SetPaymentProviderIDParams) error
+	SetPaymentProviderRefundID(ctx context.Context, arg SetPaymentProviderRefundIDParams) error
+	SetRegistrationPayment(ctx context.Context, arg SetRegistrationPaymentParams) error
 	// Archived: no longer offered in the reports; the past entries stay.
 	SetStandardActivityTypeArchived(ctx context.Context, arg SetStandardActivityTypeArchivedParams) (ActivityType, error)
 	// Puts a profile photo (NULL takes it off) and gives the one it replaces,
 	// for its file to go. No row when the member doesn't exist.
 	SetUserAvatar(ctx context.Context, arg SetUserAvatarParams) (sql.NullInt64, error)
+	// The completed payment did its work: the registration or the Premium.
+	SettlePayment(ctx context.Context, arg SettlePaymentParams) error
 	// Moves by [delta] the nations numbered from [first] to [last] (included):
 	// room for one, or the gap of one gone.
 	ShiftNations(ctx context.Context, arg ShiftNationsParams) error
+	// Only a completed payment, once.
+	StartPaymentRefund(ctx context.Context, arg StartPaymentRefundParams) (Payment, error)
 	SumOtherRegistrationsPeople(ctx context.Context, arg SumOtherRegistrationsPeopleParams) (int32, error)
 	// A new version of the book: the apps download it again.
 	TouchHymnBook(ctx context.Context, id int64) error
+	// Looked at, nothing new: the reconciler waits before looking again.
+	TouchPaymentCheck(ctx context.Context, id uuid.UUID) error
 	UnblockMember(ctx context.Context, arg UnblockMemberParams) error
+	// The sending failed: its payments wait for the next one.
+	UnlinkPayoutPayments(ctx context.Context, payoutID uuid.NullUUID) error
 	// Only the user's own active item can change; standard items never match (user_id IS NULL).
 	// tracks_quantity / tracks_duration stay fixed: past entries were saved with them.
 	UpdateActivityType(ctx context.Context, arg UpdateActivityTypeParams) (ActivityType, error)

@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -57,15 +58,15 @@ INSERT INTO events (
     series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone,
     venue, address, city, country, maps_url, contact_name, contact_phone, poster_id,
     registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city,
-    fee_note, status, created_by
+    fee_note, status, created_by, price_amount, price_currency
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, $13, $14, $15, $16,
     $17, $18, $19, $20, $21,
-    $22, $23, $24
+    $22, $23, $24, $25, $26
 )
-RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 `
 
 type CreateEventParams struct {
@@ -93,6 +94,8 @@ type CreateEventParams struct {
 	FeeNote              string        `json:"fee_note"`
 	Status               string        `json:"status"`
 	CreatedBy            sql.NullInt64 `json:"created_by"`
+	PriceAmount          sql.NullInt64 `json:"price_amount"`
+	PriceCurrency        string        `json:"price_currency"`
 }
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error) {
@@ -121,6 +124,8 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		arg.FeeNote,
 		arg.Status,
 		arg.CreatedBy,
+		arg.PriceAmount,
+		arg.PriceCurrency,
 	)
 	var i Event
 	err := row.Scan(
@@ -153,6 +158,12 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.PriceAmount,
+		&i.PriceCurrency,
+		&i.PayoutPhone,
+		&i.PayoutProvider,
+		&i.PayoutHolder,
+		&i.PayoutConfirmedAt,
 	)
 	return i, err
 }
@@ -415,8 +426,21 @@ func (q *Queries) DeleteMedia(ctx context.Context, id int64) (Medium, error) {
 	return i, err
 }
 
+const deleteRegistrationOfPayment = `-- name: DeleteRegistrationOfPayment :execrows
+DELETE FROM event_registrations
+WHERE payment_id = $1
+`
+
+func (q *Queries) DeleteRegistrationOfPayment(ctx context.Context, paymentID uuid.NullUUID) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteRegistrationOfPayment, paymentID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getEvent = `-- name: GetEvent :one
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 WHERE id = $1
 `
@@ -454,12 +478,45 @@ func (q *Queries) GetEvent(ctx context.Context, id int64) (Event, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.PriceAmount,
+		&i.PriceCurrency,
+		&i.PayoutPhone,
+		&i.PayoutProvider,
+		&i.PayoutHolder,
+		&i.PayoutConfirmedAt,
+	)
+	return i, err
+}
+
+const getEventRegistration = `-- name: GetEventRegistration :one
+SELECT event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at, payment_id
+FROM event_registrations
+WHERE event_id = $1 AND user_id = $2
+`
+
+type GetEventRegistrationParams struct {
+	EventID int64 `json:"event_id"`
+	UserID  int64 `json:"user_id"`
+}
+
+func (q *Queries) GetEventRegistration(ctx context.Context, arg GetEventRegistrationParams) (EventRegistration, error) {
+	row := q.db.QueryRowContext(ctx, getEventRegistration, arg.EventID, arg.UserID)
+	var i EventRegistration
+	err := row.Scan(
+		&i.EventID,
+		&i.UserID,
+		&i.People,
+		&i.NeedsLodging,
+		&i.DepartureCity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentID,
 	)
 	return i, err
 }
 
 const listAllEvents = `-- name: ListAllEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 ORDER BY starts_at DESC, id DESC
 LIMIT $2 OFFSET $1
@@ -510,6 +567,12 @@ func (q *Queries) ListAllEvents(ctx context.Context, arg ListAllEventsParams) ([
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.PriceAmount,
+			&i.PriceCurrency,
+			&i.PayoutPhone,
+			&i.PayoutProvider,
+			&i.PayoutHolder,
+			&i.PayoutConfirmedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -600,7 +663,7 @@ func (q *Queries) ListEventPosts(ctx context.Context, eventID int64) ([]EventPos
 }
 
 const listEventRegistrations = `-- name: ListEventRegistrations :many
-SELECT event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at
+SELECT event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at, payment_id
 FROM event_registrations
 WHERE event_id = $1
 ORDER BY created_at
@@ -623,6 +686,7 @@ func (q *Queries) ListEventRegistrations(ctx context.Context, eventID int64) ([]
 			&i.DepartureCity,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentID,
 		); err != nil {
 			return nil, err
 		}
@@ -638,7 +702,7 @@ func (q *Queries) ListEventRegistrations(ctx context.Context, eventID int64) ([]
 }
 
 const listEventSeriesEditions = `-- name: ListEventSeriesEditions :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 WHERE series_id = $1 AND status <> 'draft'
 ORDER BY starts_at DESC
@@ -683,6 +747,12 @@ func (q *Queries) ListEventSeriesEditions(ctx context.Context, seriesID sql.Null
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.PriceAmount,
+			&i.PriceCurrency,
+			&i.PayoutPhone,
+			&i.PayoutProvider,
+			&i.PayoutHolder,
+			&i.PayoutConfirmedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -777,7 +847,7 @@ func (q *Queries) ListMediaByIDs(ctx context.Context, ids []int64) ([]Medium, er
 }
 
 const listPastEvents = `-- name: ListPastEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 WHERE status <> 'draft' AND ends_at < $1
 ORDER BY starts_at DESC, id DESC
@@ -829,6 +899,12 @@ func (q *Queries) ListPastEvents(ctx context.Context, arg ListPastEventsParams) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.PriceAmount,
+			&i.PriceCurrency,
+			&i.PayoutPhone,
+			&i.PayoutProvider,
+			&i.PayoutHolder,
+			&i.PayoutConfirmedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -844,7 +920,7 @@ func (q *Queries) ListPastEvents(ctx context.Context, arg ListPastEventsParams) 
 }
 
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 WHERE status <> 'draft' AND ends_at >= $1
 ORDER BY starts_at, id
@@ -897,6 +973,12 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.PriceAmount,
+			&i.PriceCurrency,
+			&i.PayoutPhone,
+			&i.PayoutProvider,
+			&i.PayoutHolder,
+			&i.PayoutConfirmedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -912,7 +994,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 }
 
 const listUserRegistrations = `-- name: ListUserRegistrations :many
-SELECT event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at
+SELECT event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at, payment_id
 FROM event_registrations
 WHERE user_id = $1 AND event_id = ANY($2::bigint[])
 `
@@ -939,6 +1021,7 @@ func (q *Queries) ListUserRegistrations(ctx context.Context, arg ListUserRegistr
 			&i.DepartureCity,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentID,
 		); err != nil {
 			return nil, err
 		}
@@ -954,7 +1037,7 @@ func (q *Queries) ListUserRegistrations(ctx context.Context, arg ListUserRegistr
 }
 
 const lockEvent = `-- name: LockEvent :one
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 FROM events
 WHERE id = $1
 FOR UPDATE
@@ -995,6 +1078,12 @@ func (q *Queries) LockEvent(ctx context.Context, id int64) (Event, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.PriceAmount,
+		&i.PriceCurrency,
+		&i.PayoutPhone,
+		&i.PayoutProvider,
+		&i.PayoutHolder,
+		&i.PayoutConfirmedAt,
 	)
 	return i, err
 }
@@ -1012,6 +1101,23 @@ type SetEventSeriesParams struct {
 
 func (q *Queries) SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error {
 	_, err := q.db.ExecContext(ctx, setEventSeries, arg.ID, arg.SeriesID)
+	return err
+}
+
+const setRegistrationPayment = `-- name: SetRegistrationPayment :exec
+UPDATE event_registrations
+SET payment_id = $1
+WHERE event_id = $2 AND user_id = $3
+`
+
+type SetRegistrationPaymentParams struct {
+	PaymentID uuid.NullUUID `json:"payment_id"`
+	EventID   int64         `json:"event_id"`
+	UserID    int64         `json:"user_id"`
+}
+
+func (q *Queries) SetRegistrationPayment(ctx context.Context, arg SetRegistrationPaymentParams) error {
+	_, err := q.db.ExecContext(ctx, setRegistrationPayment, arg.PaymentID, arg.EventID, arg.UserID)
 	return err
 }
 
@@ -1057,9 +1163,11 @@ SET title = $2,
     asks_departure_city = $21,
     fee_note = $22,
     status = $23,
+    price_amount = $24,
+    price_currency = $25,
     updated_at = now()
 WHERE id = $1
-RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
+RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at, price_amount, price_currency, payout_phone, payout_provider, payout_holder, payout_confirmed_at
 `
 
 type UpdateEventParams struct {
@@ -1086,6 +1194,8 @@ type UpdateEventParams struct {
 	AsksDepartureCity    bool          `json:"asks_departure_city"`
 	FeeNote              string        `json:"fee_note"`
 	Status               string        `json:"status"`
+	PriceAmount          sql.NullInt64 `json:"price_amount"`
+	PriceCurrency        string        `json:"price_currency"`
 }
 
 func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error) {
@@ -1113,6 +1223,8 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		arg.AsksDepartureCity,
 		arg.FeeNote,
 		arg.Status,
+		arg.PriceAmount,
+		arg.PriceCurrency,
 	)
 	var i Event
 	err := row.Scan(
@@ -1145,6 +1257,12 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.PriceAmount,
+		&i.PriceCurrency,
+		&i.PayoutPhone,
+		&i.PayoutProvider,
+		&i.PayoutHolder,
+		&i.PayoutConfirmedAt,
 	)
 	return i, err
 }
@@ -1157,7 +1275,7 @@ SET people = EXCLUDED.people,
     needs_lodging = EXCLUDED.needs_lodging,
     departure_city = EXCLUDED.departure_city,
     updated_at = now()
-RETURNING event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at
+RETURNING event_id, user_id, people, needs_lodging, departure_city, created_at, updated_at, payment_id
 `
 
 type UpsertEventRegistrationParams struct {
@@ -1185,6 +1303,7 @@ func (q *Queries) UpsertEventRegistration(ctx context.Context, arg UpsertEventRe
 		&i.DepartureCity,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentID,
 	)
 	return i, err
 }

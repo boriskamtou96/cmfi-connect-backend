@@ -151,6 +151,8 @@ func (s *SQLStore) DuplicateEventTx(ctx context.Context, eventID int64, createdB
 			AsksLodging:          event.AsksLodging,
 			AsksDepartureCity:    event.AsksDepartureCity,
 			FeeNote:              event.FeeNote,
+			PriceAmount:          event.PriceAmount,
+			PriceCurrency:        event.PriceCurrency,
 			Status:               "draft",
 			CreatedBy:            sql.NullInt64{Int64: createdBy, Valid: createdBy != 0},
 		})

@@ -8,6 +8,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ActivityGoal struct {
@@ -134,6 +136,12 @@ type Event struct {
 	CreatedAt            time.Time     `json:"created_at"`
 	UpdatedAt            time.Time     `json:"updated_at"`
 	NotifiedAt           sql.NullTime  `json:"notified_at"`
+	PriceAmount          sql.NullInt64 `json:"price_amount"`
+	PriceCurrency        string        `json:"price_currency"`
+	PayoutPhone          string        `json:"payout_phone"`
+	PayoutProvider       string        `json:"payout_provider"`
+	PayoutHolder         string        `json:"payout_holder"`
+	PayoutConfirmedAt    sql.NullTime  `json:"payout_confirmed_at"`
 }
 
 type EventPhoto struct {
@@ -155,13 +163,14 @@ type EventPost struct {
 }
 
 type EventRegistration struct {
-	EventID       int64     `json:"event_id"`
-	UserID        int64     `json:"user_id"`
-	People        int32     `json:"people"`
-	NeedsLodging  bool      `json:"needs_lodging"`
-	DepartureCity string    `json:"departure_city"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	EventID       int64         `json:"event_id"`
+	UserID        int64         `json:"user_id"`
+	People        int32         `json:"people"`
+	NeedsLodging  bool          `json:"needs_lodging"`
+	DepartureCity string        `json:"departure_city"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	PaymentID     uuid.NullUUID `json:"payment_id"`
 }
 
 type EventSeries struct {
@@ -286,6 +295,53 @@ type MinistryPerson struct {
 	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
+type Payment struct {
+	ID                    uuid.UUID     `json:"id"`
+	UserID                sql.NullInt64 `json:"user_id"`
+	Purpose               string        `json:"purpose"`
+	EventID               sql.NullInt64 `json:"event_id"`
+	People                int32         `json:"people"`
+	NeedsLodging          bool          `json:"needs_lodging"`
+	DepartureCity         string        `json:"departure_city"`
+	PremiumPlan           string        `json:"premium_plan"`
+	Amount                int64         `json:"amount"`
+	Currency              string        `json:"currency"`
+	PhoneNumber           string        `json:"phone_number"`
+	Provider              string        `json:"provider"`
+	Status                string        `json:"status"`
+	FailureCode           string        `json:"failure_code"`
+	ProviderTransactionID string        `json:"provider_transaction_id"`
+	SettledAt             sql.NullTime  `json:"settled_at"`
+	PremiumUntil          sql.NullTime  `json:"premium_until"`
+	RefundID              uuid.NullUUID `json:"refund_id"`
+	RefundReason          string        `json:"refund_reason"`
+	RefundedAt            sql.NullTime  `json:"refunded_at"`
+	CheckedAt             sql.NullTime  `json:"checked_at"`
+	CreatedAt             time.Time     `json:"created_at"`
+	UpdatedAt             time.Time     `json:"updated_at"`
+	ProviderPaymentID     string        `json:"provider_payment_id"`
+	ProviderRefundID      string        `json:"provider_refund_id"`
+	PayoutID              uuid.NullUUID `json:"payout_id"`
+}
+
+type Payout struct {
+	ID               uuid.UUID     `json:"id"`
+	EventID          sql.NullInt64 `json:"event_id"`
+	Kind             string        `json:"kind"`
+	Amount           int64         `json:"amount"`
+	Currency         string        `json:"currency"`
+	PhoneNumber      string        `json:"phone_number"`
+	Provider         string        `json:"provider"`
+	Holder           string        `json:"holder"`
+	Status           string        `json:"status"`
+	FailureCode      string        `json:"failure_code"`
+	ProviderPayoutID string        `json:"provider_payout_id"`
+	CreatedBy        sql.NullInt64 `json:"created_by"`
+	CreatedAt        time.Time     `json:"created_at"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+	CompletedAt      sql.NullTime  `json:"completed_at"`
+}
+
 type PrayerPerson struct {
 	ID           int64        `json:"id"`
 	UserID       int64        `json:"user_id"`
@@ -333,6 +389,30 @@ type PrayerTopicPrayer struct {
 	Position int32     `json:"position"`
 	UserID   int64     `json:"user_id"`
 	PrayedOn time.Time `json:"prayed_on"`
+}
+
+type PremiumGift struct {
+	ID        int64        `json:"id"`
+	OfferID   int64        `json:"offer_id"`
+	UserID    int64        `json:"user_id"`
+	Months    int32        `json:"months"`
+	Status    string       `json:"status"`
+	Until     sql.NullTime `json:"until"`
+	Attempts  int32        `json:"attempts"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
+}
+
+type PremiumOffer struct {
+	ID           int64           `json:"id"`
+	Months       int32           `json:"months"`
+	Audience     json.RawMessage `json:"audience"`
+	Note         string          `json:"note"`
+	Notify       bool            `json:"notify"`
+	MembersCount int32           `json:"members_count"`
+	CreatedBy    sql.NullInt64   `json:"created_by"`
+	CreatedAt    time.Time       `json:"created_at"`
+	RevokedAt    sql.NullTime    `json:"revoked_at"`
 }
 
 type Profile struct {

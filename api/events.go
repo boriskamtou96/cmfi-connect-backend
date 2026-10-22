@@ -60,6 +60,21 @@ type eventSummaryResponse struct {
 	Poster       *mediaResponse      `json:"poster"`
 	Status       string              `json:"status"`
 	Registration registrationSummary `json:"registration"`
+	// per person, paid by mobile money (POST /v1/events/:id/payments); null
+	// for a free event
+	Price *priceResponse `json:"price"`
+}
+
+type priceResponse struct {
+	Amount   int64  `json:"amount"`
+	Currency string `json:"currency"`
+}
+
+func priceOf(event db.Event) *priceResponse {
+	if !event.PriceAmount.Valid {
+		return nil
+	}
+	return &priceResponse{Amount: event.PriceAmount.Int64, Currency: event.PriceCurrency}
 }
 
 type sessionResponse struct {
@@ -92,6 +107,8 @@ type registrationResponse struct {
 	NeedsLodging  bool      `json:"needs_lodging"`
 	DepartureCity string    `json:"departure_city"`
 	UpdatedAt     time.Time `json:"updated_at"`
+	// made by a payment: its people can't change, and only a refund undoes it
+	Paid bool `json:"paid"`
 }
 
 // editionResponse is another edition of the same yearly event.
@@ -177,6 +194,7 @@ func (s *Server) eventSummaries(c *gin.Context, events []db.Event, userID int64)
 			City:     event.City,
 			Country:  event.Country,
 			Status:   event.Status,
+			Price:    priceOf(event),
 			Registration: registrationSummary{
 				State:         db.RegistrationState(event, now, count.People),
 				Registered:    mine[event.ID],
@@ -304,6 +322,7 @@ func (s *Server) eventDetail(c *gin.Context, event db.Event, userID int64) (even
 			NeedsLodging:  registration[0].NeedsLodging,
 			DepartureCity: registration[0].DepartureCity,
 			UpdatedAt:     registration[0].UpdatedAt,
+			Paid:          registration[0].PaymentID.Valid,
 		}
 	}
 	return response, nil
@@ -446,6 +465,21 @@ func (s *Server) registerForEvent(c *gin.Context) {
 	}
 
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	// a paid event: one may register now and pay later (POST
+	// /v1/events/:id/payments); once paid, only the lodging and the city
+	// change
+	if event.PriceAmount.Valid {
+		registration, err := s.store.GetEventRegistration(c, db.GetEventRegistrationParams{EventID: event.ID, UserID: authUser.ID})
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			internalServerError(c, err)
+			return
+		}
+		if err == nil && registration.PaymentID.Valid && registration.People != req.People {
+			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "PEOPLE_PAID",
+				fmt.Errorf("the people of a paid registration can't change")))
+			return
+		}
+	}
 	_, err := s.store.RegisterForEventTx(c, db.UpsertEventRegistrationParams{
 		EventID:       event.ID,
 		UserID:        authUser.ID,
@@ -477,6 +511,13 @@ func (s *Server) unregisterFromEvent(c *gin.Context) {
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	// paid: undone by a refund (the organizers)
+	registration, err := s.store.GetEventRegistration(c, db.GetEventRegistrationParams{EventID: event.ID, UserID: authUser.ID})
+	if err == nil && registration.PaymentID.Valid {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "PAID_REGISTRATION",
+			fmt.Errorf("a paid registration is cancelled by the organizers, with a refund")))
+		return
+	}
 	if _, err := s.store.DeleteEventRegistration(c, db.DeleteEventRegistrationParams{EventID: event.ID, UserID: authUser.ID}); err != nil {
 		internalServerError(c, err)
 		return
@@ -530,6 +571,9 @@ type eventRequest struct {
 	AsksLodging          bool       `json:"asks_lodging"`
 	AsksDepartureCity    bool       `json:"asks_departure_city"`
 	FeeNote              string     `json:"fee_note"`
+	// the price per person; null or 0 for a free event
+	PriceAmount   *int64 `json:"price_amount"`
+	PriceCurrency string `json:"price_currency"`
 	// draft (default), published or cancelled
 	Status string `json:"status"`
 	// « Prévenir les membres » the first time it is published (true when
@@ -559,6 +603,7 @@ func (s *Server) eventParams(c *gin.Context, req eventRequest) (db.CreateEventPa
 		AsksDepartureCity: req.AsksDepartureCity,
 		FeeNote:           strings.TrimSpace(req.FeeNote),
 		Status:            req.Status,
+		PriceCurrency:     strings.ToUpper(strings.TrimSpace(req.PriceCurrency)),
 	}
 	if params.Title == "" {
 		return params, fmt.Errorf("title is required")
@@ -583,6 +628,18 @@ func (s *Server) eventParams(c *gin.Context, req eventRequest) (db.CreateEventPa
 			return params, fmt.Errorf("capacity must be positive")
 		}
 		params.Capacity = sql.NullInt32{Int32: *req.Capacity, Valid: true}
+	}
+	if params.PriceCurrency == "" {
+		params.PriceCurrency = "XAF"
+	}
+	if len(params.PriceCurrency) != 3 || strings.ToUpper(params.PriceCurrency) != params.PriceCurrency {
+		return params, fmt.Errorf("price_currency must be a currency code (XAF)")
+	}
+	if req.PriceAmount != nil {
+		if *req.PriceAmount < 0 {
+			return params, fmt.Errorf("price_amount must be positive")
+		}
+		params.PriceAmount = sql.NullInt64{Int64: *req.PriceAmount, Valid: *req.PriceAmount > 0}
 	}
 	if req.RegistrationDeadline != nil {
 		params.RegistrationDeadline = sql.NullTime{Time: *req.RegistrationDeadline, Valid: true}
@@ -662,6 +719,8 @@ func (s *Server) updateEvent(c *gin.Context) {
 		AsksDepartureCity:    params.AsksDepartureCity,
 		FeeNote:              params.FeeNote,
 		Status:               params.Status,
+		PriceAmount:          params.PriceAmount,
+		PriceCurrency:        params.PriceCurrency,
 	})
 	if err != nil {
 		internalServerError(c, err)
@@ -675,6 +734,17 @@ func (s *Server) updateEvent(c *gin.Context) {
 func (s *Server) deleteEvent(c *gin.Context) {
 	event, ok := s.loadEvent(c, true)
 	if !ok {
+		return
+	}
+	// the money of its members is refunded first
+	held, err := s.store.CountHeldEventPayments(c, nullID(event.ID))
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	if held > 0 {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "EVENT_HAS_PAYMENTS",
+			fmt.Errorf("%d payments to refund first", held)))
 		return
 	}
 	if _, err := s.store.DeleteEvent(c, event.ID); err != nil {
@@ -779,6 +849,8 @@ type registrantResponse struct {
 	NeedsLodging  bool      `json:"needs_lodging"`
 	DepartureCity string    `json:"departure_city"`
 	CreatedAt     time.Time `json:"created_at"`
+	// a paid event: registered by a payment (else to pay, or free)
+	Paid bool `json:"paid"`
 }
 
 type cityCount struct {
@@ -787,11 +859,13 @@ type cityCount struct {
 }
 
 type registrationsResponse struct {
-	Registrations int32                `json:"registrations"`
-	People        int32                `json:"people"`
-	Lodging       int32                `json:"lodging"`
-	Cities        []cityCount          `json:"cities"`
-	Registrants   []registrantResponse `json:"registrants"`
+	Registrations int32 `json:"registrations"`
+	People        int32 `json:"people"`
+	Lodging       int32 `json:"lodging"`
+	// the people whose registration is paid (a paid event)
+	PaidPeople  int32                `json:"paid_people"`
+	Cities      []cityCount          `json:"cities"`
+	Registrants []registrantResponse `json:"registrants"`
 }
 
 // GET /v1/admin/events/:id/registrations: who comes, with the totals the
@@ -834,7 +908,11 @@ func (s *Server) listEventRegistrations(c *gin.Context) {
 		if row.DepartureCity != "" {
 			byCity[row.DepartureCity] += row.People
 		}
+		if row.PaymentID.Valid {
+			response.PaidPeople += row.People
+		}
 		response.Registrants = append(response.Registrants, registrantResponse{
+			Paid:          row.PaymentID.Valid,
 			memberCard:    toMemberCard(card),
 			PhoneNumber:   card.PhoneNumber,
 			People:        row.People,

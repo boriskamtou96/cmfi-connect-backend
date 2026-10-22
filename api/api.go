@@ -13,9 +13,11 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/phoneauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/push"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/revenuecat"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/gin-contrib/cors"
@@ -35,6 +37,13 @@ type Server struct {
 	audio        media.AudioCompressor
 	compressSlot chan struct{}
 	compressing  sync.WaitGroup
+	// mobile money (nil without the KPAY keys), and Premium given in
+	// RevenueCat (nil without REVENUECAT_SECRET_KEY)
+	money   MobileMoney
+	premium PremiumGranter
+	fees    feesCache
+	// the premium gifts given in the background (waited for by tests)
+	gifting sync.WaitGroup
 }
 
 func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
@@ -78,7 +87,22 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 	if audio == nil {
 		slog.Warn("ffmpeg not found (FFMPEG_PATH): the sounds of the teachings stay as sent")
 	}
+	var money MobileMoney
+	if cfg.Pay.KPayAPIKey != "" && cfg.Pay.KPaySecretKey != "" {
+		money = kpay.New(cfg.Pay.KPayURL, cfg.Pay.KPayAPIKey, cfg.Pay.KPaySecretKey)
+		if cfg.Pay.KPayWebhookSecret == "" {
+			slog.Warn("KPAY_WEBHOOK_SECRET is not set: the payments will never be confirmed")
+		}
+	} else {
+		slog.Warn("KPAY_API_KEY / KPAY_SECRET_KEY are not set: nobody can pay by mobile money")
+	}
+	var premium PremiumGranter
+	if cfg.Pay.RevenueCatSecretKey != "" {
+		premium = revenuecat.New(cfg.Pay.RevenueCatSecretKey, cfg.Pay.RevenueCatEntitlement)
+	}
 	return &Server{
+		money:            money,
+		premium:          premium,
 		store:            store,
 		config:           cfg,
 		jwtAuthenticator: jwtAuthenticator,
@@ -217,6 +241,20 @@ func (s *Server) SetupRouter() *gin.Engine {
 
 			// the dashboard: counts only, never who
 			admin.GET("/stats", s.adminStats)
+
+			// mobile money: who paid what, and the refunds
+			admin.GET("/payments", s.adminListPayments)
+			admin.POST("/payments/:id/refund", s.adminRefundPayment)
+			// the money of an event, sent to its own confirmed account
+			admin.GET("/events/:id/payouts", s.adminEventPayouts)
+			admin.PUT("/events/:id/payout-account", s.setEventPayoutAccount)
+			admin.POST("/events/:id/payout-account/test", s.retestEventPayoutAccount)
+			admin.POST("/events/:id/payouts", s.forwardEventMoney)
+
+			// Premium offered, 1 to 3 months, to a member or a group
+			admin.GET("/premium/offers", s.adminListPremiumOffers)
+			admin.POST("/premium/offers", s.offerPremium)
+			admin.DELETE("/premium/offers/:id", s.revokePremiumOffer)
 		}
 
 		// the images of the events: public links with random names
@@ -228,6 +266,28 @@ func (s *Server) SetupRouter() *gin.Engine {
 			events.GET("/:id", s.getEvent)
 			events.PUT("/:id/registration", s.registerForEvent)
 			events.DELETE("/:id/registration", s.unregisterFromEvent)
+			// a paid event: the registration is made once the money arrived
+			events.POST("/:id/payments", s.payForEvent)
+		}
+
+		// mobile money (KPAY-NOW): the operators, a payment followed by its
+		// member; KPAY's webhooks, believed only when signed (relayed by
+		// cmfi-connect.com/api/kpay/*)
+		payments := r.Group("/payments", authMiddleware(s.jwtAuthenticator))
+		{
+			payments.GET("/providers", s.listPaymentProviders)
+			payments.POST("/predict-provider", s.predictPaymentProvider)
+			payments.GET("/:id", s.getPayment)
+		}
+		r.POST("/kpay/callbacks", s.kpayWebhook)
+		r.POST("/kpay/callbacks/*kind", s.kpayWebhook)
+
+		// Premium sold on the website (the stores forbid it in the apps)
+		r.GET("/premium/plans", s.listPremiumPlans)
+		premium := r.Group("/premium", authMiddleware(s.jwtAuthenticator))
+		{
+			premium.POST("/payments", s.payForPremium)
+			premium.GET("/status", s.getPremiumStatus)
 		}
 
 		profiles := r.Group("/profiles").Use(authMiddleware(s.jwtAuthenticator))

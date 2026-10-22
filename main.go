@@ -51,6 +51,11 @@ func main() {
 	}
 	router := srv.SetupRouter()
 
+	// the mobile money payments whose answer was lost are asked again
+	reconcileCtx, stopReconciling := context.WithCancel(context.Background())
+	defer stopReconciling()
+	go srv.ReconcilePayments(reconcileCtx)
+
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
 		Handler:      router,

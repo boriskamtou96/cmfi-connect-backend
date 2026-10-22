@@ -24,13 +24,13 @@ INSERT INTO events (
     series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone,
     venue, address, city, country, maps_url, contact_name, contact_phone, poster_id,
     registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city,
-    fee_note, status, created_by
+    fee_note, status, created_by, price_amount, price_currency
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, $13, $14, $15, $16,
     $17, $18, $19, $20, $21,
-    $22, $23, $24
+    $22, $23, $24, $25, $26
 )
 RETURNING *;
 
@@ -58,6 +58,8 @@ SET title = $2,
     asks_departure_city = $21,
     fee_note = $22,
     status = $23,
+    price_amount = $24,
+    price_currency = $25,
     updated_at = now()
 WHERE id = $1
 RETURNING *;
@@ -195,3 +197,17 @@ ORDER BY id;
 -- name: DeleteEventPhoto :execrows
 DELETE FROM event_photos
 WHERE id = $1 AND event_id = $2;
+
+-- name: GetEventRegistration :one
+SELECT *
+FROM event_registrations
+WHERE event_id = $1 AND user_id = $2;
+
+-- name: SetRegistrationPayment :exec
+UPDATE event_registrations
+SET payment_id = @payment_id
+WHERE event_id = @event_id AND user_id = @user_id;
+
+-- name: DeleteRegistrationOfPayment :execrows
+DELETE FROM event_registrations
+WHERE payment_id = $1;
