@@ -85,7 +85,7 @@ func (q *Queries) DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingR
 }
 
 const getTeaching = `-- name: GetTeaching :one
-SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
+SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, t.notified_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
 FROM teachings t
 JOIN media m ON m.id = t.audio_id
 WHERE t.id = $1
@@ -106,6 +106,7 @@ type GetTeachingRow struct {
 	CreatedBy       sql.NullInt64 `json:"created_by"`
 	CreatedAt       time.Time     `json:"created_at"`
 	UpdatedAt       time.Time     `json:"updated_at"`
+	NotifiedAt      sql.NullTime  `json:"notified_at"`
 	AudioKey        string        `json:"audio_key"`
 	AudioType       string        `json:"audio_type"`
 	AudioSize       int64         `json:"audio_size"`
@@ -129,6 +130,7 @@ func (q *Queries) GetTeaching(ctx context.Context, id int64) (GetTeachingRow, er
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 		&i.AudioKey,
 		&i.AudioType,
 		&i.AudioSize,
@@ -137,7 +139,7 @@ func (q *Queries) GetTeaching(ctx context.Context, id int64) (GetTeachingRow, er
 }
 
 const listTeachings = `-- name: ListTeachings :many
-SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
+SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, t.notified_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
 FROM teachings t
 JOIN media m ON m.id = t.audio_id
 WHERE $1::boolean OR t.published
@@ -159,6 +161,7 @@ type ListTeachingsRow struct {
 	CreatedBy       sql.NullInt64 `json:"created_by"`
 	CreatedAt       time.Time     `json:"created_at"`
 	UpdatedAt       time.Time     `json:"updated_at"`
+	NotifiedAt      sql.NullTime  `json:"notified_at"`
 	AudioKey        string        `json:"audio_key"`
 	AudioType       string        `json:"audio_type"`
 	AudioSize       int64         `json:"audio_size"`
@@ -191,6 +194,7 @@ func (q *Queries) ListTeachings(ctx context.Context, withDrafts bool) ([]ListTea
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 			&i.AudioKey,
 			&i.AudioType,
 			&i.AudioSize,

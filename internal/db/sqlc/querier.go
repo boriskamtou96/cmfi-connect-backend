@@ -23,6 +23,13 @@ type Querier interface {
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
+	ClaimDocumentNotification(ctx context.Context, id int64) (string, error)
+	// A cancelled event is not announced.
+	ClaimEventNotification(ctx context.Context, id int64) (ClaimEventNotificationRow, error)
+	ClaimPrayerTopicNotification(ctx context.Context, id int64) (string, error)
+	// Marks a published teaching as announced: no row when it is a draft or
+	// was announced already (two clicks at once: only one gets it).
+	ClaimTeachingNotification(ctx context.Context, id int64) (ClaimTeachingNotificationRow, error)
 	// Members who filled a report or made a retreat since [since].
 	CountActiveMembers(ctx context.Context, since time.Time) (int64, error)
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
@@ -162,6 +169,8 @@ type Querier interface {
 	// profile first, the last time the app was opened on a phone, how many
 	// phones get the push and the profile photo. The newest first.
 	ListAdminMembers(ctx context.Context) ([]ListAdminMembersRow, error)
+	// Every phone of the members, with its language.
+	ListAllDevices(ctx context.Context) ([]ListAllDevicesRow, error)
 	// For the admins: drafts included, the latest first.
 	ListAllEvents(ctx context.Context, arg ListAllEventsParams) ([]Event, error)
 	// For the admins: drafts included.

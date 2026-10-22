@@ -70,7 +70,7 @@ func (q *Queries) DeleteDocument(ctx context.Context, id int64) (int64, error) {
 }
 
 const getDocument = `-- name: GetDocument :one
-SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
+SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, d.notified_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
 FROM documents d
 JOIN media m ON m.id = d.file_id
 WHERE d.id = $1
@@ -88,6 +88,7 @@ type GetDocumentRow struct {
 	CreatedBy   sql.NullInt64 `json:"created_by"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
+	NotifiedAt  sql.NullTime  `json:"notified_at"`
 	FileKey     string        `json:"file_key"`
 	FileType    string        `json:"file_type"`
 	FileSize    int64         `json:"file_size"`
@@ -108,6 +109,7 @@ func (q *Queries) GetDocument(ctx context.Context, id int64) (GetDocumentRow, er
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 		&i.FileKey,
 		&i.FileType,
 		&i.FileSize,
@@ -116,7 +118,7 @@ func (q *Queries) GetDocument(ctx context.Context, id int64) (GetDocumentRow, er
 }
 
 const listDocuments = `-- name: ListDocuments :many
-SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
+SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, d.notified_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
 FROM documents d
 JOIN media m ON m.id = d.file_id
 WHERE $1::boolean OR d.published
@@ -135,6 +137,7 @@ type ListDocumentsRow struct {
 	CreatedBy   sql.NullInt64 `json:"created_by"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
+	NotifiedAt  sql.NullTime  `json:"notified_at"`
 	FileKey     string        `json:"file_key"`
 	FileType    string        `json:"file_type"`
 	FileSize    int64         `json:"file_size"`
@@ -163,6 +166,7 @@ func (q *Queries) ListDocuments(ctx context.Context, withDrafts bool) ([]ListDoc
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 			&i.FileKey,
 			&i.FileType,
 			&i.FileSize,

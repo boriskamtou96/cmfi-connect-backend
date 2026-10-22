@@ -42,6 +42,8 @@ type libraryDocumentResponse struct {
 	Published   bool                `json:"published"`
 	PublishedAt *time.Time          `json:"published_at"`
 	UpdatedAt   time.Time           `json:"updated_at"`
+	// when the members were told by a push; null before
+	NotifiedAt *time.Time `json:"notified_at"`
 }
 
 func documentKind(contentType string) string {
@@ -71,6 +73,7 @@ func toLibraryDocument(row db.ListDocumentsRow) libraryDocumentResponse {
 		at := row.PublishedAt.Time
 		response.PublishedAt = &at
 	}
+	response.NotifiedAt = timePtr(row.NotifiedAt)
 	return response
 }
 
@@ -250,6 +253,9 @@ type saveDocumentRequest struct {
 	FileID      int64  `json:"file_id"`
 	FileName    string `json:"file_name"`
 	Published   bool   `json:"published"`
+	// « Prévenir les membres » the first time it is published (true when
+	// absent)
+	Notify *bool `json:"notify"`
 }
 
 // checked: trimmed, the lengths, and the file a PDF or a Word file.
@@ -319,6 +325,7 @@ func (s *Server) createDocument(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+	s.announceDocument(c, id, req.Notify)
 	row, err := s.store.GetDocument(c, id)
 	if err != nil {
 		internalServerError(c, err)
@@ -372,6 +379,7 @@ func (s *Server) updateDocument(c *gin.Context) {
 	if before.FileID != req.FileID {
 		s.dropDocumentFile(c, before.FileID)
 	}
+	s.announceDocument(c, uri.ID, req.Notify)
 	s.documentByID(c, uri.ID)
 }
 

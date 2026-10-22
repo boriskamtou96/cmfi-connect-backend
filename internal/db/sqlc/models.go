@@ -101,6 +101,7 @@ type Document struct {
 	CreatedBy   sql.NullInt64 `json:"created_by"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
+	NotifiedAt  sql.NullTime  `json:"notified_at"`
 }
 
 type Event struct {
@@ -132,6 +133,7 @@ type Event struct {
 	CreatedBy            sql.NullInt64 `json:"created_by"`
 	CreatedAt            time.Time     `json:"created_at"`
 	UpdatedAt            time.Time     `json:"updated_at"`
+	NotifiedAt           sql.NullTime  `json:"notified_at"`
 }
 
 type EventPhoto struct {
@@ -317,6 +319,7 @@ type PrayerTopic struct {
 	CreatedBy    sql.NullInt64 `json:"created_by"`
 	CreatedAt    time.Time     `json:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at"`
+	NotifiedAt   sql.NullTime  `json:"notified_at"`
 }
 
 type PrayerTopicPoint struct {
@@ -383,6 +386,7 @@ type Teaching struct {
 	CreatedBy       sql.NullInt64 `json:"created_by"`
 	CreatedAt       time.Time     `json:"created_at"`
 	UpdatedAt       time.Time     `json:"updated_at"`
+	NotifiedAt      sql.NullTime  `json:"notified_at"`
 }
 
 type User struct {

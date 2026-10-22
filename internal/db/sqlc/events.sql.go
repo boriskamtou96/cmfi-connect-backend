@@ -65,7 +65,7 @@ VALUES (
     $17, $18, $19, $20, $21,
     $22, $23, $24
 )
-RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 `
 
 type CreateEventParams struct {
@@ -152,6 +152,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }
@@ -415,7 +416,7 @@ func (q *Queries) DeleteMedia(ctx context.Context, id int64) (Medium, error) {
 }
 
 const getEvent = `-- name: GetEvent :one
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 WHERE id = $1
 `
@@ -452,12 +453,13 @@ func (q *Queries) GetEvent(ctx context.Context, id int64) (Event, error) {
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }
 
 const listAllEvents = `-- name: ListAllEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 ORDER BY starts_at DESC, id DESC
 LIMIT $2 OFFSET $1
@@ -507,6 +509,7 @@ func (q *Queries) ListAllEvents(ctx context.Context, arg ListAllEventsParams) ([
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -635,7 +638,7 @@ func (q *Queries) ListEventRegistrations(ctx context.Context, eventID int64) ([]
 }
 
 const listEventSeriesEditions = `-- name: ListEventSeriesEditions :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 WHERE series_id = $1 AND status <> 'draft'
 ORDER BY starts_at DESC
@@ -679,6 +682,7 @@ func (q *Queries) ListEventSeriesEditions(ctx context.Context, seriesID sql.Null
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -773,7 +777,7 @@ func (q *Queries) ListMediaByIDs(ctx context.Context, ids []int64) ([]Medium, er
 }
 
 const listPastEvents = `-- name: ListPastEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 WHERE status <> 'draft' AND ends_at < $1
 ORDER BY starts_at DESC, id DESC
@@ -824,6 +828,7 @@ func (q *Queries) ListPastEvents(ctx context.Context, arg ListPastEventsParams) 
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -839,7 +844,7 @@ func (q *Queries) ListPastEvents(ctx context.Context, arg ListPastEventsParams) 
 }
 
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 WHERE status <> 'draft' AND ends_at >= $1
 ORDER BY starts_at, id
@@ -891,6 +896,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -948,7 +954,7 @@ func (q *Queries) ListUserRegistrations(ctx context.Context, arg ListUserRegistr
 }
 
 const lockEvent = `-- name: LockEvent :one
-SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+SELECT id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 FROM events
 WHERE id = $1
 FOR UPDATE
@@ -988,6 +994,7 @@ func (q *Queries) LockEvent(ctx context.Context, id int64) (Event, error) {
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }
@@ -1052,7 +1059,7 @@ SET title = $2,
     status = $23,
     updated_at = now()
 WHERE id = $1
-RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at
+RETURNING id, series_id, title, theme, theme_verse, description, starts_at, ends_at, time_zone, venue, address, city, country, maps_url, contact_name, contact_phone, poster_id, registration_open, registration_deadline, capacity, asks_lodging, asks_departure_city, fee_note, scope, status, created_by, created_at, updated_at, notified_at
 `
 
 type UpdateEventParams struct {
@@ -1137,6 +1144,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }

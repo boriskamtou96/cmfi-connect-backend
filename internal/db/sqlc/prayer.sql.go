@@ -313,7 +313,7 @@ INSERT INTO prayer_topics (
     title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+RETURNING id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 `
 
 type CreatePrayerTopicParams struct {
@@ -358,6 +358,7 @@ func (q *Queries) CreatePrayerTopic(ctx context.Context, arg CreatePrayerTopicPa
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }
@@ -541,7 +542,7 @@ func (q *Queries) GetMyDiscipleMaker(ctx context.Context, userID int64) (int64, 
 }
 
 const getPrayerTopic = `-- name: GetPrayerTopic :one
-SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 FROM prayer_topics
 WHERE id = $1
 `
@@ -563,6 +564,7 @@ func (q *Queries) GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, er
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }
@@ -627,7 +629,7 @@ func (q *Queries) LeaveImportunity(ctx context.Context, arg LeaveImportunityPara
 }
 
 const listAllPrayerTopics = `-- name: ListAllPrayerTopics :many
-SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 FROM prayer_topics
 ORDER BY starts_on DESC, id DESC
 LIMIT $2 OFFSET $1
@@ -662,6 +664,7 @@ func (q *Queries) ListAllPrayerTopics(ctx context.Context, arg ListAllPrayerTopi
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -677,7 +680,7 @@ func (q *Queries) ListAllPrayerTopics(ctx context.Context, arg ListAllPrayerTopi
 }
 
 const listCurrentPrayerTopics = `-- name: ListCurrentPrayerTopics :many
-SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 FROM prayer_topics
 WHERE status = 'published'
   AND starts_on <= $1::date
@@ -709,6 +712,7 @@ func (q *Queries) ListCurrentPrayerTopics(ctx context.Context, today time.Time) 
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -897,7 +901,7 @@ func (q *Queries) ListMyPrayedPoints(ctx context.Context, arg ListMyPrayedPoints
 }
 
 const listPastPrayerTopics = `-- name: ListPastPrayerTopics :many
-SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+SELECT id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 FROM prayer_topics
 WHERE status = 'published'
   AND ends_on < $1::date
@@ -934,6 +938,7 @@ func (q *Queries) ListPastPrayerTopics(ctx context.Context, arg ListPastPrayerTo
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NotifiedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1213,7 +1218,7 @@ SET title = $2,
     status = $10,
     updated_at = now()
 WHERE id = $1
-RETURNING id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at
+RETURNING id, title, category, verse, starts_on, ends_on, event_id, document_id, document_name, status, created_by, created_at, updated_at, notified_at
 `
 
 type UpdatePrayerTopicParams struct {
@@ -1257,6 +1262,7 @@ func (q *Queries) UpdatePrayerTopic(ctx context.Context, arg UpdatePrayerTopicPa
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NotifiedAt,
 	)
 	return i, err
 }

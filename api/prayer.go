@@ -87,6 +87,8 @@ type prayerTopicResponse struct {
 	// the points the signed-in member prayed for on ?day
 	PrayedToday []int32   `json:"prayed_today"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	// when the members were told by a push; null before
+	NotifiedAt *time.Time `json:"notified_at"`
 }
 
 func (s *Server) prayerTopicResponses(c *gin.Context, topics []db.PrayerTopic, userID int64, day time.Time) ([]prayerTopicResponse, error) {
@@ -152,6 +154,7 @@ func (s *Server) prayerTopicResponses(c *gin.Context, topics []db.PrayerTopic, u
 			People:      people[topic.ID],
 			PrayedToday: prayedOf[topic.ID],
 			UpdatedAt:   topic.UpdatedAt,
+			NotifiedAt:  timePtr(topic.NotifiedAt),
 		}
 		if response.Points == nil {
 			response.Points = []string{}
@@ -333,6 +336,9 @@ type prayerTopicRequest struct {
 	// draft (default) or published
 	Status string   `json:"status"`
 	Points []string `json:"points"`
+	// « Prévenir les membres » the first time it is published (true when
+	// absent)
+	Notify *bool `json:"notify"`
 }
 
 // prayerTopicParams checks the request and turns it into the columns of a topic.
@@ -427,7 +433,7 @@ func (s *Server) createPrayerTopic(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	s.sendPrayerTopic(c, http.StatusCreated, topic, todayIn())
+	s.sendPrayerTopic(c, http.StatusCreated, s.announcedPrayerTopic(c, topic, req.Notify), todayIn())
 }
 
 // PUT /v1/admin/prayer/topics/:id: the whole topic, its points included.
@@ -451,7 +457,7 @@ func (s *Server) updatePrayerTopic(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	s.sendPrayerTopic(c, http.StatusOK, updated, todayIn())
+	s.sendPrayerTopic(c, http.StatusOK, s.announcedPrayerTopic(c, updated, req.Notify), todayIn())
 }
 
 // DELETE /v1/admin/prayer/topics/:id (the PDF stays in the media storage).

@@ -47,6 +47,8 @@ type teachingResponse struct {
 	Published   bool           `json:"published"`
 	PublishedAt *time.Time     `json:"published_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
+	// when the members were told by a push; null before
+	NotifiedAt *time.Time `json:"notified_at"`
 }
 
 func audioFormat(contentType string) string {
@@ -81,6 +83,7 @@ func toTeaching(row db.ListTeachingsRow, covers map[int64]mediaResponse) teachin
 		at := row.PublishedAt.Time
 		response.PublishedAt = &at
 	}
+	response.NotifiedAt = timePtr(row.NotifiedAt)
 	if cover, ok := covers[row.CoverID.Int64]; ok && row.CoverID.Valid {
 		response.Cover = &cover
 	}
@@ -277,6 +280,9 @@ type saveTeachingRequest struct {
 	// null or 0: no cover
 	CoverID   *int64 `json:"cover_id"`
 	Published bool   `json:"published"`
+	// « Prévenir les membres » the first time it is published (true when
+	// absent)
+	Notify *bool `json:"notify"`
 }
 
 // checkedTeaching: trimmed, the lengths, the sound an MP3 or an M4A and the
@@ -377,6 +383,7 @@ func (s *Server) createTeaching(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+	s.announceTeaching(c, id, req.Notify)
 	s.teachingByID(c, http.StatusCreated, id)
 }
 
@@ -432,6 +439,7 @@ func (s *Server) updateTeaching(c *gin.Context) {
 	if before.CoverID.Valid && before.CoverID != cover {
 		s.dropTeachingMedia(c, before.CoverID.Int64)
 	}
+	s.announceTeaching(c, uri.ID, req.Notify)
 	s.teachingByID(c, http.StatusOK, uri.ID)
 }
 

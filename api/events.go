@@ -125,6 +125,8 @@ type eventResponse struct {
 	Photos               []photoResponse       `json:"photos"`
 	MyRegistration       *registrationResponse `json:"my_registration"`
 	Editions             []editionResponse     `json:"editions"`
+	// when the members were told by a push; null before
+	NotifiedAt *time.Time `json:"notified_at"`
 }
 
 func (s *Server) eventSummaries(c *gin.Context, events []db.Event, userID int64) ([]eventSummaryResponse, error) {
@@ -197,6 +199,7 @@ func (s *Server) eventDetail(c *gin.Context, event db.Event, userID int64) (even
 	}
 	response := eventResponse{
 		eventSummaryResponse: summaries[0],
+		NotifiedAt:           timePtr(event.NotifiedAt),
 		ThemeVerse:           event.ThemeVerse,
 		Description:          event.Description,
 		Address:              event.Address,
@@ -529,6 +532,9 @@ type eventRequest struct {
 	FeeNote              string     `json:"fee_note"`
 	// draft (default), published or cancelled
 	Status string `json:"status"`
+	// « Prévenir les membres » the first time it is published (true when
+	// absent)
+	Notify *bool `json:"notify"`
 }
 
 // params checks the request and turns it into the columns of an event.
@@ -613,7 +619,7 @@ func (s *Server) createEvent(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	s.sendEvent(c, http.StatusCreated, event)
+	s.sendEvent(c, http.StatusCreated, s.announcedEvent(c, event, req.Notify))
 }
 
 // PUT /v1/admin/events/:id: the whole event (not its program, news nor photos).
@@ -661,7 +667,7 @@ func (s *Server) updateEvent(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	s.sendEvent(c, http.StatusOK, updated)
+	s.sendEvent(c, http.StatusOK, s.announcedEvent(c, updated, req.Notify))
 }
 
 // DELETE /v1/admin/events/:id: with its program, registrations, news and
