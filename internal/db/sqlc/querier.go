@@ -279,6 +279,9 @@ type Querier interface {
 	// Only its receiver; the first reading stays.
 	MarkReportSendingRead(ctx context.Context, arg MarkReportSendingReadParams) (ReportSending, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
+	// A sound re-encoded smaller: its new file, under the same media (the
+	// teaching that lists it doesn't change). No row once deleted meanwhile.
+	ReplaceMediaFile(ctx context.Context, arg ReplaceMediaFileParams) (int64, error)
 	ReplyReportSending(ctx context.Context, arg ReplyReportSendingParams) (ReportSending, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)

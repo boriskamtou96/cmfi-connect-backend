@@ -60,6 +60,9 @@ type MediaConfig struct {
 	S3AccessKeyID     string
 	S3SecretAccessKey string
 	S3Region          string
+	// ffmpeg, to compress the sounds of the teachings (FFMPEG_PATH; empty:
+	// the one of the PATH, if any)
+	FFmpegPath string
 }
 
 // PushConfig: the notifications sent to the phones. Without
@@ -112,6 +115,7 @@ func (c *Config) loadConfig() (*Config, error) {
 			S3AccessKeyID:     getEnv("S3_ACCESS_KEY_ID", ""),
 			S3SecretAccessKey: getEnv("S3_SECRET_ACCESS_KEY", ""),
 			S3Region:          getEnv("S3_REGION", "auto"),
+			FFmpegPath:        getEnv("FFMPEG_PATH", ""),
 		},
 		Push: PushConfig{
 			CredentialsFile: getEnv("FIREBASE_CREDENTIALS_FILE", ""),

@@ -9,6 +9,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -112,7 +113,8 @@ func (i Info) IsAudio() bool {
 
 // InspectAudio checks that [data] is a sound the phones play: an MP3 (its
 // ID3 tag, or straight its first MPEG frame: layer III) or an M4A (an MP4
-// box "ftyp" of an audio brand, or any MP4 named .m4a). A video, or AAC
+// box "ftyp" of an audio brand, any MP4 named .m4a, or an MP4 with a sound
+// track and no picture: a recording saved as .mp4). A video, or AAC
 // without its MP4 box, is refused.
 func InspectAudio(data []byte, name string) (Info, error) {
 	switch {
@@ -123,11 +125,52 @@ func InspectAudio(data []byte, name string) (Info, error) {
 		return Info{ContentType: MP3, Ext: extensions[MP3]}, nil
 	case len(data) >= 12 && string(data[4:8]) == "ftyp":
 		brand := string(data[8:12])
-		if brand == "M4A " || brand == "M4B " || strings.EqualFold(filepath.Ext(name), ".m4a") {
+		if brand == "M4A " || brand == "M4B " || strings.EqualFold(filepath.Ext(name), ".m4a") || soundOnly(data) {
 			return Info{ContentType: M4A, Ext: extensions[M4A]}, nil
 		}
 	}
 	return Info{}, ErrUnsupportedAudio
+}
+
+// soundOnly: an MP4 whose tracks are sounds only (handler "soun"), none of
+// them a picture ("vide"). Read from the boxes moov › trak › mdia › hdlr.
+func soundOnly(data []byte) bool {
+	sound, picture := false, false
+	var walk func(box []byte)
+	walk = func(box []byte) {
+		for len(box) >= 8 {
+			size := int(binary.BigEndian.Uint32(box[:4]))
+			kind := string(box[4:8])
+			header := 8
+			if size == 1 && len(box) >= 16 {
+				size = int(binary.BigEndian.Uint64(box[8:16]))
+				header = 16
+			} else if size == 0 {
+				size = len(box)
+			}
+			if size < header || size > len(box) {
+				return
+			}
+			body := box[header:size]
+			switch kind {
+			case "moov", "trak", "mdia":
+				walk(body)
+			case "hdlr":
+				// version and flags, pre_defined, then the handler type
+				if len(body) >= 12 {
+					switch string(body[8:12]) {
+					case "soun":
+						sound = true
+					case "vide":
+						picture = true
+					}
+				}
+			}
+			box = box[size:]
+		}
+	}
+	walk(data)
+	return sound && !picture
 }
 
 // oleHeader starts the old Office files (.doc, but .xls and .ppt as well).

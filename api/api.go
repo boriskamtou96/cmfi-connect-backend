@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
@@ -29,6 +30,11 @@ type Server struct {
 	push             push.Sender
 	// checks the SMS code of "forgot password" (Firebase Authentication)
 	phones phoneauth.Verifier
+	// re-encodes the sounds of the teachings smaller (nil without ffmpeg),
+	// one at a time; compressing waits for them (tests, shutdown)
+	audio        media.AudioCompressor
+	compressSlot chan struct{}
+	compressing  sync.WaitGroup
 }
 
 func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
@@ -68,6 +74,10 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 		slog.Warn("FIREBASE_CREDENTIALS_FILE is not set: the notifications reach the apps without push, and a forgotten password can't be reset")
 	}
 
+	audio := media.FindFFmpeg(cfg.Media.FFmpegPath)
+	if audio == nil {
+		slog.Warn("ffmpeg not found (FFMPEG_PATH): the sounds of the teachings stay as sent")
+	}
 	return &Server{
 		store:            store,
 		config:           cfg,
@@ -75,6 +85,8 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 		media:            mediaStore,
 		push:             sender,
 		phones:           phones,
+		audio:            audio,
+		compressSlot:     make(chan struct{}, 1),
 	}, nil
 }
 

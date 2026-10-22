@@ -50,3 +50,10 @@ RETURNING audio_id, cover_id;
 -- name: CountTeachingsWithMedia :one
 -- A sound or a cover still used by another teaching is kept.
 SELECT count(*) FROM teachings WHERE audio_id = sqlc.arg(media_id) OR cover_id = sqlc.arg(media_id);
+
+-- name: ReplaceMediaFile :execrows
+-- A sound re-encoded smaller: its new file, under the same media (the
+-- teaching that lists it doesn't change). No row once deleted meanwhile.
+UPDATE media
+SET key = $2, content_type = $3, size_bytes = $4
+WHERE id = $1;

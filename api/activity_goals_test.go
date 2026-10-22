@@ -85,8 +85,8 @@ func TestActivityGoalFitsTheItem(t *testing.T) {
 	grace := registerMember(t, router, nil)
 	items := listItems(t, router, grace.Token)
 
-	// LB counts chapters, PS a duration
-	wrong := setGoal(t, router, grace.Token, items["LB"].ID, map[string]any{"minutes": 30})
+	// JC counts days, PS a duration (LB counts both since 000029)
+	wrong := setGoal(t, router, grace.Token, items["JC"].ID, map[string]any{"minutes": 30})
 	require.Equal(t, http.StatusBadRequest, wrong.Code, wrong.Body.String())
 	wrong = setGoal(t, router, grace.Token, items["PS"].ID, map[string]any{"quantity": 2})
 	require.Equal(t, http.StatusBadRequest, wrong.Code, wrong.Body.String())

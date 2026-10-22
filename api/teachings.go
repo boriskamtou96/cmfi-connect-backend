@@ -260,6 +260,7 @@ func (s *Server) uploadTeachingAudio(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+	s.compressLater(row.ID, key, data)
 	apiResponse(c, http.StatusCreated, teachingAudioResponse{
 		ID:        row.ID,
 		URL:       mediaURL(row.Key),

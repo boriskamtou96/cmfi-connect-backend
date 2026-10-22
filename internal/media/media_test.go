@@ -3,6 +3,7 @@ package media
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/binary"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -206,4 +207,38 @@ func TestSaveTimeoutGrowsWithTheFile(t *testing.T) {
 	require.Equal(t, 30*time.Second, saveTimeout(200<<10))
 	require.Equal(t, 50*time.Second, saveTimeout(10<<20))
 	require.Equal(t, 230*time.Second, saveTimeout(MaxAudioSize))
+}
+
+// box: an MP4 box of [kind] around [body].
+func box(kind string, body ...[]byte) []byte {
+	content := bytes.Join(body, nil)
+	header := make([]byte, 8)
+	binary.BigEndian.PutUint32(header, uint32(8+len(content)))
+	copy(header[4:], kind)
+	return append(header, content...)
+}
+
+// track: a track whose handler is [handler] ("soun", "vide").
+func track(handler string) []byte {
+	return box("trak", box("mdia", box("hdlr", make([]byte, 8), []byte(handler), make([]byte, 12))))
+}
+
+func TestARecordingSavedAsMP4IsASound(t *testing.T) {
+	ftyp := box("ftyp", []byte("isom\x00\x00\x02\x00isomiso2mp41"))
+	// a sound only: accepted, kept as .m4a
+	recording := append(append([]byte{}, ftyp...), box("moov", box("mvhd", make([]byte, 100)), track("soun"))...)
+	info, err := InspectAudio(recording, "message_du_seigneur.mp4")
+	require.NoError(t, err)
+	require.Equal(t, Info{ContentType: M4A, Ext: ".m4a"}, info)
+	// a picture with its sound: a video, refused
+	film := append(append([]byte{}, ftyp...), box("moov", track("vide"), track("soun"))...)
+	_, err = InspectAudio(film, "culte.mp4")
+	require.ErrorIs(t, err, ErrUnsupportedAudio)
+	// nothing readable after the ftyp: refused
+	_, err = InspectAudio(append(append([]byte{}, ftyp...), 0, 0, 0), "x.mp4")
+	require.ErrorIs(t, err, ErrUnsupportedAudio)
+}
+
+func TestFFmpegIsOptional(t *testing.T) {
+	require.Nil(t, FindFFmpeg("/nowhere/ffmpeg"))
 }

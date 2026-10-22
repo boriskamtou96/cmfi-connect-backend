@@ -26,7 +26,7 @@ RUN go build -trimpath -ldflags="-s -w" -o /out/server . \
 FROM alpine:3.22
 
 # certificates (Firebase, R2), time zones (the events), and a user without rights
-RUN apk add --no-cache ca-certificates tzdata \
+RUN apk add --no-cache ca-certificates tzdata ffmpeg \
  && adduser -D -H -u 10001 app
 
 WORKDIR /app

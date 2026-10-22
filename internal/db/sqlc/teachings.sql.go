@@ -212,6 +212,34 @@ func (q *Queries) ListTeachings(ctx context.Context, withDrafts bool) ([]ListTea
 	return items, nil
 }
 
+const replaceMediaFile = `-- name: ReplaceMediaFile :execrows
+UPDATE media
+SET key = $2, content_type = $3, size_bytes = $4
+WHERE id = $1
+`
+
+type ReplaceMediaFileParams struct {
+	ID          int64  `json:"id"`
+	Key         string `json:"key"`
+	ContentType string `json:"content_type"`
+	SizeBytes   int64  `json:"size_bytes"`
+}
+
+// A sound re-encoded smaller: its new file, under the same media (the
+// teaching that lists it doesn't change). No row once deleted meanwhile.
+func (q *Queries) ReplaceMediaFile(ctx context.Context, arg ReplaceMediaFileParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, replaceMediaFile,
+		arg.ID,
+		arg.Key,
+		arg.ContentType,
+		arg.SizeBytes,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const updateTeaching = `-- name: UpdateTeaching :one
 UPDATE teachings
 SET title = $1,
