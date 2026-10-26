@@ -11,6 +11,108 @@ import (
 	"time"
 )
 
+const archiveTeachingCategory = `-- name: ArchiveTeachingCategory :one
+UPDATE teaching_categories
+SET archived_at = CASE WHEN $1::boolean THEN now() ELSE NULL END,
+    updated_at = now()
+WHERE id = $2
+RETURNING id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at
+`
+
+type ArchiveTeachingCategoryParams struct {
+	Archived bool  `json:"archived"`
+	ID       int64 `json:"id"`
+}
+
+func (q *Queries) ArchiveTeachingCategory(ctx context.Context, arg ArchiveTeachingCategoryParams) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, archiveTeachingCategory, arg.Archived, arg.ID)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const countTeachingsFiltered = `-- name: CountTeachingsFiltered :one
+SELECT count(*)
+FROM teaching_details t
+WHERE ($1::boolean OR t.published)
+  AND ($2::bigint = 0 OR t.category_id = $2)
+  AND ($3::bigint = 0 OR t.edition_id = $3)
+  AND ($4::int = 0 OR t.year = $4::int)
+  AND ($5::int = 0 OR t.day_number = $5::int)
+  AND ($6::date IS NULL OR t.recorded_on >= $6::date)
+  AND ($7::date IS NULL OR t.recorded_on <= $7::date)
+  AND ($8::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || $8::text || '%')
+  AND ($9::text = '' OR NOT EXISTS (
+      SELECT 1
+      FROM unnest(string_to_array($9::text, ' ')) AS word
+      WHERE word <> '' AND t.search_text NOT LIKE '%' || word || '%'
+  ))
+`
+
+type CountTeachingsFilteredParams struct {
+	WithDrafts bool         `json:"with_drafts"`
+	CategoryID int64        `json:"category_id"`
+	EditionID  int64        `json:"edition_id"`
+	Year       int32        `json:"year"`
+	Day        int32        `json:"day"`
+	FromDate   sql.NullTime `json:"from_date"`
+	ToDate     sql.NullTime `json:"to_date"`
+	Speaker    string       `json:"speaker"`
+	Search     string       `json:"search"`
+}
+
+func (q *Queries) CountTeachingsFiltered(ctx context.Context, arg CountTeachingsFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTeachingsFiltered,
+		arg.WithDrafts,
+		arg.CategoryID,
+		arg.EditionID,
+		arg.Year,
+		arg.Day,
+		arg.FromDate,
+		arg.ToDate,
+		arg.Speaker,
+		arg.Search,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTeachingsInCategory = `-- name: CountTeachingsInCategory :one
+SELECT count(*) FROM teachings WHERE category_id = $1
+`
+
+func (q *Queries) CountTeachingsInCategory(ctx context.Context, categoryID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTeachingsInCategory, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTeachingsInEdition = `-- name: CountTeachingsInEdition :one
+SELECT count(*) FROM teachings WHERE edition_id = $1
+`
+
+func (q *Queries) CountTeachingsInEdition(ctx context.Context, editionID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTeachingsInEdition, editionID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countTeachingsWithMedia = `-- name: CountTeachingsWithMedia :one
 SELECT count(*) FROM teachings WHERE audio_id = $1 OR cover_id = $1
 `
@@ -25,13 +127,14 @@ func (q *Queries) CountTeachingsWithMedia(ctx context.Context, mediaID int64) (i
 
 const createTeaching = `-- name: CreateTeaching :one
 INSERT INTO teachings (
-    title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id,
-    published, published_at, created_by
+    title, speaker, description, category, category_id, edition_id, year, day_number, position,
+    recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by
 )
 VALUES (
-    $1, $2, $3, $4, $5,
-    $6, $7, $8,
-    $9, CASE WHEN $9::boolean THEN now() END, $10
+    $1, $2, $3, $4,
+    $5, $6, $7, $8, $9,
+    $10, $11, $12, $13,
+    $14, CASE WHEN $14::boolean THEN now() END, $15
 )
 RETURNING id
 `
@@ -41,6 +144,11 @@ type CreateTeachingParams struct {
 	Speaker         string        `json:"speaker"`
 	Description     string        `json:"description"`
 	Category        string        `json:"category"`
+	CategoryID      sql.NullInt64 `json:"category_id"`
+	EditionID       sql.NullInt64 `json:"edition_id"`
+	Year            sql.NullInt16 `json:"year"`
+	DayNumber       sql.NullInt16 `json:"day_number"`
+	Position        int32         `json:"position"`
 	RecordedOn      sql.NullTime  `json:"recorded_on"`
 	AudioID         int64         `json:"audio_id"`
 	DurationSeconds int32         `json:"duration_seconds"`
@@ -55,6 +163,11 @@ func (q *Queries) CreateTeaching(ctx context.Context, arg CreateTeachingParams) 
 		arg.Speaker,
 		arg.Description,
 		arg.Category,
+		arg.CategoryID,
+		arg.EditionID,
+		arg.Year,
+		arg.DayNumber,
+		arg.Position,
 		arg.RecordedOn,
 		arg.AudioID,
 		arg.DurationSeconds,
@@ -65,6 +178,103 @@ func (q *Queries) CreateTeaching(ctx context.Context, arg CreateTeachingParams) 
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const createTeachingCategory = `-- name: CreateTeachingCategory :one
+INSERT INTO teaching_categories (name, slug, description, color, icon, parent_id, annual, position)
+VALUES (
+    $1, $2, $3, $4, $5,
+    $6, $7, $8
+)
+RETURNING id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at
+`
+
+type CreateTeachingCategoryParams struct {
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Annual      bool          `json:"annual"`
+	Position    int32         `json:"position"`
+}
+
+func (q *Queries) CreateTeachingCategory(ctx context.Context, arg CreateTeachingCategoryParams) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, createTeachingCategory,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+		arg.Color,
+		arg.Icon,
+		arg.ParentID,
+		arg.Annual,
+		arg.Position,
+	)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createTeachingEdition = `-- name: CreateTeachingEdition :one
+INSERT INTO teaching_editions (category_id, year, title, theme, starts_on, ends_on, venue, cover_id)
+VALUES (
+    $1, $2, $3, $4,
+    $5, $6, $7, $8
+)
+RETURNING id, category_id, year, title, theme, starts_on, ends_on, venue, cover_id, created_at, updated_at
+`
+
+type CreateTeachingEditionParams struct {
+	CategoryID int64         `json:"category_id"`
+	Year       int16         `json:"year"`
+	Title      string        `json:"title"`
+	Theme      string        `json:"theme"`
+	StartsOn   sql.NullTime  `json:"starts_on"`
+	EndsOn     sql.NullTime  `json:"ends_on"`
+	Venue      string        `json:"venue"`
+	CoverID    sql.NullInt64 `json:"cover_id"`
+}
+
+func (q *Queries) CreateTeachingEdition(ctx context.Context, arg CreateTeachingEditionParams) (TeachingEdition, error) {
+	row := q.db.QueryRowContext(ctx, createTeachingEdition,
+		arg.CategoryID,
+		arg.Year,
+		arg.Title,
+		arg.Theme,
+		arg.StartsOn,
+		arg.EndsOn,
+		arg.Venue,
+		arg.CoverID,
+	)
+	var i TeachingEdition
+	err := row.Scan(
+		&i.ID,
+		&i.CategoryID,
+		&i.Year,
+		&i.Title,
+		&i.Theme,
+		&i.StartsOn,
+		&i.EndsOn,
+		&i.Venue,
+		&i.CoverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const deleteTeaching = `-- name: DeleteTeaching :one
@@ -84,37 +294,24 @@ func (q *Queries) DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingR
 	return i, err
 }
 
-const getTeaching = `-- name: GetTeaching :one
-SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, t.notified_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
-FROM teachings t
-JOIN media m ON m.id = t.audio_id
-WHERE t.id = $1
+const deleteTeachingEdition = `-- name: DeleteTeachingEdition :one
+DELETE FROM teaching_editions WHERE id = $1 RETURNING id
 `
 
-type GetTeachingRow struct {
-	ID              int64         `json:"id"`
-	Title           string        `json:"title"`
-	Speaker         string        `json:"speaker"`
-	Description     string        `json:"description"`
-	Category        string        `json:"category"`
-	RecordedOn      sql.NullTime  `json:"recorded_on"`
-	AudioID         int64         `json:"audio_id"`
-	DurationSeconds int32         `json:"duration_seconds"`
-	CoverID         sql.NullInt64 `json:"cover_id"`
-	Published       bool          `json:"published"`
-	PublishedAt     sql.NullTime  `json:"published_at"`
-	CreatedBy       sql.NullInt64 `json:"created_by"`
-	CreatedAt       time.Time     `json:"created_at"`
-	UpdatedAt       time.Time     `json:"updated_at"`
-	NotifiedAt      sql.NullTime  `json:"notified_at"`
-	AudioKey        string        `json:"audio_key"`
-	AudioType       string        `json:"audio_type"`
-	AudioSize       int64         `json:"audio_size"`
+func (q *Queries) DeleteTeachingEdition(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, deleteTeachingEdition, id)
+	var id_2 int64
+	err := row.Scan(&id_2)
+	return id_2, err
 }
 
-func (q *Queries) GetTeaching(ctx context.Context, id int64) (GetTeachingRow, error) {
+const getTeaching = `-- name: GetTeaching :one
+SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme FROM teaching_details WHERE id = $1
+`
+
+func (q *Queries) GetTeaching(ctx context.Context, id int64) (TeachingDetail, error) {
 	row := q.db.QueryRowContext(ctx, getTeaching, id)
-	var i GetTeachingRow
+	var i TeachingDetail
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -131,54 +328,499 @@ func (q *Queries) GetTeaching(ctx context.Context, id int64) (GetTeachingRow, er
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.CategoryID,
+		&i.EditionID,
+		&i.Year,
+		&i.DayNumber,
+		&i.Position,
+		&i.SearchText,
 		&i.AudioKey,
 		&i.AudioType,
 		&i.AudioSize,
+		&i.CategorySlug,
+		&i.CategoryName,
+		&i.EditionTitle,
+		&i.EditionTheme,
 	)
 	return i, err
 }
 
-const listTeachings = `-- name: ListTeachings :many
-SELECT t.id, t.title, t.speaker, t.description, t.category, t.recorded_on, t.audio_id, t.duration_seconds, t.cover_id, t.published, t.published_at, t.created_by, t.created_at, t.updated_at, t.notified_at, m.key AS audio_key, m.content_type AS audio_type, m.size_bytes AS audio_size
-FROM teachings t
-JOIN media m ON m.id = t.audio_id
-WHERE $1::boolean OR t.published
-ORDER BY t.published DESC, t.recorded_on DESC NULLS LAST, t.published_at DESC NULLS LAST, t.updated_at DESC, t.id DESC
+const getTeachingCategory = `-- name: GetTeachingCategory :one
+SELECT id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at FROM teaching_categories WHERE id = $1
 `
 
-type ListTeachingsRow struct {
-	ID              int64         `json:"id"`
-	Title           string        `json:"title"`
-	Speaker         string        `json:"speaker"`
-	Description     string        `json:"description"`
-	Category        string        `json:"category"`
-	RecordedOn      sql.NullTime  `json:"recorded_on"`
-	AudioID         int64         `json:"audio_id"`
-	DurationSeconds int32         `json:"duration_seconds"`
-	CoverID         sql.NullInt64 `json:"cover_id"`
-	Published       bool          `json:"published"`
-	PublishedAt     sql.NullTime  `json:"published_at"`
-	CreatedBy       sql.NullInt64 `json:"created_by"`
-	CreatedAt       time.Time     `json:"created_at"`
-	UpdatedAt       time.Time     `json:"updated_at"`
-	NotifiedAt      sql.NullTime  `json:"notified_at"`
-	AudioKey        string        `json:"audio_key"`
-	AudioType       string        `json:"audio_type"`
-	AudioSize       int64         `json:"audio_size"`
+func (q *Queries) GetTeachingCategory(ctx context.Context, id int64) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingCategory, id)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
-// Every teaching with its sound, the published ones first, the newest
-// message first (then the newest sent), then the drafts; the API filters
-// (category, speaker, search) and pages them.
-func (q *Queries) ListTeachings(ctx context.Context, withDrafts bool) ([]ListTeachingsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachings, withDrafts)
+const getTeachingCategoryByName = `-- name: GetTeachingCategoryByName :one
+SELECT id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at FROM teaching_categories
+WHERE lower(btrim(name)) = lower(btrim($1)) AND archived_at IS NULL
+LIMIT 1
+`
+
+func (q *Queries) GetTeachingCategoryByName(ctx context.Context, name string) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingCategoryByName, name)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingCategoryBySlug = `-- name: GetTeachingCategoryBySlug :one
+SELECT id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at FROM teaching_categories WHERE slug = $1 AND archived_at IS NULL
+`
+
+func (q *Queries) GetTeachingCategoryBySlug(ctx context.Context, slug string) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingCategoryBySlug, slug)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingCategoryBySlugAny = `-- name: GetTeachingCategoryBySlugAny :one
+SELECT id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at FROM teaching_categories WHERE slug = $1
+`
+
+func (q *Queries) GetTeachingCategoryBySlugAny(ctx context.Context, slug string) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingCategoryBySlugAny, slug)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingEdition = `-- name: GetTeachingEdition :one
+SELECT id, category_id, year, title, theme, starts_on, ends_on, venue, cover_id, created_at, updated_at FROM teaching_editions WHERE id = $1
+`
+
+func (q *Queries) GetTeachingEdition(ctx context.Context, id int64) (TeachingEdition, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingEdition, id)
+	var i TeachingEdition
+	err := row.Scan(
+		&i.ID,
+		&i.CategoryID,
+		&i.Year,
+		&i.Title,
+		&i.Theme,
+		&i.StartsOn,
+		&i.EndsOn,
+		&i.Venue,
+		&i.CoverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listTeachingCategories = `-- name: ListTeachingCategories :many
+SELECT c.id, c.name, c.slug, c.description, c.color, c.icon, c.parent_id, c.annual, c.position, c.archived_at, c.created_at, c.updated_at, count(t.id)::int AS teaching_count
+FROM teaching_categories c
+LEFT JOIN teachings t ON t.category_id = c.id AND ($1::boolean OR t.published)
+WHERE ($2::boolean OR c.archived_at IS NULL)
+GROUP BY c.id
+ORDER BY c.position, lower(c.name)
+`
+
+type ListTeachingCategoriesParams struct {
+	WithDrafts   bool `json:"with_drafts"`
+	WithArchived bool `json:"with_archived"`
+}
+
+type ListTeachingCategoriesRow struct {
+	ID            int64         `json:"id"`
+	Name          string        `json:"name"`
+	Slug          string        `json:"slug"`
+	Description   string        `json:"description"`
+	Color         string        `json:"color"`
+	Icon          string        `json:"icon"`
+	ParentID      sql.NullInt64 `json:"parent_id"`
+	Annual        bool          `json:"annual"`
+	Position      int32         `json:"position"`
+	ArchivedAt    sql.NullTime  `json:"archived_at"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	TeachingCount int32         `json:"teaching_count"`
+}
+
+func (q *Queries) ListTeachingCategories(ctx context.Context, arg ListTeachingCategoriesParams) ([]ListTeachingCategoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingCategories, arg.WithDrafts, arg.WithArchived)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListTeachingsRow{}
+	items := []ListTeachingCategoriesRow{}
 	for rows.Next() {
-		var i ListTeachingsRow
+		var i ListTeachingCategoriesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Description,
+			&i.Color,
+			&i.Icon,
+			&i.ParentID,
+			&i.Annual,
+			&i.Position,
+			&i.ArchivedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.TeachingCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingCategoryCounts = `-- name: ListTeachingCategoryCounts :many
+SELECT c.id, c.name, c.slug, count(t.id)::int AS count
+FROM teaching_categories c
+JOIN teachings t ON t.category_id = c.id AND ($1::boolean OR t.published)
+WHERE c.archived_at IS NULL
+GROUP BY c.id
+ORDER BY c.position, lower(c.name)
+`
+
+type ListTeachingCategoryCountsRow struct {
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Slug  string `json:"slug"`
+	Count int32  `json:"count"`
+}
+
+func (q *Queries) ListTeachingCategoryCounts(ctx context.Context, withDrafts bool) ([]ListTeachingCategoryCountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingCategoryCounts, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingCategoryCountsRow{}
+	for rows.Next() {
+		var i ListTeachingCategoryCountsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingDays = `-- name: ListTeachingDays :many
+SELECT day_number, count(*)::int AS count
+FROM teachings
+WHERE edition_id = $1
+  AND day_number IS NOT NULL
+  AND ($2::boolean OR published)
+GROUP BY day_number
+ORDER BY day_number
+`
+
+type ListTeachingDaysParams struct {
+	EditionID  sql.NullInt64 `json:"edition_id"`
+	WithDrafts bool          `json:"with_drafts"`
+}
+
+type ListTeachingDaysRow struct {
+	DayNumber sql.NullInt16 `json:"day_number"`
+	Count     int32         `json:"count"`
+}
+
+func (q *Queries) ListTeachingDays(ctx context.Context, arg ListTeachingDaysParams) ([]ListTeachingDaysRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingDays, arg.EditionID, arg.WithDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingDaysRow{}
+	for rows.Next() {
+		var i ListTeachingDaysRow
+		if err := rows.Scan(&i.DayNumber, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingEditions = `-- name: ListTeachingEditions :many
+SELECT e.id, e.category_id, e.year, e.title, e.theme, e.starts_on, e.ends_on, e.venue, e.cover_id, e.created_at, e.updated_at, c.name AS category_name, c.slug AS category_slug, count(t.id)::int AS teaching_count
+FROM teaching_editions e
+JOIN teaching_categories c ON c.id = e.category_id
+LEFT JOIN teachings t ON t.edition_id = e.id AND ($1::boolean OR t.published)
+GROUP BY e.id, c.name, c.slug, c.position
+ORDER BY e.year DESC, c.position, lower(c.name)
+`
+
+type ListTeachingEditionsRow struct {
+	ID            int64         `json:"id"`
+	CategoryID    int64         `json:"category_id"`
+	Year          int16         `json:"year"`
+	Title         string        `json:"title"`
+	Theme         string        `json:"theme"`
+	StartsOn      sql.NullTime  `json:"starts_on"`
+	EndsOn        sql.NullTime  `json:"ends_on"`
+	Venue         string        `json:"venue"`
+	CoverID       sql.NullInt64 `json:"cover_id"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	CategoryName  string        `json:"category_name"`
+	CategorySlug  string        `json:"category_slug"`
+	TeachingCount int32         `json:"teaching_count"`
+}
+
+func (q *Queries) ListTeachingEditions(ctx context.Context, withDrafts bool) ([]ListTeachingEditionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingEditions, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingEditionsRow{}
+	for rows.Next() {
+		var i ListTeachingEditionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CategoryID,
+			&i.Year,
+			&i.Title,
+			&i.Theme,
+			&i.StartsOn,
+			&i.EndsOn,
+			&i.Venue,
+			&i.CoverID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.CategoryName,
+			&i.CategorySlug,
+			&i.TeachingCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingSpeakers = `-- name: ListTeachingSpeakers :many
+SELECT speaker, count(*)::int AS count
+FROM teachings
+WHERE btrim(speaker) <> '' AND ($1::boolean OR published)
+GROUP BY speaker
+ORDER BY lower(speaker)
+`
+
+type ListTeachingSpeakersRow struct {
+	Speaker string `json:"speaker"`
+	Count   int32  `json:"count"`
+}
+
+func (q *Queries) ListTeachingSpeakers(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingSpeakers, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingSpeakersRow{}
+	for rows.Next() {
+		var i ListTeachingSpeakersRow
+		if err := rows.Scan(&i.Speaker, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingYears = `-- name: ListTeachingYears :many
+SELECT year, count(*)::int AS count
+FROM teachings
+WHERE year IS NOT NULL AND ($1::boolean OR published)
+GROUP BY year
+ORDER BY year DESC
+`
+
+type ListTeachingYearsRow struct {
+	Year  sql.NullInt16 `json:"year"`
+	Count int32         `json:"count"`
+}
+
+func (q *Queries) ListTeachingYears(ctx context.Context, withDrafts bool) ([]ListTeachingYearsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingYears, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingYearsRow{}
+	for rows.Next() {
+		var i ListTeachingYearsRow
+		if err := rows.Scan(&i.Year, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingsFiltered = `-- name: ListTeachingsFiltered :many
+SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme
+FROM teaching_details t
+WHERE ($1::boolean OR t.published)
+  AND ($2::bigint = 0 OR t.category_id = $2)
+  AND ($3::bigint = 0 OR t.edition_id = $3)
+  AND ($4::int = 0 OR t.year = $4::int)
+  AND ($5::int = 0 OR t.day_number = $5::int)
+  AND ($6::date IS NULL OR t.recorded_on >= $6::date)
+  AND ($7::date IS NULL OR t.recorded_on <= $7::date)
+  AND ($8::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || $8::text || '%')
+  AND ($9::text = '' OR NOT EXISTS (
+      SELECT 1
+      FROM unnest(string_to_array($9::text, ' ')) AS word
+      WHERE word <> '' AND t.search_text NOT LIKE '%' || word || '%'
+  ))
+ORDER BY t.published DESC,
+         t.year DESC NULLS LAST,
+         t.day_number ASC NULLS LAST,
+         t.position ASC,
+         t.recorded_on DESC NULLS LAST,
+         t.published_at DESC NULLS LAST,
+         t.updated_at DESC,
+         t.id DESC
+LIMIT $11 OFFSET $10
+`
+
+type ListTeachingsFilteredParams struct {
+	WithDrafts bool         `json:"with_drafts"`
+	CategoryID int64        `json:"category_id"`
+	EditionID  int64        `json:"edition_id"`
+	Year       int32        `json:"year"`
+	Day        int32        `json:"day"`
+	FromDate   sql.NullTime `json:"from_date"`
+	ToDate     sql.NullTime `json:"to_date"`
+	Speaker    string       `json:"speaker"`
+	Search     string       `json:"search"`
+	Off        int32        `json:"off"`
+	Lim        int32        `json:"lim"`
+}
+
+// Une page d'enseignements, les publiés d'abord, les messages les plus
+// récents en premier. La recherche, la catégorie, l'orateur, l'année et le
+// jour sont filtrés en base: la pagination et le total restent justes.
+func (q *Queries) ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFilteredParams) ([]TeachingDetail, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingsFiltered,
+		arg.WithDrafts,
+		arg.CategoryID,
+		arg.EditionID,
+		arg.Year,
+		arg.Day,
+		arg.FromDate,
+		arg.ToDate,
+		arg.Speaker,
+		arg.Search,
+		arg.Off,
+		arg.Lim,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TeachingDetail{}
+	for rows.Next() {
+		var i TeachingDetail
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
@@ -195,9 +837,19 @@ func (q *Queries) ListTeachings(ctx context.Context, withDrafts bool) ([]ListTea
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.CategoryID,
+			&i.EditionID,
+			&i.Year,
+			&i.DayNumber,
+			&i.Position,
+			&i.SearchText,
 			&i.AudioKey,
 			&i.AudioType,
 			&i.AudioSize,
+			&i.CategorySlug,
+			&i.CategoryName,
+			&i.EditionTitle,
+			&i.EditionTheme,
 		); err != nil {
 			return nil, err
 		}
@@ -246,14 +898,19 @@ SET title = $1,
     speaker = $2,
     description = $3,
     category = $4,
-    recorded_on = $5,
-    audio_id = $6,
-    duration_seconds = $7,
-    cover_id = $8,
-    published = $9,
-    published_at = CASE WHEN $9::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
+    category_id = $5,
+    edition_id = $6,
+    year = $7,
+    day_number = $8,
+    position = $9,
+    recorded_on = $10,
+    audio_id = $11,
+    duration_seconds = $12,
+    cover_id = $13,
+    published = $14,
+    published_at = CASE WHEN $14::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
     updated_at = now()
-WHERE id = $10
+WHERE id = $15
 RETURNING id
 `
 
@@ -262,6 +919,11 @@ type UpdateTeachingParams struct {
 	Speaker         string        `json:"speaker"`
 	Description     string        `json:"description"`
 	Category        string        `json:"category"`
+	CategoryID      sql.NullInt64 `json:"category_id"`
+	EditionID       sql.NullInt64 `json:"edition_id"`
+	Year            sql.NullInt16 `json:"year"`
+	DayNumber       sql.NullInt16 `json:"day_number"`
+	Position        int32         `json:"position"`
 	RecordedOn      sql.NullTime  `json:"recorded_on"`
 	AudioID         int64         `json:"audio_id"`
 	DurationSeconds int32         `json:"duration_seconds"`
@@ -277,6 +939,11 @@ func (q *Queries) UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) 
 		arg.Speaker,
 		arg.Description,
 		arg.Category,
+		arg.CategoryID,
+		arg.EditionID,
+		arg.Year,
+		arg.DayNumber,
+		arg.Position,
 		arg.RecordedOn,
 		arg.AudioID,
 		arg.DurationSeconds,
@@ -287,4 +954,117 @@ func (q *Queries) UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) 
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateTeachingCategory = `-- name: UpdateTeachingCategory :one
+UPDATE teaching_categories
+SET name = $1,
+    slug = $2,
+    description = $3,
+    color = $4,
+    icon = $5,
+    parent_id = $6,
+    annual = $7,
+    position = $8,
+    updated_at = now()
+WHERE id = $9
+RETURNING id, name, slug, description, color, icon, parent_id, annual, position, archived_at, created_at, updated_at
+`
+
+type UpdateTeachingCategoryParams struct {
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Annual      bool          `json:"annual"`
+	Position    int32         `json:"position"`
+	ID          int64         `json:"id"`
+}
+
+func (q *Queries) UpdateTeachingCategory(ctx context.Context, arg UpdateTeachingCategoryParams) (TeachingCategory, error) {
+	row := q.db.QueryRowContext(ctx, updateTeachingCategory,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+		arg.Color,
+		arg.Icon,
+		arg.ParentID,
+		arg.Annual,
+		arg.Position,
+		arg.ID,
+	)
+	var i TeachingCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Annual,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateTeachingEdition = `-- name: UpdateTeachingEdition :one
+UPDATE teaching_editions
+SET category_id = $1,
+    year = $2,
+    title = $3,
+    theme = $4,
+    starts_on = $5,
+    ends_on = $6,
+    venue = $7,
+    cover_id = $8,
+    updated_at = now()
+WHERE id = $9
+RETURNING id, category_id, year, title, theme, starts_on, ends_on, venue, cover_id, created_at, updated_at
+`
+
+type UpdateTeachingEditionParams struct {
+	CategoryID int64         `json:"category_id"`
+	Year       int16         `json:"year"`
+	Title      string        `json:"title"`
+	Theme      string        `json:"theme"`
+	StartsOn   sql.NullTime  `json:"starts_on"`
+	EndsOn     sql.NullTime  `json:"ends_on"`
+	Venue      string        `json:"venue"`
+	CoverID    sql.NullInt64 `json:"cover_id"`
+	ID         int64         `json:"id"`
+}
+
+func (q *Queries) UpdateTeachingEdition(ctx context.Context, arg UpdateTeachingEditionParams) (TeachingEdition, error) {
+	row := q.db.QueryRowContext(ctx, updateTeachingEdition,
+		arg.CategoryID,
+		arg.Year,
+		arg.Title,
+		arg.Theme,
+		arg.StartsOn,
+		arg.EndsOn,
+		arg.Venue,
+		arg.CoverID,
+		arg.ID,
+	)
+	var i TeachingEdition
+	err := row.Scan(
+		&i.ID,
+		&i.CategoryID,
+		&i.Year,
+		&i.Title,
+		&i.Theme,
+		&i.StartsOn,
+		&i.EndsOn,
+		&i.Venue,
+		&i.CoverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
