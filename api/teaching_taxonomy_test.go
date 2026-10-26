@@ -81,7 +81,16 @@ func TestTeachingsAreFilteredByCategoryYearAndDay(t *testing.T) {
 	require.Contains(t, values.Categories, teachingCategoryResponse{
 		ID: category.ID, Name: name, Slug: category.Slug, Count: 3,
 	})
-	require.Contains(t, values.Speakers, teachingSpeakerFacet{Name: "Théodore Andoseh", Count: 2})
+	var speaker *teachingSpeakerFacet
+	for index := range values.Speakers {
+		if values.Speakers[index].Name == "Théodore Andoseh" {
+			speaker = &values.Speakers[index]
+		}
+	}
+	require.NotNil(t, speaker)
+	require.Equal(t, 2, speaker.Count)
+	require.NotZero(t, speaker.ID)
+	require.Equal(t, "theodore-andoseh", speaker.Slug)
 	require.Contains(t, values.Years, teachingYearFacet{Year: 2026, Count: 3})
 	require.Contains(t, values.Editions, teachingEditionFacet{
 		ID: edition.ID, CategoryID: category.ID, CategoryName: name,

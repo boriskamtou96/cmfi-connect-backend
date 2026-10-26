@@ -25,6 +25,7 @@ type Querier interface {
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	ArchiveDocumentCategory(ctx context.Context, arg ArchiveDocumentCategoryParams) (DocumentCategory, error)
 	ArchiveTeachingCategory(ctx context.Context, arg ArchiveTeachingCategoryParams) (TeachingCategory, error)
+	ArchiveTeachingSpeaker(ctx context.Context, arg ArchiveTeachingSpeakerParams) (TeachingSpeaker, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
 	ClaimDocumentNotification(ctx context.Context, id int64) (string, error)
@@ -73,6 +74,7 @@ type Querier interface {
 	CountTeachingsFiltered(ctx context.Context, arg CountTeachingsFilteredParams) (int64, error)
 	CountTeachingsInCategory(ctx context.Context, categoryID sql.NullInt64) (int64, error)
 	CountTeachingsInEdition(ctx context.Context, editionID sql.NullInt64) (int64, error)
+	CountTeachingsOfSpeaker(ctx context.Context, speakerID sql.NullInt64) (int64, error)
 	// A sound or a cover still used by another teaching is kept.
 	CountTeachingsWithMedia(ctx context.Context, mediaID int64) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
@@ -112,6 +114,7 @@ type Querier interface {
 	CreateTeaching(ctx context.Context, arg CreateTeachingParams) (int64, error)
 	CreateTeachingCategory(ctx context.Context, arg CreateTeachingCategoryParams) (TeachingCategory, error)
 	CreateTeachingEdition(ctx context.Context, arg CreateTeachingEditionParams) (TeachingEdition, error)
+	CreateTeachingSpeaker(ctx context.Context, arg CreateTeachingSpeakerParams) (TeachingSpeaker, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error
 	// The authorities of other members that point to this member: their copy
@@ -145,6 +148,7 @@ type Querier interface {
 	DeleteSoul(ctx context.Context, arg DeleteSoulParams) error
 	DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingRow, error)
 	DeleteTeachingEdition(ctx context.Context, id int64) (int64, error)
+	DeleteTeachingSpeaker(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	// Before the account: its personal items can't go while entries use them.
 	DeleteUserReports(ctx context.Context, userID int64) error
@@ -200,6 +204,10 @@ type Querier interface {
 	GetTeachingCategoryBySlug(ctx context.Context, slug string) (TeachingCategory, error)
 	GetTeachingCategoryBySlugAny(ctx context.Context, slug string) (TeachingCategory, error)
 	GetTeachingEdition(ctx context.Context, id int64) (TeachingEdition, error)
+	GetTeachingSpeaker(ctx context.Context, id int64) (TeachingSpeaker, error)
+	// An active speaker, accents and case left aside.
+	GetTeachingSpeakerByName(ctx context.Context, name string) (TeachingSpeaker, error)
+	GetTeachingSpeakerBySlug(ctx context.Context, slug string) (TeachingSpeaker, error)
 	// Standard items (user_id IS NULL) + the user's own items, archived ones excluded.
 	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
@@ -338,7 +346,10 @@ type Querier interface {
 	ListTeachingCategoryCounts(ctx context.Context, withDrafts bool) ([]ListTeachingCategoryCountsRow, error)
 	ListTeachingDays(ctx context.Context, arg ListTeachingDaysParams) ([]ListTeachingDaysRow, error)
 	ListTeachingEditions(ctx context.Context, withDrafts bool) ([]ListTeachingEditionsRow, error)
-	ListTeachingSpeakers(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakersRow, error)
+	// The speakers the published teachings name, for the filter of the apps.
+	ListTeachingSpeakerFacets(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakerFacetsRow, error)
+	// The admins' speakers, archived ones too, with how many teachings each.
+	ListTeachingSpeakers(ctx context.Context, arg ListTeachingSpeakersParams) ([]ListTeachingSpeakersRow, error)
 	ListTeachingYears(ctx context.Context, withDrafts bool) ([]ListTeachingYearsRow, error)
 	// Une page d'enseignements, les publiés d'abord, les messages les plus
 	// récents en premier. La recherche, la catégorie, l'orateur, l'année et le
@@ -366,6 +377,9 @@ type Querier interface {
 	MarkPrayerPeoplePrayed(ctx context.Context, arg MarkPrayerPeoplePrayedParams) (int64, error)
 	// Only its receiver; the first reading stays.
 	MarkReportSendingRead(ctx context.Context, arg MarkReportSendingReadParams) (ReportSending, error)
+	// The teachings of the merged speakers go to [into_id]; the others are
+	// archived. The name of each teaching follows through its before-save trigger.
+	MergeTeachingSpeakers(ctx context.Context, arg MergeTeachingSpeakersParams) error
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
 	// A sound re-encoded smaller: its new file, under the same media (the
 	// teaching that lists it doesn't change). No row once deleted meanwhile.
@@ -431,6 +445,7 @@ type Querier interface {
 	UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) (int64, error)
 	UpdateTeachingCategory(ctx context.Context, arg UpdateTeachingCategoryParams) (TeachingCategory, error)
 	UpdateTeachingEdition(ctx context.Context, arg UpdateTeachingEditionParams) (TeachingEdition, error)
+	UpdateTeachingSpeaker(ctx context.Context, arg UpdateTeachingSpeakerParams) (TeachingSpeaker, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)
