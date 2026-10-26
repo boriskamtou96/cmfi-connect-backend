@@ -239,6 +239,13 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.POST("/teaching-editions", s.createTeachingEdition)
 			admin.PUT("/teaching-editions/:id", s.updateTeachingEdition)
 			admin.DELETE("/teaching-editions/:id", s.deleteTeachingEdition)
+			// the speakers of the teachings
+			admin.GET("/speakers", s.adminListTeachingSpeakers)
+			admin.POST("/speakers", s.createTeachingSpeaker)
+			admin.PUT("/speakers/:id", s.updateTeachingSpeaker)
+			admin.PUT("/speakers/:id/archive", s.archiveTeachingSpeaker)
+			admin.DELETE("/speakers/:id", s.deleteTeachingSpeaker)
+			admin.POST("/speakers/merge", s.mergeTeachingSpeakers)
 
 			// the hymn books: each change gives the book a new version
 			admin.GET("/hymns/books", s.adminListHymnBooks)
@@ -411,6 +418,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			teachings.GET("", s.listTeachings)
 			teachings.GET("/categories", s.listTeachingCategories)
+			teachings.GET("/speakers", s.listTeachingSpeakers)
 			teachings.GET("/facets", s.listTeachingFacets)
 		}
 

@@ -41,9 +41,12 @@ type teachingEditionBrief struct {
 }
 
 type teachingResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+	// the speaker's name, kept for the apps that don't know speaker_id yet
 	Speaker     string `json:"speaker"`
+	SpeakerID   *int64 `json:"speaker_id"`
+	SpeakerSlug string `json:"speaker_slug"`
 	Description string `json:"description"`
 	// the category's name, kept for the apps that don't know category_id yet
 	Category     string `json:"category"`
@@ -102,6 +105,8 @@ func toTeaching(row db.TeachingDetail, covers map[int64]mediaResponse) teachingR
 		ID:           row.ID,
 		Title:        row.Title,
 		Speaker:      row.Speaker,
+		SpeakerID:    nullInt64Ptr(row.SpeakerID),
+		SpeakerSlug:  row.SpeakerSlug.String,
 		Description:  row.Description,
 		Category:     category,
 		CategoryID:   nullInt64Ptr(row.CategoryID),
@@ -152,8 +157,9 @@ type teachingsRequest struct {
 	// one category: its id, its slug ("camp-des-jeunes") or its name
 	Category   string `form:"category"`
 	CategoryID int64  `form:"category_id"`
-	// one speaker, partly typed ("andoseh")
-	Speaker string `form:"speaker"`
+	// one speaker, partly typed ("andoseh"), or its id
+	Speaker   string `form:"speaker"`
+	SpeakerID int64  `form:"speaker_id"`
 	// one year ("2026")
 	Year int32 `form:"year"`
 	// one annual edition
@@ -273,6 +279,7 @@ func (s *Server) teachings(c *gin.Context, withDrafts bool) {
 		FromDate:   from,
 		ToDate:     to,
 		Speaker:    fold(req.Speaker),
+		SpeakerID:  req.SpeakerID,
 		Search:     fold(search),
 	}
 	total, err := s.store.CountTeachingsFiltered(c, params)
@@ -289,6 +296,7 @@ func (s *Server) teachings(c *gin.Context, withDrafts bool) {
 		FromDate:   params.FromDate,
 		ToDate:     params.ToDate,
 		Speaker:    params.Speaker,
+		SpeakerID:  params.SpeakerID,
 		Search:     params.Search,
 		Lim:        limit,
 		Off:        offset,
@@ -342,7 +350,9 @@ func (s *Server) listTeachingCategories(c *gin.Context) {
 }
 
 type teachingSpeakerFacet struct {
+	ID    int64  `json:"id"`
 	Name  string `json:"name"`
+	Slug  string `json:"slug"`
 	Count int    `json:"count"`
 }
 
@@ -389,7 +399,7 @@ func (s *Server) listTeachingFacets(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	speakers, err := s.store.ListTeachingSpeakers(c, false)
+	speakers, err := s.store.ListTeachingSpeakerFacets(c, false)
 	if err != nil {
 		internalServerError(c, err)
 		return
@@ -416,7 +426,9 @@ func (s *Server) listTeachingFacets(c *gin.Context) {
 		})
 	}
 	for _, row := range speakers {
-		response.Speakers = append(response.Speakers, teachingSpeakerFacet{Name: row.Speaker, Count: int(row.Count)})
+		response.Speakers = append(response.Speakers, teachingSpeakerFacet{
+			ID: row.ID, Name: row.Name, Slug: row.Slug, Count: int(row.Count),
+		})
 	}
 	for _, row := range years {
 		response.Years = append(response.Years, teachingYearFacet{Year: int32(row.Year.Int16), Count: int(row.Count)})
@@ -510,8 +522,11 @@ func (s *Server) uploadTeachingAudio(c *gin.Context) {
 }
 
 type saveTeachingRequest struct {
-	Title       string `json:"title"`
-	Speaker     string `json:"speaker"`
+	Title string `json:"title"`
+	// the speaker's name; an old app sends only this
+	Speaker string `json:"speaker"`
+	// the speaker chosen in the new form
+	SpeakerID   *int64 `json:"speaker_id"`
 	Description string `json:"description"`
 	// the category's name; an old app sends only this
 	Category string `json:"category"`
@@ -535,6 +550,7 @@ type saveTeachingRequest struct {
 }
 
 type checkedTeachingValues struct {
+	SpeakerID    sql.NullInt64
 	RecordedOn   sql.NullTime
 	Cover        sql.NullInt64
 	CategoryID   sql.NullInt64
@@ -571,6 +587,30 @@ func (s *Server) checkedTeaching(c *gin.Context, req *saveTeachingRequest) (chec
 	case req.Position < 0 || req.Position > 10000:
 		return values, errors.New("position: 0 to 10000")
 	}
+	// the speaker: a fiche already known, or one created from a name typed by
+	// an older app — so a free text never makes a second fiche
+	if req.SpeakerID != nil && *req.SpeakerID != 0 {
+		speaker, err := s.store.GetTeachingSpeaker(c, *req.SpeakerID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return values, errors.New("speaker_id: unknown speaker")
+			}
+			return values, err
+		}
+		req.Speaker = speaker.Name
+		values.SpeakerID = sql.NullInt64{Int64: speaker.ID, Valid: true}
+	} else if req.Speaker != "" {
+		speaker, err := s.store.GetTeachingSpeakerByName(c, req.Speaker)
+		if errors.Is(err, sql.ErrNoRows) {
+			speaker, err = s.createTeachingSpeakerFromName(c, req.Speaker)
+		}
+		if err != nil {
+			return values, err
+		}
+		req.Speaker = speaker.Name
+		values.SpeakerID = sql.NullInt64{Int64: speaker.ID, Valid: true}
+	}
+
 	if req.RecordedOn != nil && strings.TrimSpace(*req.RecordedOn) != "" {
 		day, err := time.Parse(time.DateOnly, strings.TrimSpace(*req.RecordedOn))
 		if err != nil || day.Year() < 1900 || day.After(time.Now().AddDate(0, 0, 1)) {
@@ -708,6 +748,7 @@ func (s *Server) createTeaching(c *gin.Context) {
 	id, err := s.store.CreateTeaching(c, db.CreateTeachingParams{
 		Title:           req.Title,
 		Speaker:         req.Speaker,
+		SpeakerID:       values.SpeakerID,
 		Description:     req.Description,
 		Category:        req.Category,
 		CategoryID:      values.CategoryID,
@@ -765,6 +806,7 @@ func (s *Server) updateTeaching(c *gin.Context) {
 		ID:              uri.ID,
 		Title:           req.Title,
 		Speaker:         req.Speaker,
+		SpeakerID:       values.SpeakerID,
 		Description:     req.Description,
 		Category:        req.Category,
 		CategoryID:      values.CategoryID,

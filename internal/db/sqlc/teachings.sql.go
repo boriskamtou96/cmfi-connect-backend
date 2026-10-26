@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 const archiveTeachingCategory = `-- name: ArchiveTeachingCategory :one
@@ -44,6 +46,36 @@ func (q *Queries) ArchiveTeachingCategory(ctx context.Context, arg ArchiveTeachi
 	return i, err
 }
 
+const archiveTeachingSpeaker = `-- name: ArchiveTeachingSpeaker :one
+UPDATE teaching_speakers
+SET archived_at = CASE WHEN $1::boolean THEN now() ELSE NULL END,
+    updated_at = now()
+WHERE id = $2
+RETURNING id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at
+`
+
+type ArchiveTeachingSpeakerParams struct {
+	Archived bool  `json:"archived"`
+	ID       int64 `json:"id"`
+}
+
+func (q *Queries) ArchiveTeachingSpeaker(ctx context.Context, arg ArchiveTeachingSpeakerParams) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, archiveTeachingSpeaker, arg.Archived, arg.ID)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const countTeachingsFiltered = `-- name: CountTeachingsFiltered :one
 SELECT count(*)
 FROM teaching_details t
@@ -55,9 +87,10 @@ WHERE ($1::boolean OR t.published)
   AND ($6::date IS NULL OR t.recorded_on >= $6::date)
   AND ($7::date IS NULL OR t.recorded_on <= $7::date)
   AND ($8::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || $8::text || '%')
-  AND ($9::text = '' OR NOT EXISTS (
+  AND ($9::bigint = 0 OR t.speaker_id = $9)
+  AND ($10::text = '' OR NOT EXISTS (
       SELECT 1
-      FROM unnest(string_to_array($9::text, ' ')) AS word
+      FROM unnest(string_to_array($10::text, ' ')) AS word
       WHERE word <> '' AND t.search_text NOT LIKE '%' || word || '%'
   ))
 `
@@ -71,6 +104,7 @@ type CountTeachingsFilteredParams struct {
 	FromDate   sql.NullTime `json:"from_date"`
 	ToDate     sql.NullTime `json:"to_date"`
 	Speaker    string       `json:"speaker"`
+	SpeakerID  int64        `json:"speaker_id"`
 	Search     string       `json:"search"`
 }
 
@@ -84,6 +118,7 @@ func (q *Queries) CountTeachingsFiltered(ctx context.Context, arg CountTeachings
 		arg.FromDate,
 		arg.ToDate,
 		arg.Speaker,
+		arg.SpeakerID,
 		arg.Search,
 	)
 	var count int64
@@ -113,6 +148,17 @@ func (q *Queries) CountTeachingsInEdition(ctx context.Context, editionID sql.Nul
 	return count, err
 }
 
+const countTeachingsOfSpeaker = `-- name: CountTeachingsOfSpeaker :one
+SELECT count(*) FROM teachings WHERE speaker_id = $1
+`
+
+func (q *Queries) CountTeachingsOfSpeaker(ctx context.Context, speakerID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTeachingsOfSpeaker, speakerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countTeachingsWithMedia = `-- name: CountTeachingsWithMedia :one
 SELECT count(*) FROM teachings WHERE audio_id = $1 OR cover_id = $1
 `
@@ -127,14 +173,14 @@ func (q *Queries) CountTeachingsWithMedia(ctx context.Context, mediaID int64) (i
 
 const createTeaching = `-- name: CreateTeaching :one
 INSERT INTO teachings (
-    title, speaker, description, category, category_id, edition_id, year, day_number, position,
+    title, speaker, speaker_id, description, category, category_id, edition_id, year, day_number, position,
     recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by
 )
 VALUES (
-    $1, $2, $3, $4,
-    $5, $6, $7, $8, $9,
-    $10, $11, $12, $13,
-    $14, CASE WHEN $14::boolean THEN now() END, $15
+    $1, $2, $3, $4, $5,
+    $6, $7, $8, $9, $10,
+    $11, $12, $13, $14,
+    $15, CASE WHEN $15::boolean THEN now() END, $16
 )
 RETURNING id
 `
@@ -142,6 +188,7 @@ RETURNING id
 type CreateTeachingParams struct {
 	Title           string        `json:"title"`
 	Speaker         string        `json:"speaker"`
+	SpeakerID       sql.NullInt64 `json:"speaker_id"`
 	Description     string        `json:"description"`
 	Category        string        `json:"category"`
 	CategoryID      sql.NullInt64 `json:"category_id"`
@@ -161,6 +208,7 @@ func (q *Queries) CreateTeaching(ctx context.Context, arg CreateTeachingParams) 
 	row := q.db.QueryRowContext(ctx, createTeaching,
 		arg.Title,
 		arg.Speaker,
+		arg.SpeakerID,
 		arg.Description,
 		arg.Category,
 		arg.CategoryID,
@@ -277,6 +325,45 @@ func (q *Queries) CreateTeachingEdition(ctx context.Context, arg CreateTeachingE
 	return i, err
 }
 
+const createTeachingSpeaker = `-- name: CreateTeachingSpeaker :one
+INSERT INTO teaching_speakers (name, slug, role, bio, photo_id)
+VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at
+`
+
+type CreateTeachingSpeakerParams struct {
+	Name    string        `json:"name"`
+	Slug    string        `json:"slug"`
+	Role    string        `json:"role"`
+	Bio     string        `json:"bio"`
+	PhotoID sql.NullInt64 `json:"photo_id"`
+}
+
+func (q *Queries) CreateTeachingSpeaker(ctx context.Context, arg CreateTeachingSpeakerParams) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, createTeachingSpeaker,
+		arg.Name,
+		arg.Slug,
+		arg.Role,
+		arg.Bio,
+		arg.PhotoID,
+	)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteTeaching = `-- name: DeleteTeaching :one
 DELETE FROM teachings WHERE id = $1
 RETURNING audio_id, cover_id
@@ -305,8 +392,17 @@ func (q *Queries) DeleteTeachingEdition(ctx context.Context, id int64) (int64, e
 	return id_2, err
 }
 
+const deleteTeachingSpeaker = `-- name: DeleteTeachingSpeaker :exec
+DELETE FROM teaching_speakers WHERE id = $1
+`
+
+func (q *Queries) DeleteTeachingSpeaker(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteTeachingSpeaker, id)
+	return err
+}
+
 const getTeaching = `-- name: GetTeaching :one
-SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme FROM teaching_details WHERE id = $1
+SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, speaker_id, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme, speaker_slug FROM teaching_details WHERE id = $1
 `
 
 func (q *Queries) GetTeaching(ctx context.Context, id int64) (TeachingDetail, error) {
@@ -334,6 +430,7 @@ func (q *Queries) GetTeaching(ctx context.Context, id int64) (TeachingDetail, er
 		&i.DayNumber,
 		&i.Position,
 		&i.SearchText,
+		&i.SpeakerID,
 		&i.AudioKey,
 		&i.AudioType,
 		&i.AudioSize,
@@ -341,6 +438,7 @@ func (q *Queries) GetTeaching(ctx context.Context, id int64) (TeachingDetail, er
 		&i.CategoryName,
 		&i.EditionTitle,
 		&i.EditionTheme,
+		&i.SpeakerSlug,
 	)
 	return i, err
 }
@@ -460,6 +558,73 @@ func (q *Queries) GetTeachingEdition(ctx context.Context, id int64) (TeachingEdi
 		&i.EndsOn,
 		&i.Venue,
 		&i.CoverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingSpeaker = `-- name: GetTeachingSpeaker :one
+SELECT id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at FROM teaching_speakers WHERE id = $1
+`
+
+func (q *Queries) GetTeachingSpeaker(ctx context.Context, id int64) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingSpeaker, id)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingSpeakerByName = `-- name: GetTeachingSpeakerByName :one
+SELECT id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at FROM teaching_speakers
+WHERE lower(public.unaccent(btrim(name))) = lower(public.unaccent(btrim($1)))
+  AND archived_at IS NULL
+LIMIT 1
+`
+
+// An active speaker, accents and case left aside.
+func (q *Queries) GetTeachingSpeakerByName(ctx context.Context, name string) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingSpeakerByName, name)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTeachingSpeakerBySlug = `-- name: GetTeachingSpeakerBySlug :one
+SELECT id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at FROM teaching_speakers WHERE slug = $1
+`
+
+func (q *Queries) GetTeachingSpeakerBySlug(ctx context.Context, slug string) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, getTeachingSpeakerBySlug, slug)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -684,21 +849,81 @@ func (q *Queries) ListTeachingEditions(ctx context.Context, withDrafts bool) ([]
 	return items, nil
 }
 
-const listTeachingSpeakers = `-- name: ListTeachingSpeakers :many
-SELECT speaker, count(*)::int AS count
-FROM teachings
-WHERE btrim(speaker) <> '' AND ($1::boolean OR published)
-GROUP BY speaker
-ORDER BY lower(speaker)
+const listTeachingSpeakerFacets = `-- name: ListTeachingSpeakerFacets :many
+SELECT s.id, s.name, s.slug, count(t.id)::int AS count
+FROM teaching_speakers s
+JOIN teachings t ON t.speaker_id = s.id AND ($1::boolean OR t.published)
+WHERE s.archived_at IS NULL
+GROUP BY s.id
+ORDER BY lower(s.name)
 `
 
-type ListTeachingSpeakersRow struct {
-	Speaker string `json:"speaker"`
-	Count   int32  `json:"count"`
+type ListTeachingSpeakerFacetsRow struct {
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Slug  string `json:"slug"`
+	Count int32  `json:"count"`
 }
 
-func (q *Queries) ListTeachingSpeakers(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTeachingSpeakers, withDrafts)
+// The speakers the published teachings name, for the filter of the apps.
+func (q *Queries) ListTeachingSpeakerFacets(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakerFacetsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingSpeakerFacets, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTeachingSpeakerFacetsRow{}
+	for rows.Next() {
+		var i ListTeachingSpeakerFacetsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeachingSpeakers = `-- name: ListTeachingSpeakers :many
+SELECT s.id, s.name, s.slug, s.role, s.bio, s.photo_id, s.archived_at, s.created_at, s.updated_at, count(t.id)::int AS teaching_count
+FROM teaching_speakers s
+LEFT JOIN teachings t ON t.speaker_id = s.id AND ($1::boolean OR t.published)
+WHERE ($2::boolean OR s.archived_at IS NULL)
+GROUP BY s.id
+ORDER BY lower(s.name)
+`
+
+type ListTeachingSpeakersParams struct {
+	WithDrafts   bool `json:"with_drafts"`
+	WithArchived bool `json:"with_archived"`
+}
+
+type ListTeachingSpeakersRow struct {
+	ID            int64         `json:"id"`
+	Name          string        `json:"name"`
+	Slug          string        `json:"slug"`
+	Role          string        `json:"role"`
+	Bio           string        `json:"bio"`
+	PhotoID       sql.NullInt64 `json:"photo_id"`
+	ArchivedAt    sql.NullTime  `json:"archived_at"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	TeachingCount int32         `json:"teaching_count"`
+}
+
+// The admins' speakers, archived ones too, with how many teachings each.
+func (q *Queries) ListTeachingSpeakers(ctx context.Context, arg ListTeachingSpeakersParams) ([]ListTeachingSpeakersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTeachingSpeakers, arg.WithDrafts, arg.WithArchived)
 	if err != nil {
 		return nil, err
 	}
@@ -706,7 +931,18 @@ func (q *Queries) ListTeachingSpeakers(ctx context.Context, withDrafts bool) ([]
 	items := []ListTeachingSpeakersRow{}
 	for rows.Next() {
 		var i ListTeachingSpeakersRow
-		if err := rows.Scan(&i.Speaker, &i.Count); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Role,
+			&i.Bio,
+			&i.PhotoID,
+			&i.ArchivedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.TeachingCount,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -757,7 +993,7 @@ func (q *Queries) ListTeachingYears(ctx context.Context, withDrafts bool) ([]Lis
 }
 
 const listTeachingsFiltered = `-- name: ListTeachingsFiltered :many
-SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme
+SELECT id, title, speaker, description, category, recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by, created_at, updated_at, notified_at, category_id, edition_id, year, day_number, position, search_text, speaker_id, audio_key, audio_type, audio_size, category_slug, category_name, edition_title, edition_theme, speaker_slug
 FROM teaching_details t
 WHERE ($1::boolean OR t.published)
   AND ($2::bigint = 0 OR t.category_id = $2)
@@ -767,9 +1003,10 @@ WHERE ($1::boolean OR t.published)
   AND ($6::date IS NULL OR t.recorded_on >= $6::date)
   AND ($7::date IS NULL OR t.recorded_on <= $7::date)
   AND ($8::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || $8::text || '%')
-  AND ($9::text = '' OR NOT EXISTS (
+  AND ($9::bigint = 0 OR t.speaker_id = $9)
+  AND ($10::text = '' OR NOT EXISTS (
       SELECT 1
-      FROM unnest(string_to_array($9::text, ' ')) AS word
+      FROM unnest(string_to_array($10::text, ' ')) AS word
       WHERE word <> '' AND t.search_text NOT LIKE '%' || word || '%'
   ))
 ORDER BY t.published DESC,
@@ -780,7 +1017,7 @@ ORDER BY t.published DESC,
          t.published_at DESC NULLS LAST,
          t.updated_at DESC,
          t.id DESC
-LIMIT $11 OFFSET $10
+LIMIT $12 OFFSET $11
 `
 
 type ListTeachingsFilteredParams struct {
@@ -792,6 +1029,7 @@ type ListTeachingsFilteredParams struct {
 	FromDate   sql.NullTime `json:"from_date"`
 	ToDate     sql.NullTime `json:"to_date"`
 	Speaker    string       `json:"speaker"`
+	SpeakerID  int64        `json:"speaker_id"`
 	Search     string       `json:"search"`
 	Off        int32        `json:"off"`
 	Lim        int32        `json:"lim"`
@@ -810,6 +1048,7 @@ func (q *Queries) ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFi
 		arg.FromDate,
 		arg.ToDate,
 		arg.Speaker,
+		arg.SpeakerID,
 		arg.Search,
 		arg.Off,
 		arg.Lim,
@@ -843,6 +1082,7 @@ func (q *Queries) ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFi
 			&i.DayNumber,
 			&i.Position,
 			&i.SearchText,
+			&i.SpeakerID,
 			&i.AudioKey,
 			&i.AudioType,
 			&i.AudioSize,
@@ -850,6 +1090,7 @@ func (q *Queries) ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFi
 			&i.CategoryName,
 			&i.EditionTitle,
 			&i.EditionTheme,
+			&i.SpeakerSlug,
 		); err != nil {
 			return nil, err
 		}
@@ -862,6 +1103,29 @@ func (q *Queries) ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFi
 		return nil, err
 	}
 	return items, nil
+}
+
+const mergeTeachingSpeakers = `-- name: MergeTeachingSpeakers :exec
+WITH moved AS (
+    UPDATE teachings
+    SET speaker_id = $2::bigint
+    WHERE speaker_id = ANY($1::bigint[])
+)
+UPDATE teaching_speakers
+SET archived_at = now(), updated_at = now()
+WHERE id = ANY($1::bigint[]) AND id <> $2::bigint
+`
+
+type MergeTeachingSpeakersParams struct {
+	FromIds []int64 `json:"from_ids"`
+	IntoID  int64   `json:"into_id"`
+}
+
+// The teachings of the merged speakers go to [into_id]; the others are
+// archived. The name of each teaching follows through its before-save trigger.
+func (q *Queries) MergeTeachingSpeakers(ctx context.Context, arg MergeTeachingSpeakersParams) error {
+	_, err := q.db.ExecContext(ctx, mergeTeachingSpeakers, pq.Array(arg.FromIds), arg.IntoID)
+	return err
 }
 
 const replaceMediaFile = `-- name: ReplaceMediaFile :execrows
@@ -896,27 +1160,29 @@ const updateTeaching = `-- name: UpdateTeaching :one
 UPDATE teachings
 SET title = $1,
     speaker = $2,
-    description = $3,
-    category = $4,
-    category_id = $5,
-    edition_id = $6,
-    year = $7,
-    day_number = $8,
-    position = $9,
-    recorded_on = $10,
-    audio_id = $11,
-    duration_seconds = $12,
-    cover_id = $13,
-    published = $14,
-    published_at = CASE WHEN $14::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
+    speaker_id = $3,
+    description = $4,
+    category = $5,
+    category_id = $6,
+    edition_id = $7,
+    year = $8,
+    day_number = $9,
+    position = $10,
+    recorded_on = $11,
+    audio_id = $12,
+    duration_seconds = $13,
+    cover_id = $14,
+    published = $15,
+    published_at = CASE WHEN $15::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
     updated_at = now()
-WHERE id = $15
+WHERE id = $16
 RETURNING id
 `
 
 type UpdateTeachingParams struct {
 	Title           string        `json:"title"`
 	Speaker         string        `json:"speaker"`
+	SpeakerID       sql.NullInt64 `json:"speaker_id"`
 	Description     string        `json:"description"`
 	Category        string        `json:"category"`
 	CategoryID      sql.NullInt64 `json:"category_id"`
@@ -937,6 +1203,7 @@ func (q *Queries) UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) 
 	row := q.db.QueryRowContext(ctx, updateTeaching,
 		arg.Title,
 		arg.Speaker,
+		arg.SpeakerID,
 		arg.Description,
 		arg.Category,
 		arg.CategoryID,
@@ -1063,6 +1330,51 @@ func (q *Queries) UpdateTeachingEdition(ctx context.Context, arg UpdateTeachingE
 		&i.EndsOn,
 		&i.Venue,
 		&i.CoverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateTeachingSpeaker = `-- name: UpdateTeachingSpeaker :one
+UPDATE teaching_speakers
+SET name = $1,
+    slug = $2,
+    role = $3,
+    bio = $4,
+    photo_id = $5,
+    updated_at = now()
+WHERE id = $6
+RETURNING id, name, slug, role, bio, photo_id, archived_at, created_at, updated_at
+`
+
+type UpdateTeachingSpeakerParams struct {
+	Name    string        `json:"name"`
+	Slug    string        `json:"slug"`
+	Role    string        `json:"role"`
+	Bio     string        `json:"bio"`
+	PhotoID sql.NullInt64 `json:"photo_id"`
+	ID      int64         `json:"id"`
+}
+
+func (q *Queries) UpdateTeachingSpeaker(ctx context.Context, arg UpdateTeachingSpeakerParams) (TeachingSpeaker, error) {
+	row := q.db.QueryRowContext(ctx, updateTeachingSpeaker,
+		arg.Name,
+		arg.Slug,
+		arg.Role,
+		arg.Bio,
+		arg.PhotoID,
+		arg.ID,
+	)
+	var i TeachingSpeaker
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Role,
+		&i.Bio,
+		&i.PhotoID,
+		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

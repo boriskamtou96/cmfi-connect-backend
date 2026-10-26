@@ -12,6 +12,7 @@ WHERE (sqlc.arg(with_drafts)::boolean OR t.published)
   AND (sqlc.narg(from_date)::date IS NULL OR t.recorded_on >= sqlc.narg(from_date)::date)
   AND (sqlc.narg(to_date)::date IS NULL OR t.recorded_on <= sqlc.narg(to_date)::date)
   AND (sqlc.arg(speaker)::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || sqlc.arg(speaker)::text || '%')
+  AND (sqlc.arg(speaker_id)::bigint = 0 OR t.speaker_id = sqlc.arg(speaker_id))
   AND (sqlc.arg(search)::text = '' OR NOT EXISTS (
       SELECT 1
       FROM unnest(string_to_array(sqlc.arg(search)::text, ' ')) AS word
@@ -38,6 +39,7 @@ WHERE (sqlc.arg(with_drafts)::boolean OR t.published)
   AND (sqlc.narg(from_date)::date IS NULL OR t.recorded_on >= sqlc.narg(from_date)::date)
   AND (sqlc.narg(to_date)::date IS NULL OR t.recorded_on <= sqlc.narg(to_date)::date)
   AND (sqlc.arg(speaker)::text = '' OR lower(public.unaccent(t.speaker)) LIKE '%' || sqlc.arg(speaker)::text || '%')
+  AND (sqlc.arg(speaker_id)::bigint = 0 OR t.speaker_id = sqlc.arg(speaker_id))
   AND (sqlc.arg(search)::text = '' OR NOT EXISTS (
       SELECT 1
       FROM unnest(string_to_array(sqlc.arg(search)::text, ' ')) AS word
@@ -49,11 +51,11 @@ SELECT * FROM teaching_details WHERE id = $1;
 
 -- name: CreateTeaching :one
 INSERT INTO teachings (
-    title, speaker, description, category, category_id, edition_id, year, day_number, position,
+    title, speaker, speaker_id, description, category, category_id, edition_id, year, day_number, position,
     recorded_on, audio_id, duration_seconds, cover_id, published, published_at, created_by
 )
 VALUES (
-    sqlc.arg(title), sqlc.arg(speaker), sqlc.arg(description), sqlc.arg(category),
+    sqlc.arg(title), sqlc.arg(speaker), sqlc.narg(speaker_id), sqlc.arg(description), sqlc.arg(category),
     sqlc.narg(category_id), sqlc.narg(edition_id), sqlc.narg(year), sqlc.narg(day_number), sqlc.arg(position),
     sqlc.narg(recorded_on), sqlc.arg(audio_id), sqlc.arg(duration_seconds), sqlc.narg(cover_id),
     sqlc.arg(published), CASE WHEN sqlc.arg(published)::boolean THEN now() END, sqlc.narg(created_by)
@@ -65,6 +67,7 @@ RETURNING id;
 UPDATE teachings
 SET title = sqlc.arg(title),
     speaker = sqlc.arg(speaker),
+    speaker_id = sqlc.narg(speaker_id),
     description = sqlc.arg(description),
     category = sqlc.arg(category),
     category_id = sqlc.narg(category_id),
@@ -198,12 +201,79 @@ WHERE c.archived_at IS NULL
 GROUP BY c.id
 ORDER BY c.position, lower(c.name);
 
+-- name: ListTeachingSpeakerFacets :many
+-- The speakers the published teachings name, for the filter of the apps.
+SELECT s.id, s.name, s.slug, count(t.id)::int AS count
+FROM teaching_speakers s
+JOIN teachings t ON t.speaker_id = s.id AND (sqlc.arg(with_drafts)::boolean OR t.published)
+WHERE s.archived_at IS NULL
+GROUP BY s.id
+ORDER BY lower(s.name);
+
 -- name: ListTeachingSpeakers :many
-SELECT speaker, count(*)::int AS count
-FROM teachings
-WHERE btrim(speaker) <> '' AND (sqlc.arg(with_drafts)::boolean OR published)
-GROUP BY speaker
-ORDER BY lower(speaker);
+-- The admins' speakers, archived ones too, with how many teachings each.
+SELECT s.*, count(t.id)::int AS teaching_count
+FROM teaching_speakers s
+LEFT JOIN teachings t ON t.speaker_id = s.id AND (sqlc.arg(with_drafts)::boolean OR t.published)
+WHERE (sqlc.arg(with_archived)::boolean OR s.archived_at IS NULL)
+GROUP BY s.id
+ORDER BY lower(s.name);
+
+-- name: GetTeachingSpeaker :one
+SELECT * FROM teaching_speakers WHERE id = $1;
+
+-- name: GetTeachingSpeakerByName :one
+-- An active speaker, accents and case left aside.
+SELECT * FROM teaching_speakers
+WHERE lower(public.unaccent(btrim(name))) = lower(public.unaccent(btrim(sqlc.arg(name))))
+  AND archived_at IS NULL
+LIMIT 1;
+
+-- name: GetTeachingSpeakerBySlug :one
+SELECT * FROM teaching_speakers WHERE slug = $1;
+
+-- name: CreateTeachingSpeaker :one
+INSERT INTO teaching_speakers (name, slug, role, bio, photo_id)
+VALUES (
+    sqlc.arg(name), sqlc.arg(slug), sqlc.arg(role), sqlc.arg(bio), sqlc.narg(photo_id)
+)
+RETURNING *;
+
+-- name: UpdateTeachingSpeaker :one
+UPDATE teaching_speakers
+SET name = sqlc.arg(name),
+    slug = sqlc.arg(slug),
+    role = sqlc.arg(role),
+    bio = sqlc.arg(bio),
+    photo_id = sqlc.narg(photo_id),
+    updated_at = now()
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: ArchiveTeachingSpeaker :one
+UPDATE teaching_speakers
+SET archived_at = CASE WHEN sqlc.arg(archived)::boolean THEN now() ELSE NULL END,
+    updated_at = now()
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: CountTeachingsOfSpeaker :one
+SELECT count(*) FROM teachings WHERE speaker_id = $1;
+
+-- name: DeleteTeachingSpeaker :exec
+DELETE FROM teaching_speakers WHERE id = $1;
+
+-- name: MergeTeachingSpeakers :exec
+-- The teachings of the merged speakers go to [into_id]; the others are
+-- archived. The name of each teaching follows through its before-save trigger.
+WITH moved AS (
+    UPDATE teachings
+    SET speaker_id = sqlc.arg(into_id)::bigint
+    WHERE speaker_id = ANY(sqlc.arg(from_ids)::bigint[])
+)
+UPDATE teaching_speakers
+SET archived_at = now(), updated_at = now()
+WHERE id = ANY(sqlc.arg(from_ids)::bigint[]) AND id <> sqlc.arg(into_id)::bigint;
 
 -- name: ListTeachingYears :many
 SELECT year, count(*)::int AS count

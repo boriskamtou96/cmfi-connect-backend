@@ -525,6 +525,7 @@ type Teaching struct {
 	DayNumber       sql.NullInt16 `json:"day_number"`
 	Position        int32         `json:"position"`
 	SearchText      string        `json:"search_text"`
+	SpeakerID       sql.NullInt64 `json:"speaker_id"`
 }
 
 type TeachingCategory struct {
@@ -564,6 +565,7 @@ type TeachingDetail struct {
 	DayNumber       sql.NullInt16  `json:"day_number"`
 	Position        int32          `json:"position"`
 	SearchText      string         `json:"search_text"`
+	SpeakerID       sql.NullInt64  `json:"speaker_id"`
 	AudioKey        string         `json:"audio_key"`
 	AudioType       string         `json:"audio_type"`
 	AudioSize       int64          `json:"audio_size"`
@@ -571,6 +573,7 @@ type TeachingDetail struct {
 	CategoryName    sql.NullString `json:"category_name"`
 	EditionTitle    sql.NullString `json:"edition_title"`
 	EditionTheme    sql.NullString `json:"edition_theme"`
+	SpeakerSlug     sql.NullString `json:"speaker_slug"`
 }
 
 type TeachingEdition struct {
@@ -583,6 +586,18 @@ type TeachingEdition struct {
 	EndsOn     sql.NullTime  `json:"ends_on"`
 	Venue      string        `json:"venue"`
 	CoverID    sql.NullInt64 `json:"cover_id"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
+}
+
+type TeachingSpeaker struct {
+	ID         int64         `json:"id"`
+	Name       string        `json:"name"`
+	Slug       string        `json:"slug"`
+	Role       string        `json:"role"`
+	Bio        string        `json:"bio"`
+	PhotoID    sql.NullInt64 `json:"photo_id"`
+	ArchivedAt sql.NullTime  `json:"archived_at"`
 	CreatedAt  time.Time     `json:"created_at"`
 	UpdatedAt  time.Time     `json:"updated_at"`
 }
