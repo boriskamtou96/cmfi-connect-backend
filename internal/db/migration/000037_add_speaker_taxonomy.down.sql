@@ -5,6 +5,10 @@ DROP FUNCTION IF EXISTS refresh_teachings_for_speaker();
 
 DROP VIEW teaching_details;
 
+-- the column goes before the view comes back (a view takes every column of
+-- the teachings, so it would hold the column and refuse to let it go)
+ALTER TABLE teachings DROP COLUMN speaker_id;
+
 CREATE VIEW teaching_details AS
 SELECT t.*,
        m.key AS audio_key,
@@ -18,8 +22,6 @@ FROM teachings t
 JOIN media m ON m.id = t.audio_id
 LEFT JOIN teaching_categories c ON c.id = t.category_id
 LEFT JOIN teaching_editions e ON e.id = t.edition_id;
-
-ALTER TABLE teachings DROP COLUMN speaker_id;
 
 CREATE OR REPLACE FUNCTION teachings_before_save()
 RETURNS trigger
