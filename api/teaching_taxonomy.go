@@ -114,7 +114,10 @@ type saveTeachingCategoryRequest struct {
 	Position    int32  `json:"position"`
 }
 
-func (s *Server) checkedTeachingCategory(c *gin.Context, req *saveTeachingCategoryRequest, id int64) (slug string, err error) {
+// checkedTeachingCategory: the name and the lengths checked; the slug is the
+// one given, else the one it already had, else the name's. A slug stays the
+// same when a category is renamed: the links of the apps keep working.
+func (s *Server) checkedTeachingCategory(c *gin.Context, req *saveTeachingCategoryRequest, id int64, currentSlug string) (slug string, err error) {
 	req.Name = strings.Join(strings.Fields(req.Name), " ")
 	req.Description = strings.TrimSpace(req.Description)
 	req.Color = strings.TrimSpace(req.Color)
@@ -134,6 +137,9 @@ func (s *Server) checkedTeachingCategory(c *gin.Context, req *saveTeachingCatego
 		return "", errors.New("position: 0 to 10000")
 	}
 	slug = slugify(req.Slug)
+	if slug == "" {
+		slug = currentSlug
+	}
 	if slug == "" {
 		slug = slugify(req.Name)
 	}
@@ -191,7 +197,7 @@ func (s *Server) createTeachingCategory(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	slug, err := s.checkedTeachingCategory(c, &req, 0)
+	slug, err := s.checkedTeachingCategory(c, &req, 0, "")
 	if err != nil {
 		badRequestError(c, err)
 		return
@@ -228,7 +234,8 @@ func (s *Server) updateTeachingCategory(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	if _, err := s.store.GetTeachingCategory(c, uri.ID); err != nil {
+	before, err := s.store.GetTeachingCategory(c, uri.ID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			resourceNotFoundError(c, "teaching category")
 			return
@@ -236,7 +243,7 @@ func (s *Server) updateTeachingCategory(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	slug, err := s.checkedTeachingCategory(c, &req, uri.ID)
+	slug, err := s.checkedTeachingCategory(c, &req, uri.ID, before.Slug)
 	if err != nil {
 		badRequestError(c, err)
 		return

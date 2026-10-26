@@ -90,6 +90,15 @@ func TestTeachingsAreFilteredByCategoryYearAndDay(t *testing.T) {
 	require.Contains(t, values.Days, teachingDayFacet{Day: 1, Count: 2})
 	require.Contains(t, values.Days, teachingDayFacet{Day: 2, Count: 1})
 
+	// renamed: the slug stays (the apps' links keep working) and the teachings
+	// show the new name
+	renamed := send(t, router, http.MethodPut, admin.Token,
+		fmt.Sprintf("/v1/admin/teaching-categories/%d", category.ID), map[string]any{"name": name + " 2026"})
+	require.Equal(t, http.StatusOK, renamed.Code, renamed.Body.String())
+	require.Equal(t, category.Slug, decode[adminTeachingCategoryResponse](t, renamed).Slug)
+	require.Equal(t, name+" 2026", listedTeachings(t, router, member.Token,
+		fmt.Sprintf("?edition_id=%d", edition.ID)).Content[0].Category)
+
 	// an archived category keeps its teachings but leaves the public chips
 	archived := send(t, router, http.MethodPut, admin.Token,
 		fmt.Sprintf("/v1/admin/teaching-categories/%d/archive", category.ID), map[string]any{"archived": true})
