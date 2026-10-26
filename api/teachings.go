@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -20,9 +20,10 @@ import (
 // Enseignements: the audio messages of the community. The admins send an
 // MP3 or an M4A, give it a title, the speaker, a category, the day it was
 // given and a cover if they like, and publish it; every member hears the
-// published ones, the newest message first, a page at a time, by category or
-// by a search on their words. The apps stream the file from its link (the
-// CDN in production) and may keep it to listen offline.
+// published ones, the newest message first, a page at a time, by category,
+// speaker, year or day, or by a search on their words. The apps stream the
+// file from its link (the CDN in production) and may keep it to listen
+// offline.
 
 type teachingAudioResponse struct {
 	ID  int64  `json:"id"`
@@ -32,12 +33,30 @@ type teachingAudioResponse struct {
 	SizeBytes int64  `json:"size_bytes"`
 }
 
+type teachingEditionBrief struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+	Theme string `json:"theme"`
+	Year  int32  `json:"year"`
+}
+
 type teachingResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Speaker     string `json:"speaker"`
 	Description string `json:"description"`
-	Category    string `json:"category"`
+	// the category's name, kept for the apps that don't know category_id yet
+	Category     string `json:"category"`
+	CategoryID   *int64 `json:"category_id"`
+	CategorySlug string `json:"category_slug"`
+	// the year of the message ("2026"), null when unknown
+	Year *int32 `json:"year"`
+	// day 1, 2… of a camp or a crusade; several teachings may share it
+	DayNumber *int32 `json:"day_number"`
+	// their order inside the day
+	Position int32 `json:"position"`
+	// the annual edition ("Camp des jeunes 2026"), null when none
+	Edition *teachingEditionBrief `json:"edition"`
 	// "2024-08-15"; null when unknown
 	RecordedOn      *string               `json:"recorded_on"`
 	Audio           teachingAudioResponse `json:"audio"`
@@ -58,13 +77,38 @@ func audioFormat(contentType string) string {
 	return "mp3"
 }
 
-func toTeaching(row db.ListTeachingsRow, covers map[int64]mediaResponse) teachingResponse {
+func nullInt64Ptr(value sql.NullInt64) *int64 {
+	if !value.Valid {
+		return nil
+	}
+	number := value.Int64
+	return &number
+}
+
+func nullInt16Ptr(value sql.NullInt16) *int32 {
+	if !value.Valid {
+		return nil
+	}
+	number := int32(value.Int16)
+	return &number
+}
+
+func toTeaching(row db.TeachingDetail, covers map[int64]mediaResponse) teachingResponse {
+	category := row.Category
+	if row.CategoryName.Valid {
+		category = row.CategoryName.String
+	}
 	response := teachingResponse{
-		ID:          row.ID,
-		Title:       row.Title,
-		Speaker:     row.Speaker,
-		Description: row.Description,
-		Category:    row.Category,
+		ID:           row.ID,
+		Title:        row.Title,
+		Speaker:      row.Speaker,
+		Description:  row.Description,
+		Category:     category,
+		CategoryID:   nullInt64Ptr(row.CategoryID),
+		CategorySlug: row.CategorySlug.String,
+		Year:         nullInt16Ptr(row.Year),
+		DayNumber:    nullInt16Ptr(row.DayNumber),
+		Position:     row.Position,
 		Audio: teachingAudioResponse{
 			ID:        row.AudioID,
 			URL:       mediaURL(row.AudioKey),
@@ -74,6 +118,14 @@ func toTeaching(row db.ListTeachingsRow, covers map[int64]mediaResponse) teachin
 		DurationSeconds: row.DurationSeconds,
 		Published:       row.Published,
 		UpdatedAt:       row.UpdatedAt,
+	}
+	if row.EditionID.Valid {
+		response.Edition = &teachingEditionBrief{
+			ID:    row.EditionID.Int64,
+			Title: row.EditionTitle.String,
+			Theme: row.EditionTheme.String,
+			Year:  int32(row.Year.Int16),
+		}
 	}
 	if row.RecordedOn.Valid {
 		day := row.RecordedOn.Time.Format(time.DateOnly)
@@ -92,39 +144,89 @@ func toTeaching(row db.ListTeachingsRow, covers map[int64]mediaResponse) teachin
 
 type teachingsRequest struct {
 	pageRequest
-	// words of the title, the speaker, the description or the category; case
-	// and accents left aside
+	// words of the title, the speaker, the description, the category, the
+	// edition or the year; case and accents left aside
 	Search string `form:"search"`
-	// one category; empty for all
-	Category string `form:"category"`
+	// the same, for the apps that ask q
+	Q string `form:"q"`
+	// one category: its id, its slug ("camp-des-jeunes") or its name
+	Category   string `form:"category"`
+	CategoryID int64  `form:"category_id"`
+	// one speaker, partly typed ("andoseh")
+	Speaker string `form:"speaker"`
+	// one year ("2026")
+	Year int32 `form:"year"`
+	// one annual edition
+	EditionID int64 `form:"edition_id"`
+	// day 1, 2… of that edition (or of a category)
+	Day int32 `form:"day"`
+	// "2026-01-01"; messages recorded on or after
+	From string `form:"from"`
+	// "2026-12-31"; messages recorded on or before
+	To string `form:"to"`
 }
 
-// keeps tells whether a teaching answers the category and the search.
-func (r teachingsRequest) keeps(t teachingResponse) bool {
-	if category := fold(r.Category); category != "" && fold(t.Category) != category {
-		return false
+func parseDayFilter(value string) (sql.NullTime, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return sql.NullTime{}, nil
 	}
-	words := strings.Fields(fold(r.Search))
-	if len(words) == 0 {
-		return true
+	day, err := time.Parse(time.DateOnly, value)
+	if err != nil {
+		return sql.NullTime{}, err
 	}
-	text := fold(strings.Join([]string{t.Title, t.Speaker, t.Description, t.Category}, " "))
-	for _, word := range words {
-		if !strings.Contains(text, word) {
-			return false
+	return sql.NullTime{Time: day, Valid: true}, nil
+}
+
+// teachingCategoryFilter finds the category named by an old app (its name)
+// or by a new one (its id or slug). It answers 0 when there is none.
+func (s *Server) teachingCategoryFilter(c *gin.Context, request teachingsRequest) (int64, error) {
+	if request.CategoryID != 0 {
+		return request.CategoryID, nil
+	}
+	value := strings.TrimSpace(request.Category)
+	if value == "" {
+		return 0, nil
+	}
+	if id, err := strconv.ParseInt(value, 10, 64); err == nil && id > 0 {
+		return id, nil
+	}
+	category, err := s.store.GetTeachingCategoryBySlug(c, value)
+	if err == nil {
+		return category.ID, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return 0, err
+	}
+	category, err = s.store.GetTeachingCategoryByName(c, value)
+	if err == nil {
+		return category.ID, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return 0, err
+	}
+	// "camp des jeunes" written by hand, or an old category name
+	categories, err := s.store.ListTeachingCategories(c, db.ListTeachingCategoriesParams{WithDrafts: true, WithArchived: true})
+	if err != nil {
+		return 0, err
+	}
+	wanted := fold(value)
+	for _, one := range categories {
+		if fold(one.Name) == wanted || one.Slug == value {
+			return one.ID, nil
 		}
 	}
-	return true
+	return 0, nil
 }
 
-// GET /v1/teachings?search=&category=&page=&size=: the published teachings,
-// the newest message first.
+// GET /v1/teachings?search=&category=&speaker=&year=&day=&page=&size=: the
+// published teachings, the newest message first.
 func (s *Server) listTeachings(c *gin.Context) {
 	s.teachings(c, false)
 }
 
-// GET /v1/admin/teachings?search=&category=&page=&size=: the drafts too
-// (after the published ones).
+// GET /v1/admin/teachings?search=&category=&speaker=&year=&day=&page=&size=:
+// the drafts too (after the published ones).
 func (s *Server) adminListTeachings(c *gin.Context) {
 	s.teachings(c, true)
 }
@@ -135,22 +237,68 @@ func (s *Server) teachings(c *gin.Context, withDrafts bool) {
 		badRequestError(c, err)
 		return
 	}
-	rows, err := s.store.ListTeachings(c, withDrafts)
+	search := req.Q
+	if strings.TrimSpace(search) == "" {
+		search = req.Search
+	}
+	from, err := parseDayFilter(req.From)
+	if err != nil {
+		badRequestError(c, errors.New("from: a day such as 2026-01-01"))
+		return
+	}
+	to, err := parseDayFilter(req.To)
+	if err != nil {
+		badRequestError(c, errors.New("to: a day such as 2026-12-31"))
+		return
+	}
+	categoryID, err := s.teachingCategoryFilter(c, req)
 	if err != nil {
 		internalServerError(c, err)
 		return
 	}
-	// filtered without the covers, which only the page needs
-	kept := []db.ListTeachingsRow{}
-	for _, row := range rows {
-		if req.keeps(toTeaching(row, nil)) {
-			kept = append(kept, row)
-		}
-	}
 	limit, offset := req.limits()
-	page := kept[min(int(offset), len(kept)):min(int(offset+limit), len(kept))]
-	ids := make([]int64, 0, len(page))
-	for _, row := range page {
+	// a category that doesn't exist answers nothing, not the whole list
+	if req.Category != "" && categoryID == 0 {
+		paginatedApiResponse(c, http.StatusOK, []teachingResponse{}, MetaResponse{
+			Total: 0, Limit: limit, Offset: offset,
+		})
+		return
+	}
+	params := db.CountTeachingsFilteredParams{
+		WithDrafts: withDrafts,
+		CategoryID: categoryID,
+		EditionID:  req.EditionID,
+		Year:       req.Year,
+		Day:        req.Day,
+		FromDate:   from,
+		ToDate:     to,
+		Speaker:    fold(req.Speaker),
+		Search:     fold(search),
+	}
+	total, err := s.store.CountTeachingsFiltered(c, params)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	rows, err := s.store.ListTeachingsFiltered(c, db.ListTeachingsFilteredParams{
+		WithDrafts: params.WithDrafts,
+		CategoryID: params.CategoryID,
+		EditionID:  params.EditionID,
+		Year:       params.Year,
+		Day:        params.Day,
+		FromDate:   params.FromDate,
+		ToDate:     params.ToDate,
+		Speaker:    params.Speaker,
+		Search:     params.Search,
+		Lim:        limit,
+		Off:        offset,
+	})
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	ids := make([]int64, 0, len(rows))
+	for _, row := range rows {
 		ids = append(ids, row.CoverID.Int64)
 	}
 	covers, err := s.mediaByIDs(c, ids)
@@ -158,51 +306,143 @@ func (s *Server) teachings(c *gin.Context, withDrafts bool) {
 		internalServerError(c, err)
 		return
 	}
-	teachings := make([]teachingResponse, 0, len(page))
-	for _, row := range page {
+	teachings := make([]teachingResponse, 0, len(rows))
+	for _, row := range rows {
 		teachings = append(teachings, toTeaching(row, covers))
 	}
 	paginatedApiResponse(c, http.StatusOK, teachings, MetaResponse{
-		Total:  int64(len(kept)),
+		Total:  total,
 		Limit:  limit,
 		Offset: offset,
 	})
 }
 
 type teachingCategoryResponse struct {
+	ID    int64  `json:"id"`
 	Name  string `json:"name"`
+	Slug  string `json:"slug"`
 	Count int    `json:"count"`
 }
 
 // GET /v1/teachings/categories: the categories of the published teachings,
-// with how many each, in alphabetical order (the filter chips of the app).
+// with how many each, in the order chosen by the admins (the filter chips).
 func (s *Server) listTeachingCategories(c *gin.Context) {
-	rows, err := s.store.ListTeachings(c, false)
+	rows, err := s.store.ListTeachingCategoryCounts(c, false)
 	if err != nil {
 		internalServerError(c, err)
 		return
 	}
-	counts := map[string]*teachingCategoryResponse{}
+	categories := make([]teachingCategoryResponse, 0, len(rows))
 	for _, row := range rows {
-		name := strings.TrimSpace(row.Category)
-		if name == "" {
-			continue
-		}
-		// "Prédications" and "prédications" are one
-		key := fold(name)
-		if counts[key] == nil {
-			counts[key] = &teachingCategoryResponse{Name: name}
-		}
-		counts[key].Count++
+		categories = append(categories, teachingCategoryResponse{
+			ID: row.ID, Name: row.Name, Slug: row.Slug, Count: int(row.Count),
+		})
 	}
-	categories := make([]teachingCategoryResponse, 0, len(counts))
-	for _, category := range counts {
-		categories = append(categories, *category)
-	}
-	sort.Slice(categories, func(i, j int) bool {
-		return fold(categories[i].Name) < fold(categories[j].Name)
-	})
 	apiResponse(c, http.StatusOK, categories)
+}
+
+type teachingSpeakerFacet struct {
+	Name  string `json:"name"`
+	Count int    `json:"count"`
+}
+
+type teachingYearFacet struct {
+	Year  int32 `json:"year"`
+	Count int   `json:"count"`
+}
+
+type teachingDayFacet struct {
+	Day   int32 `json:"day"`
+	Count int   `json:"count"`
+}
+
+type teachingEditionFacet struct {
+	ID           int64  `json:"id"`
+	CategoryID   int64  `json:"category_id"`
+	CategoryName string `json:"category_name"`
+	CategorySlug string `json:"category_slug"`
+	Year         int32  `json:"year"`
+	Title        string `json:"title"`
+	Count        int    `json:"count"`
+}
+
+type teachingFacetsResponse struct {
+	Categories []teachingCategoryResponse `json:"categories"`
+	Speakers   []teachingSpeakerFacet     `json:"speakers"`
+	Years      []teachingYearFacet        `json:"years"`
+	Editions   []teachingEditionFacet     `json:"editions"`
+	Days       []teachingDayFacet         `json:"days,omitempty"`
+}
+
+// GET /v1/teachings/facets?edition_id=: the values and counts of the filters,
+// for the chips and the advanced panel.
+func (s *Server) listTeachingFacets(c *gin.Context) {
+	var req struct {
+		EditionID int64 `form:"edition_id"`
+	}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		badRequestError(c, err)
+		return
+	}
+	categories, err := s.store.ListTeachingCategoryCounts(c, false)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	speakers, err := s.store.ListTeachingSpeakers(c, false)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	years, err := s.store.ListTeachingYears(c, false)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	editions, err := s.store.ListTeachingEditions(c, false)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	response := teachingFacetsResponse{
+		Categories: make([]teachingCategoryResponse, 0, len(categories)),
+		Speakers:   make([]teachingSpeakerFacet, 0, len(speakers)),
+		Years:      make([]teachingYearFacet, 0, len(years)),
+		Editions:   make([]teachingEditionFacet, 0, len(editions)),
+	}
+	for _, row := range categories {
+		response.Categories = append(response.Categories, teachingCategoryResponse{
+			ID: row.ID, Name: row.Name, Slug: row.Slug, Count: int(row.Count),
+		})
+	}
+	for _, row := range speakers {
+		response.Speakers = append(response.Speakers, teachingSpeakerFacet{Name: row.Speaker, Count: int(row.Count)})
+	}
+	for _, row := range years {
+		response.Years = append(response.Years, teachingYearFacet{Year: int32(row.Year.Int16), Count: int(row.Count)})
+	}
+	for _, row := range editions {
+		response.Editions = append(response.Editions, teachingEditionFacet{
+			ID: row.ID, CategoryID: row.CategoryID, CategoryName: row.CategoryName,
+			CategorySlug: row.CategorySlug, Year: int32(row.Year), Title: row.Title,
+			Count: int(row.TeachingCount),
+		})
+	}
+	if req.EditionID != 0 {
+		days, err := s.store.ListTeachingDays(c, db.ListTeachingDaysParams{
+			EditionID:  sql.NullInt64{Int64: req.EditionID, Valid: req.EditionID != 0},
+			WithDrafts: false,
+		})
+		if err != nil {
+			internalServerError(c, err)
+			return
+		}
+		response.Days = make([]teachingDayFacet, 0, len(days))
+		for _, row := range days {
+			response.Days = append(response.Days, teachingDayFacet{Day: int32(row.DayNumber.Int16), Count: int(row.Count)})
+		}
+	}
+	apiResponse(c, http.StatusOK, response)
 }
 
 // POST /v1/admin/teachings/files (multipart form, field "file"): an MP3 or
@@ -273,7 +513,15 @@ type saveTeachingRequest struct {
 	Title       string `json:"title"`
 	Speaker     string `json:"speaker"`
 	Description string `json:"description"`
-	Category    string `json:"category"`
+	// the category's name; an old app sends only this
+	Category string `json:"category"`
+	// the category chosen in the new form
+	CategoryID *int64 `json:"category_id"`
+	// an annual edition ("Camp des jeunes 2026"), and its day
+	EditionID *int64 `json:"edition_id"`
+	Year      *int32 `json:"year"`
+	DayNumber *int32 `json:"day_number"`
+	Position  int32  `json:"position"`
 	// "2024-08-15"; empty or null when unknown
 	RecordedOn      *string `json:"recorded_on"`
 	AudioID         int64   `json:"audio_id"`
@@ -286,64 +534,153 @@ type saveTeachingRequest struct {
 	Notify *bool `json:"notify"`
 }
 
-// checkedTeaching: trimmed, the lengths, the sound an MP3 or an M4A and the
-// cover an image; the values to save.
-func (s *Server) checkedTeaching(c *gin.Context, req *saveTeachingRequest) (recordedOn sql.NullTime, cover sql.NullInt64, err error) {
+type checkedTeachingValues struct {
+	RecordedOn   sql.NullTime
+	Cover        sql.NullInt64
+	CategoryID   sql.NullInt64
+	EditionID    sql.NullInt64
+	Year         sql.NullInt16
+	DayNumber    sql.NullInt16
+	Position     int32
+	CategoryName string
+}
+
+// checkedTeaching: trimmed, the lengths, the sound an MP3 or an M4A, the
+// category and the edition found or created; the values to save.
+func (s *Server) checkedTeaching(c *gin.Context, req *saveTeachingRequest) (checkedTeachingValues, error) {
+	var values checkedTeachingValues
 	req.Title = strings.TrimSpace(req.Title)
 	req.Speaker = strings.Join(strings.Fields(req.Speaker), " ")
 	req.Description = strings.TrimSpace(req.Description)
 	req.Category = strings.Join(strings.Fields(req.Category), " ")
 	switch {
 	case req.Title == "":
-		return recordedOn, cover, errors.New("title is required")
+		return values, errors.New("title is required")
 	case utf8.RuneCountInString(req.Title) > 200:
-		return recordedOn, cover, errors.New("title: 200 characters at most")
+		return values, errors.New("title: 200 characters at most")
 	case utf8.RuneCountInString(req.Speaker) > 120:
-		return recordedOn, cover, errors.New("speaker: 120 characters at most")
+		return values, errors.New("speaker: 120 characters at most")
 	case utf8.RuneCountInString(req.Description) > 4000:
-		return recordedOn, cover, errors.New("description: 4000 characters at most")
-	case utf8.RuneCountInString(req.Category) > 60:
-		return recordedOn, cover, errors.New("category: 60 characters at most")
+		return values, errors.New("description: 4000 characters at most")
+	case utf8.RuneCountInString(req.Category) > 120:
+		return values, errors.New("category: 120 characters at most")
 	case req.DurationSeconds < 0 || req.DurationSeconds > 24*3600:
-		return recordedOn, cover, errors.New("duration_seconds: 0 to 86400")
+		return values, errors.New("duration_seconds: 0 to 86400")
 	case req.AudioID == 0:
-		return recordedOn, cover, errors.New("audio_id is required")
+		return values, errors.New("audio_id is required")
+	case req.Position < 0 || req.Position > 10000:
+		return values, errors.New("position: 0 to 10000")
 	}
 	if req.RecordedOn != nil && strings.TrimSpace(*req.RecordedOn) != "" {
 		day, err := time.Parse(time.DateOnly, strings.TrimSpace(*req.RecordedOn))
 		if err != nil || day.Year() < 1900 || day.After(time.Now().AddDate(0, 0, 1)) {
-			return recordedOn, cover, errors.New("recorded_on: a day such as 2024-08-15, not in the future")
+			return values, errors.New("recorded_on: a day such as 2024-08-15, not in the future")
 		}
-		recordedOn = sql.NullTime{Time: day, Valid: true}
+		values.RecordedOn = sql.NullTime{Time: day, Valid: true}
 	}
+
+	// the category: an id, a name already known, or a new one typed by hand
+	var category db.TeachingCategory
+	if req.CategoryID != nil && *req.CategoryID != 0 {
+		row, err := s.store.GetTeachingCategory(c, *req.CategoryID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return values, errors.New("category_id: unknown category")
+			}
+			return values, err
+		}
+		category = row
+	} else if req.Category != "" {
+		row, err := s.store.GetTeachingCategoryByName(c, req.Category)
+		if errors.Is(err, sql.ErrNoRows) {
+			row, err = s.createTeachingCategoryFromName(c, req.Category)
+		}
+		if err != nil {
+			return values, err
+		}
+		category = row
+	}
+	if category.ID != 0 {
+		values.CategoryID = sql.NullInt64{Int64: category.ID, Valid: true}
+		req.Category = category.Name
+	}
+
+	// the annual edition, if chosen
+	if req.EditionID != nil && *req.EditionID != 0 {
+		edition, err := s.store.GetTeachingEdition(c, *req.EditionID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return values, errors.New("edition_id: unknown edition")
+			}
+			return values, err
+		}
+		if category.ID != 0 && edition.CategoryID != category.ID {
+			return values, errors.New("edition_id: this edition belongs to another category")
+		}
+		if category.ID == 0 {
+			row, err := s.store.GetTeachingCategory(c, edition.CategoryID)
+			if err != nil {
+				return values, err
+			}
+			category = row
+			values.CategoryID = sql.NullInt64{Int64: category.ID, Valid: true}
+			req.Category = category.Name
+		}
+		values.EditionID = sql.NullInt64{Int64: edition.ID, Valid: true}
+		values.Year = sql.NullInt16{Int16: edition.Year, Valid: true}
+	}
+
+	// the year: given, or taken from the edition, or from the day recorded
+	if req.Year != nil && *req.Year != 0 {
+		if *req.Year < 1900 || *req.Year > 2200 {
+			return values, errors.New("year: 1900 to 2200")
+		}
+		values.Year = sql.NullInt16{Int16: int16(*req.Year), Valid: true}
+	} else if !values.Year.Valid && values.RecordedOn.Valid {
+		values.Year = sql.NullInt16{Int16: int16(values.RecordedOn.Time.Year()), Valid: true}
+	}
+
+	// the day of a camp or a crusade: several teachings may share it
+	if req.DayNumber != nil && *req.DayNumber != 0 {
+		if *req.DayNumber < 1 || *req.DayNumber > 366 {
+			return values, errors.New("day_number: 1 to 366")
+		}
+		values.DayNumber = sql.NullInt16{Int16: int16(*req.DayNumber), Valid: true}
+	}
+	values.Position = req.Position
+
 	ids := []int64{req.AudioID}
 	if req.CoverID != nil && *req.CoverID != 0 {
 		ids = append(ids, *req.CoverID)
 	}
 	rows, err := s.store.ListMediaByIDs(c, ids)
 	if err != nil {
-		return recordedOn, cover, err
+		return values, err
 	}
 	types := map[int64]string{}
 	for _, row := range rows {
 		types[row.ID] = row.ContentType
 	}
 	if !(media.Info{ContentType: types[req.AudioID]}).IsAudio() {
-		return recordedOn, cover, fmt.Errorf("audio_id %d is not an MP3 nor an M4A", req.AudioID)
+		return values, fmt.Errorf("audio_id %d is not an MP3 nor an M4A", req.AudioID)
 	}
 	if len(ids) == 2 {
 		if !strings.HasPrefix(types[ids[1]], "image/") {
-			return recordedOn, cover, fmt.Errorf("cover_id %d is not an image", ids[1])
+			return values, fmt.Errorf("cover_id %d is not an image", ids[1])
 		}
-		cover = sql.NullInt64{Int64: ids[1], Valid: true}
+		values.Cover = sql.NullInt64{Int64: ids[1], Valid: true}
 	}
-	return recordedOn, cover, nil
+	return values, nil
 }
 
 // teachingByID answers one teaching with its cover.
 func (s *Server) teachingByID(c *gin.Context, status int, id int64) {
 	row, err := s.store.GetTeaching(c, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "teaching")
+			return
+		}
 		internalServerError(c, err)
 		return
 	}
@@ -352,7 +689,7 @@ func (s *Server) teachingByID(c *gin.Context, status int, id int64) {
 		internalServerError(c, err)
 		return
 	}
-	apiResponse(c, status, toTeaching(db.ListTeachingsRow(row), covers))
+	apiResponse(c, status, toTeaching(row, covers))
 }
 
 // POST /v1/admin/teachings
@@ -362,7 +699,7 @@ func (s *Server) createTeaching(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	recordedOn, cover, err := s.checkedTeaching(c, &req)
+	values, err := s.checkedTeaching(c, &req)
 	if err != nil {
 		badRequestError(c, err)
 		return
@@ -373,10 +710,15 @@ func (s *Server) createTeaching(c *gin.Context) {
 		Speaker:         req.Speaker,
 		Description:     req.Description,
 		Category:        req.Category,
-		RecordedOn:      recordedOn,
+		CategoryID:      values.CategoryID,
+		EditionID:       values.EditionID,
+		Year:            values.Year,
+		DayNumber:       values.DayNumber,
+		Position:        values.Position,
+		RecordedOn:      values.RecordedOn,
 		AudioID:         req.AudioID,
 		DurationSeconds: req.DurationSeconds,
-		CoverID:         cover,
+		CoverID:         values.Cover,
 		Published:       req.Published,
 		CreatedBy:       nullID(authUser.ID),
 	})
@@ -414,7 +756,7 @@ func (s *Server) updateTeaching(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	recordedOn, cover, err := s.checkedTeaching(c, &req)
+	values, err := s.checkedTeaching(c, &req)
 	if err != nil {
 		badRequestError(c, err)
 		return
@@ -425,10 +767,15 @@ func (s *Server) updateTeaching(c *gin.Context) {
 		Speaker:         req.Speaker,
 		Description:     req.Description,
 		Category:        req.Category,
-		RecordedOn:      recordedOn,
+		CategoryID:      values.CategoryID,
+		EditionID:       values.EditionID,
+		Year:            values.Year,
+		DayNumber:       values.DayNumber,
+		Position:        values.Position,
+		RecordedOn:      values.RecordedOn,
 		AudioID:         req.AudioID,
 		DurationSeconds: req.DurationSeconds,
-		CoverID:         cover,
+		CoverID:         values.Cover,
 		Published:       req.Published,
 	}); err != nil {
 		internalServerError(c, err)
@@ -437,7 +784,7 @@ func (s *Server) updateTeaching(c *gin.Context) {
 	if before.AudioID != req.AudioID {
 		s.dropTeachingMedia(c, before.AudioID)
 	}
-	if before.CoverID.Valid && before.CoverID != cover {
+	if before.CoverID.Valid && before.CoverID != values.Cover {
 		s.dropTeachingMedia(c, before.CoverID.Int64)
 	}
 	s.announceTeaching(c, uri.ID, req.Notify)

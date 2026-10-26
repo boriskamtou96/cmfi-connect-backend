@@ -24,6 +24,7 @@ type Querier interface {
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	ArchiveDocumentCategory(ctx context.Context, arg ArchiveDocumentCategoryParams) (DocumentCategory, error)
+	ArchiveTeachingCategory(ctx context.Context, arg ArchiveTeachingCategoryParams) (TeachingCategory, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
 	ClaimDocumentNotification(ctx context.Context, id int64) (string, error)
@@ -69,6 +70,9 @@ type Querier interface {
 	CountReports(ctx context.Context, status string) (int64, error)
 	CountSentReportSendings(ctx context.Context, discipleID int64) (int64, error)
 	CountSuperadmins(ctx context.Context) (int64, error)
+	CountTeachingsFiltered(ctx context.Context, arg CountTeachingsFilteredParams) (int64, error)
+	CountTeachingsInCategory(ctx context.Context, categoryID sql.NullInt64) (int64, error)
+	CountTeachingsInEdition(ctx context.Context, editionID sql.NullInt64) (int64, error)
 	// A sound or a cover still used by another teaching is kept.
 	CountTeachingsWithMedia(ctx context.Context, mediaID int64) (int64, error)
 	CountUserAuthorities(ctx context.Context, userID int64) (int64, error)
@@ -106,6 +110,8 @@ type Querier interface {
 	// come from 101).
 	CreateStandardActivityType(ctx context.Context, arg CreateStandardActivityTypeParams) (ActivityType, error)
 	CreateTeaching(ctx context.Context, arg CreateTeachingParams) (int64, error)
+	CreateTeachingCategory(ctx context.Context, arg CreateTeachingCategoryParams) (TeachingCategory, error)
+	CreateTeachingEdition(ctx context.Context, arg CreateTeachingEditionParams) (TeachingEdition, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
 	DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error
 	// The authorities of other members that point to this member: their copy
@@ -138,6 +144,7 @@ type Querier interface {
 	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteSoul(ctx context.Context, arg DeleteSoulParams) error
 	DeleteTeaching(ctx context.Context, id int64) (DeleteTeachingRow, error)
+	DeleteTeachingEdition(ctx context.Context, id int64) (int64, error)
 	DeleteUser(ctx context.Context, id int64) error
 	// Before the account: its personal items can't go while entries use them.
 	DeleteUserReports(ctx context.Context, userID int64) error
@@ -187,7 +194,12 @@ type Querier interface {
 	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
 	// standard items are shared, joining report_entries directly would mix users.
 	GetReportSummary(ctx context.Context, arg GetReportSummaryParams) ([]GetReportSummaryRow, error)
-	GetTeaching(ctx context.Context, id int64) (GetTeachingRow, error)
+	GetTeaching(ctx context.Context, id int64) (TeachingDetail, error)
+	GetTeachingCategory(ctx context.Context, id int64) (TeachingCategory, error)
+	GetTeachingCategoryByName(ctx context.Context, name string) (TeachingCategory, error)
+	GetTeachingCategoryBySlug(ctx context.Context, slug string) (TeachingCategory, error)
+	GetTeachingCategoryBySlugAny(ctx context.Context, slug string) (TeachingCategory, error)
+	GetTeachingEdition(ctx context.Context, id int64) (TeachingEdition, error)
 	// Standard items (user_id IS NULL) + the user's own items, archived ones excluded.
 	GetUserActivityTypes(ctx context.Context, userID int64) ([]ActivityType, error)
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
@@ -322,10 +334,16 @@ type Querier interface {
 	ListStandardActivityTypes(ctx context.Context) ([]ActivityType, error)
 	// Among the candidates, the pseudos already used.
 	ListTakenUsernames(ctx context.Context, candidates []string) ([]string, error)
-	// Every teaching with its sound, the published ones first, the newest
-	// message first (then the newest sent), then the drafts; the API filters
-	// (category, speaker, search) and pages them.
-	ListTeachings(ctx context.Context, withDrafts bool) ([]ListTeachingsRow, error)
+	ListTeachingCategories(ctx context.Context, arg ListTeachingCategoriesParams) ([]ListTeachingCategoriesRow, error)
+	ListTeachingCategoryCounts(ctx context.Context, withDrafts bool) ([]ListTeachingCategoryCountsRow, error)
+	ListTeachingDays(ctx context.Context, arg ListTeachingDaysParams) ([]ListTeachingDaysRow, error)
+	ListTeachingEditions(ctx context.Context, withDrafts bool) ([]ListTeachingEditionsRow, error)
+	ListTeachingSpeakers(ctx context.Context, withDrafts bool) ([]ListTeachingSpeakersRow, error)
+	ListTeachingYears(ctx context.Context, withDrafts bool) ([]ListTeachingYearsRow, error)
+	// Une page d'enseignements, les publiés d'abord, les messages les plus
+	// récents en premier. La recherche, la catégorie, l'orateur, l'année et le
+	// jour sont filtrés en base: la pagination et le total restent justes.
+	ListTeachingsFiltered(ctx context.Context, arg ListTeachingsFilteredParams) ([]TeachingDetail, error)
 	// Not over yet (an event in progress is upcoming), the soonest first.
 	ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error)
 	ListUserGivenGifts(ctx context.Context, userID int64) ([]PremiumGift, error)
@@ -411,6 +429,8 @@ type Querier interface {
 	UpdateStandardActivityType(ctx context.Context, arg UpdateStandardActivityTypeParams) (ActivityType, error)
 	// published_at stays the date of the first publication.
 	UpdateTeaching(ctx context.Context, arg UpdateTeachingParams) (int64, error)
+	UpdateTeachingCategory(ctx context.Context, arg UpdateTeachingCategoryParams) (TeachingCategory, error)
+	UpdateTeachingEdition(ctx context.Context, arg UpdateTeachingEditionParams) (TeachingEdition, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)

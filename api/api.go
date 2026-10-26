@@ -230,6 +230,15 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.POST("/teachings", s.createTeaching)
 			admin.PUT("/teachings/:id", s.updateTeaching)
 			admin.DELETE("/teachings/:id", s.deleteTeaching)
+			// the categories and the annual editions of the teachings
+			admin.GET("/teaching-categories", s.adminListTeachingCategories)
+			admin.POST("/teaching-categories", s.createTeachingCategory)
+			admin.PUT("/teaching-categories/:id", s.updateTeachingCategory)
+			admin.PUT("/teaching-categories/:id/archive", s.archiveTeachingCategory)
+			admin.GET("/teaching-editions", s.adminListTeachingEditions)
+			admin.POST("/teaching-editions", s.createTeachingEdition)
+			admin.PUT("/teaching-editions/:id", s.updateTeachingEdition)
+			admin.DELETE("/teaching-editions/:id", s.deleteTeachingEdition)
 
 			// the hymn books: each change gives the book a new version
 			admin.GET("/hymns/books", s.adminListHymnBooks)
@@ -402,6 +411,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			teachings.GET("", s.listTeachings)
 			teachings.GET("/categories", s.listTeachingCategories)
+			teachings.GET("/facets", s.listTeachingFacets)
 		}
 
 		// the phones that receive push notifications, and the member's

@@ -519,6 +519,72 @@ type Teaching struct {
 	CreatedAt       time.Time     `json:"created_at"`
 	UpdatedAt       time.Time     `json:"updated_at"`
 	NotifiedAt      sql.NullTime  `json:"notified_at"`
+	CategoryID      sql.NullInt64 `json:"category_id"`
+	EditionID       sql.NullInt64 `json:"edition_id"`
+	Year            sql.NullInt16 `json:"year"`
+	DayNumber       sql.NullInt16 `json:"day_number"`
+	Position        int32         `json:"position"`
+	SearchText      string        `json:"search_text"`
+}
+
+type TeachingCategory struct {
+	ID          int64         `json:"id"`
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Annual      bool          `json:"annual"`
+	Position    int32         `json:"position"`
+	ArchivedAt  sql.NullTime  `json:"archived_at"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
+type TeachingDetail struct {
+	ID              int64          `json:"id"`
+	Title           string         `json:"title"`
+	Speaker         string         `json:"speaker"`
+	Description     string         `json:"description"`
+	Category        string         `json:"category"`
+	RecordedOn      sql.NullTime   `json:"recorded_on"`
+	AudioID         int64          `json:"audio_id"`
+	DurationSeconds int32          `json:"duration_seconds"`
+	CoverID         sql.NullInt64  `json:"cover_id"`
+	Published       bool           `json:"published"`
+	PublishedAt     sql.NullTime   `json:"published_at"`
+	CreatedBy       sql.NullInt64  `json:"created_by"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	NotifiedAt      sql.NullTime   `json:"notified_at"`
+	CategoryID      sql.NullInt64  `json:"category_id"`
+	EditionID       sql.NullInt64  `json:"edition_id"`
+	Year            sql.NullInt16  `json:"year"`
+	DayNumber       sql.NullInt16  `json:"day_number"`
+	Position        int32          `json:"position"`
+	SearchText      string         `json:"search_text"`
+	AudioKey        string         `json:"audio_key"`
+	AudioType       string         `json:"audio_type"`
+	AudioSize       int64          `json:"audio_size"`
+	CategorySlug    sql.NullString `json:"category_slug"`
+	CategoryName    sql.NullString `json:"category_name"`
+	EditionTitle    sql.NullString `json:"edition_title"`
+	EditionTheme    sql.NullString `json:"edition_theme"`
+}
+
+type TeachingEdition struct {
+	ID         int64         `json:"id"`
+	CategoryID int64         `json:"category_id"`
+	Year       int16         `json:"year"`
+	Title      string        `json:"title"`
+	Theme      string        `json:"theme"`
+	StartsOn   sql.NullTime  `json:"starts_on"`
+	EndsOn     sql.NullTime  `json:"ends_on"`
+	Venue      string        `json:"venue"`
+	CoverID    sql.NullInt64 `json:"cover_id"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
 }
 
 type User struct {

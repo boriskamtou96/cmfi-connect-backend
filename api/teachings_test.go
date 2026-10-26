@@ -117,7 +117,17 @@ func TestAnAdminPublishesATeaching(t *testing.T) {
 
 	categories := send(t, router, http.MethodGet, boris.Token, "/v1/teachings/categories", nil)
 	require.Equal(t, http.StatusOK, categories.Code)
-	require.Contains(t, decode[[]teachingCategoryResponse](t, categories), teachingCategoryResponse{Name: "Prédications", Count: 1})
+	savedCategories := decode[[]teachingCategoryResponse](t, categories)
+	require.NotEmpty(t, savedCategories)
+	var predications *teachingCategoryResponse
+	for index := range savedCategories {
+		if savedCategories[index].Name == "Prédications" {
+			predications = &savedCategories[index]
+		}
+	}
+	require.NotNil(t, predications)
+	require.Equal(t, 1, predications.Count)
+	require.Equal(t, "predications", predications.Slug)
 
 	require.Equal(t, http.StatusNoContent, send(t, router, http.MethodDelete, admin.Token, path, nil).Code)
 	require.Equal(t, http.StatusNotFound, send(t, router, http.MethodDelete, admin.Token, path, nil).Code)
