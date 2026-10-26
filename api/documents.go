@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
-	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -34,16 +34,26 @@ type libraryFileResponse struct {
 }
 
 type libraryDocumentResponse struct {
-	ID          int64               `json:"id"`
-	Title       string              `json:"title"`
-	Description string              `json:"description"`
-	Category    string              `json:"category"`
-	File        libraryFileResponse `json:"file"`
-	Published   bool                `json:"published"`
-	PublishedAt *time.Time          `json:"published_at"`
-	UpdatedAt   time.Time           `json:"updated_at"`
+	ID           int64               `json:"id"`
+	Title        string              `json:"title"`
+	Description  string              `json:"description"`
+	Category     string              `json:"category"`
+	CategoryID   *int64              `json:"category_id"`
+	CategorySlug string              `json:"category_slug"`
+	File         libraryFileResponse `json:"file"`
+	Published    bool                `json:"published"`
+	PublishedAt  *time.Time          `json:"published_at"`
+	UpdatedAt    time.Time           `json:"updated_at"`
 	// when the members were told by a push; null before
 	NotifiedAt *time.Time `json:"notified_at"`
+}
+
+func documentCategoryIDPtr(value sql.NullInt64) *int64 {
+	if !value.Valid {
+		return nil
+	}
+	number := value.Int64
+	return &number
 }
 
 func documentKind(contentType string) string {
@@ -53,12 +63,18 @@ func documentKind(contentType string) string {
 	return "word"
 }
 
-func toLibraryDocument(row db.ListDocumentsRow) libraryDocumentResponse {
+func toLibraryDocument(row db.DocumentDetail) libraryDocumentResponse {
+	category := row.Category
+	if row.CategoryName.Valid {
+		category = row.CategoryName.String
+	}
 	response := libraryDocumentResponse{
-		ID:          row.ID,
-		Title:       row.Title,
-		Description: row.Description,
-		Category:    row.Category,
+		ID:           row.ID,
+		Title:        row.Title,
+		Description:  row.Description,
+		Category:     category,
+		CategoryID:   documentCategoryIDPtr(row.CategoryID),
+		CategorySlug: row.CategorySlug.String,
 		File: libraryFileResponse{
 			ID:        row.FileID,
 			URL:       mediaURL(row.FileKey),
@@ -82,26 +98,49 @@ type documentsRequest struct {
 	// words of the title, the description, the category or the file name;
 	// case and accents left aside
 	Search string `form:"search"`
-	// one category; empty for all
-	Category string `form:"category"`
+	// the same, for the apps that ask q
+	Q string `form:"q"`
+	// one category: its id, its slug ("prieres") or its name
+	Category   string `form:"category"`
+	CategoryID int64  `form:"category_id"`
 }
 
-// keeps tells whether a document answers the category and the search.
-func (r documentsRequest) keeps(d libraryDocumentResponse) bool {
-	if category := fold(r.Category); category != "" && fold(d.Category) != category {
-		return false
+func (s *Server) documentCategoryFilter(c *gin.Context, request documentsRequest) (int64, error) {
+	if request.CategoryID != 0 {
+		return request.CategoryID, nil
 	}
-	words := strings.Fields(fold(r.Search))
-	if len(words) == 0 {
-		return true
+	value := strings.TrimSpace(request.Category)
+	if value == "" {
+		return 0, nil
 	}
-	text := fold(strings.Join([]string{d.Title, d.Description, d.Category, d.File.Name}, " "))
-	for _, word := range words {
-		if !strings.Contains(text, word) {
-			return false
+	if id, err := strconv.ParseInt(value, 10, 64); err == nil && id > 0 {
+		return id, nil
+	}
+	category, err := s.store.GetDocumentCategoryBySlug(c, value)
+	if err == nil {
+		return category.ID, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return 0, err
+	}
+	category, err = s.store.GetDocumentCategoryByName(c, value)
+	if err == nil {
+		return category.ID, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return 0, err
+	}
+	categories, err := s.store.ListDocumentCategories(c, db.ListDocumentCategoriesParams{WithDrafts: true, WithArchived: true})
+	if err != nil {
+		return 0, err
+	}
+	wanted := fold(value)
+	for _, one := range categories {
+		if fold(one.Name) == wanted || one.Slug == value {
+			return one.ID, nil
 		}
 	}
-	return true
+	return 0, nil
 }
 
 // GET /v1/documents?search=&category=&page=&size=: the published documents,
@@ -122,59 +161,75 @@ func (s *Server) documents(c *gin.Context, withDrafts bool) {
 		badRequestError(c, err)
 		return
 	}
-	rows, err := s.store.ListDocuments(c, withDrafts)
+	search := req.Q
+	if strings.TrimSpace(search) == "" {
+		search = req.Search
+	}
+	categoryID, err := s.documentCategoryFilter(c, req)
 	if err != nil {
 		internalServerError(c, err)
 		return
 	}
-	kept := []libraryDocumentResponse{}
-	for _, row := range rows {
-		if document := toLibraryDocument(row); req.keeps(document) {
-			kept = append(kept, document)
-		}
-	}
 	limit, offset := req.limits()
-	page := kept[min(int(offset), len(kept)):min(int(offset+limit), len(kept))]
-	paginatedApiResponse(c, http.StatusOK, page, MetaResponse{
-		Total:  int64(len(kept)),
+	if req.Category != "" && categoryID == 0 {
+		paginatedApiResponse(c, http.StatusOK, []libraryDocumentResponse{}, MetaResponse{
+			Total: 0, Limit: limit, Offset: offset,
+		})
+		return
+	}
+	params := db.CountDocumentsFilteredParams{
+		WithDrafts: withDrafts,
+		CategoryID: categoryID,
+		Search:     fold(search),
+	}
+	total, err := s.store.CountDocumentsFiltered(c, params)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	rows, err := s.store.ListDocumentsFiltered(c, db.ListDocumentsFilteredParams{
+		WithDrafts: params.WithDrafts,
+		CategoryID: params.CategoryID,
+		Search:     params.Search,
+		Lim:        limit,
+		Off:        offset,
+	})
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	documents := make([]libraryDocumentResponse, 0, len(rows))
+	for _, row := range rows {
+		documents = append(documents, toLibraryDocument(row))
+	}
+	paginatedApiResponse(c, http.StatusOK, documents, MetaResponse{
+		Total:  total,
 		Limit:  limit,
 		Offset: offset,
 	})
 }
 
 type libraryCategoryResponse struct {
+	ID    int64  `json:"id"`
 	Name  string `json:"name"`
+	Slug  string `json:"slug"`
 	Count int    `json:"count"`
 }
 
 // GET /v1/documents/categories: the categories of the published documents,
-// with how many each, in alphabetical order (the filter chips of the app).
+// with how many each, in the order chosen by the admins (the filter chips).
 func (s *Server) listDocumentCategories(c *gin.Context) {
-	rows, err := s.store.ListDocuments(c, false)
+	rows, err := s.store.ListDocumentCategoryCounts(c, false)
 	if err != nil {
 		internalServerError(c, err)
 		return
 	}
-	counts := map[string]*libraryCategoryResponse{}
+	categories := make([]libraryCategoryResponse, 0, len(rows))
 	for _, row := range rows {
-		name := strings.TrimSpace(row.Category)
-		if name == "" {
-			continue
-		}
-		// "Formulaires" and "formulaires" are one
-		key := fold(name)
-		if counts[key] == nil {
-			counts[key] = &libraryCategoryResponse{Name: name}
-		}
-		counts[key].Count++
+		categories = append(categories, libraryCategoryResponse{
+			ID: row.ID, Name: row.Name, Slug: row.Slug, Count: int(row.Count),
+		})
 	}
-	categories := make([]libraryCategoryResponse, 0, len(counts))
-	for _, category := range counts {
-		categories = append(categories, *category)
-	}
-	sort.Slice(categories, func(i, j int) bool {
-		return fold(categories[i].Name) < fold(categories[j].Name)
-	})
 	apiResponse(c, http.StatusOK, categories)
 }
 
@@ -249,55 +304,97 @@ func (s *Server) uploadDocumentFile(c *gin.Context) {
 type saveDocumentRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	Category    string `json:"category"`
-	FileID      int64  `json:"file_id"`
-	FileName    string `json:"file_name"`
-	Published   bool   `json:"published"`
+	// the category's name; an old app sends only this
+	Category string `json:"category"`
+	// the category chosen in the new form
+	CategoryID *int64 `json:"category_id"`
+	FileID     int64  `json:"file_id"`
+	FileName   string `json:"file_name"`
+	Published  bool   `json:"published"`
 	// « Prévenir les membres » the first time it is published (true when
 	// absent)
 	Notify *bool `json:"notify"`
 }
 
-// checked: trimmed, the lengths, and the file a PDF or a Word file.
-func (s *Server) checkDocument(c *gin.Context, req *saveDocumentRequest) error {
+type checkedDocumentValues struct {
+	CategoryID   sql.NullInt64
+	CategoryName string
+}
+
+// checkDocument: trimmed, the lengths, the category found or created, and
+// the file a PDF or a Word file.
+func (s *Server) checkDocument(c *gin.Context, req *saveDocumentRequest) (checkedDocumentValues, error) {
+	var values checkedDocumentValues
 	req.Title = strings.TrimSpace(req.Title)
 	req.Description = strings.TrimSpace(req.Description)
 	req.Category = strings.Join(strings.Fields(req.Category), " ")
 	req.FileName = strings.TrimSpace(filepath.Base(req.FileName))
 	switch {
 	case req.Title == "":
-		return errors.New("title is required")
+		return values, errors.New("title is required")
 	case utf8.RuneCountInString(req.Title) > 200:
-		return errors.New("title: 200 characters at most")
+		return values, errors.New("title: 200 characters at most")
 	case utf8.RuneCountInString(req.Description) > 2000:
-		return errors.New("description: 2000 characters at most")
-	case utf8.RuneCountInString(req.Category) > 60:
-		return errors.New("category: 60 characters at most")
+		return values, errors.New("description: 2000 characters at most")
+	case utf8.RuneCountInString(req.Category) > 120:
+		return values, errors.New("category: 120 characters at most")
 	case utf8.RuneCountInString(req.FileName) > 200:
-		return errors.New("file_name: 200 characters at most")
+		return values, errors.New("file_name: 200 characters at most")
 	case req.FileID == 0:
-		return errors.New("file_id is required")
+		return values, errors.New("file_id is required")
+	}
+	var category db.DocumentCategory
+	if req.CategoryID != nil && *req.CategoryID != 0 {
+		row, err := s.store.GetDocumentCategory(c, *req.CategoryID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return values, errors.New("category_id: unknown category")
+			}
+			return values, err
+		}
+		category = row
+	} else if req.Category != "" {
+		row, err := s.store.GetDocumentCategoryByName(c, req.Category)
+		if errors.Is(err, sql.ErrNoRows) {
+			row, err = s.createDocumentCategoryFromName(c, req.Category)
+		}
+		if err != nil {
+			return values, err
+		}
+		category = row
+	}
+	if category.ID != 0 {
+		values.CategoryID = sql.NullInt64{Int64: category.ID, Valid: true}
+		req.Category = category.Name
 	}
 	rows, err := s.store.ListMediaByIDs(c, []int64{req.FileID})
 	if err != nil {
-		return err
+		return values, err
 	}
 	if len(rows) != 1 || !(media.Info{ContentType: rows[0].ContentType}).IsDocument() {
-		return fmt.Errorf("file_id %d is not a PDF nor a Word file", req.FileID)
+		return values, fmt.Errorf("file_id %d is not a PDF nor a Word file", req.FileID)
 	}
 	if req.FileName == "." || req.FileName == "" {
 		req.FileName = req.Title + filepath.Ext(rows[0].Key)
 	}
-	return nil
+	return values, nil
 }
 
-func (s *Server) documentByID(c *gin.Context, id int64) {
+func (s *Server) documentResponse(c *gin.Context, status int, id int64) {
 	row, err := s.store.GetDocument(c, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			resourceNotFoundError(c, "document")
+			return
+		}
 		internalServerError(c, err)
 		return
 	}
-	apiResponse(c, http.StatusOK, toLibraryDocument(db.ListDocumentsRow(row)))
+	apiResponse(c, status, toLibraryDocument(row))
+}
+
+func (s *Server) documentByID(c *gin.Context, id int64) {
+	s.documentResponse(c, http.StatusOK, id)
 }
 
 // POST /v1/admin/documents
@@ -307,7 +404,8 @@ func (s *Server) createDocument(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	if err := s.checkDocument(c, &req); err != nil {
+	values, err := s.checkDocument(c, &req)
+	if err != nil {
 		badRequestError(c, err)
 		return
 	}
@@ -316,6 +414,7 @@ func (s *Server) createDocument(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 		Category:    req.Category,
+		CategoryID:  values.CategoryID,
 		FileID:      req.FileID,
 		FileName:    req.FileName,
 		Published:   req.Published,
@@ -326,12 +425,7 @@ func (s *Server) createDocument(c *gin.Context) {
 		return
 	}
 	s.announceDocument(c, id, req.Notify)
-	row, err := s.store.GetDocument(c, id)
-	if err != nil {
-		internalServerError(c, err)
-		return
-	}
-	apiResponse(c, http.StatusCreated, toLibraryDocument(db.ListDocumentsRow(row)))
+	s.documentResponse(c, http.StatusCreated, id)
 }
 
 type documentURI struct {
@@ -360,7 +454,8 @@ func (s *Server) updateDocument(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	if err := s.checkDocument(c, &req); err != nil {
+	values, err := s.checkDocument(c, &req)
+	if err != nil {
 		badRequestError(c, err)
 		return
 	}
@@ -369,6 +464,7 @@ func (s *Server) updateDocument(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 		Category:    req.Category,
+		CategoryID:  values.CategoryID,
 		FileID:      req.FileID,
 		FileName:    req.FileName,
 		Published:   req.Published,
@@ -380,6 +476,7 @@ func (s *Server) updateDocument(c *gin.Context) {
 		s.dropDocumentFile(c, before.FileID)
 	}
 	s.announceDocument(c, uri.ID, req.Notify)
+	// documentByID answers 200
 	s.documentByID(c, uri.ID)
 }
 

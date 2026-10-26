@@ -200,7 +200,7 @@ func newPaymentsWorld(t *testing.T) paymentsWorld {
 
 // runSQL runs a statement on the test database.
 func runSQL(t *testing.T, query string, args ...any) {
-	conn, err := sql.Open(dbDriver, dsn)
+	conn, err := sql.Open(dbDriver, testDSN())
 	require.NoError(t, err)
 	defer conn.Close()
 	_, err = conn.ExecContext(context.Background(), query, args...)

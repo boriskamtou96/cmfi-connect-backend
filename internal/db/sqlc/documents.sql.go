@@ -11,6 +11,74 @@ import (
 	"time"
 )
 
+const archiveDocumentCategory = `-- name: ArchiveDocumentCategory :one
+UPDATE document_categories
+SET archived_at = CASE WHEN $1::boolean THEN now() ELSE NULL END,
+    updated_at = now()
+WHERE id = $2
+RETURNING id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at
+`
+
+type ArchiveDocumentCategoryParams struct {
+	Archived bool  `json:"archived"`
+	ID       int64 `json:"id"`
+}
+
+func (q *Queries) ArchiveDocumentCategory(ctx context.Context, arg ArchiveDocumentCategoryParams) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, archiveDocumentCategory, arg.Archived, arg.ID)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const countDocumentsFiltered = `-- name: CountDocumentsFiltered :one
+SELECT count(*)
+FROM document_details d
+WHERE ($1::boolean OR d.published)
+  AND ($2::bigint = 0 OR d.category_id = $2)
+  AND ($3::text = '' OR NOT EXISTS (
+      SELECT 1
+      FROM unnest(string_to_array($3::text, ' ')) AS word
+      WHERE word <> '' AND d.search_text NOT LIKE '%' || word || '%'
+  ))
+`
+
+type CountDocumentsFilteredParams struct {
+	WithDrafts bool   `json:"with_drafts"`
+	CategoryID int64  `json:"category_id"`
+	Search     string `json:"search"`
+}
+
+func (q *Queries) CountDocumentsFiltered(ctx context.Context, arg CountDocumentsFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countDocumentsFiltered, arg.WithDrafts, arg.CategoryID, arg.Search)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countDocumentsInCategory = `-- name: CountDocumentsInCategory :one
+SELECT count(*) FROM documents WHERE category_id = $1
+`
+
+func (q *Queries) CountDocumentsInCategory(ctx context.Context, categoryID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countDocumentsInCategory, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countDocumentsWithFile = `-- name: CountDocumentsWithFile :one
 SELECT count(*) FROM documents WHERE file_id = $1
 `
@@ -24,10 +92,11 @@ func (q *Queries) CountDocumentsWithFile(ctx context.Context, fileID int64) (int
 }
 
 const createDocument = `-- name: CreateDocument :one
-INSERT INTO documents (title, description, category, file_id, file_name, published, published_at, created_by)
+INSERT INTO documents (title, description, category, category_id, file_id, file_name, published, published_at, created_by)
 VALUES (
-    $1, $2, $3, $4, $5,
-    $6, CASE WHEN $6::boolean THEN now() END, $7
+    $1, $2, $3, $4,
+    $5, $6,
+    $7, CASE WHEN $7::boolean THEN now() END, $8
 )
 RETURNING id
 `
@@ -36,6 +105,7 @@ type CreateDocumentParams struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	Category    string        `json:"category"`
+	CategoryID  sql.NullInt64 `json:"category_id"`
 	FileID      int64         `json:"file_id"`
 	FileName    string        `json:"file_name"`
 	Published   bool          `json:"published"`
@@ -47,6 +117,7 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		arg.Title,
 		arg.Description,
 		arg.Category,
+		arg.CategoryID,
 		arg.FileID,
 		arg.FileName,
 		arg.Published,
@@ -55,6 +126,52 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const createDocumentCategory = `-- name: CreateDocumentCategory :one
+INSERT INTO document_categories (name, slug, description, color, icon, parent_id, position)
+VALUES (
+    $1, $2, $3, $4, $5,
+    $6, $7
+)
+RETURNING id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at
+`
+
+type CreateDocumentCategoryParams struct {
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Position    int32         `json:"position"`
+}
+
+func (q *Queries) CreateDocumentCategory(ctx context.Context, arg CreateDocumentCategoryParams) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, createDocumentCategory,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+		arg.Color,
+		arg.Icon,
+		arg.ParentID,
+		arg.Position,
+	)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const deleteDocument = `-- name: DeleteDocument :one
@@ -70,33 +187,12 @@ func (q *Queries) DeleteDocument(ctx context.Context, id int64) (int64, error) {
 }
 
 const getDocument = `-- name: GetDocument :one
-SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, d.notified_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
-FROM documents d
-JOIN media m ON m.id = d.file_id
-WHERE d.id = $1
+SELECT id, title, description, category, file_id, file_name, published, published_at, created_by, created_at, updated_at, notified_at, category_id, search_text, file_key, file_type, file_size, category_slug, category_name FROM document_details WHERE id = $1
 `
 
-type GetDocumentRow struct {
-	ID          int64         `json:"id"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	Category    string        `json:"category"`
-	FileID      int64         `json:"file_id"`
-	FileName    string        `json:"file_name"`
-	Published   bool          `json:"published"`
-	PublishedAt sql.NullTime  `json:"published_at"`
-	CreatedBy   sql.NullInt64 `json:"created_by"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
-	NotifiedAt  sql.NullTime  `json:"notified_at"`
-	FileKey     string        `json:"file_key"`
-	FileType    string        `json:"file_type"`
-	FileSize    int64         `json:"file_size"`
-}
-
-func (q *Queries) GetDocument(ctx context.Context, id int64) (GetDocumentRow, error) {
+func (q *Queries) GetDocument(ctx context.Context, id int64) (DocumentDetail, error) {
 	row := q.db.QueryRowContext(ctx, getDocument, id)
-	var i GetDocumentRow
+	var i DocumentDetail
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -110,50 +206,259 @@ func (q *Queries) GetDocument(ctx context.Context, id int64) (GetDocumentRow, er
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.NotifiedAt,
+		&i.CategoryID,
+		&i.SearchText,
 		&i.FileKey,
 		&i.FileType,
 		&i.FileSize,
+		&i.CategorySlug,
+		&i.CategoryName,
 	)
 	return i, err
 }
 
-const listDocuments = `-- name: ListDocuments :many
-SELECT d.id, d.title, d.description, d.category, d.file_id, d.file_name, d.published, d.published_at, d.created_by, d.created_at, d.updated_at, d.notified_at, m.key AS file_key, m.content_type AS file_type, m.size_bytes AS file_size
-FROM documents d
-JOIN media m ON m.id = d.file_id
-WHERE $1::boolean OR d.published
-ORDER BY d.published DESC, d.published_at DESC NULLS LAST, d.updated_at DESC, d.id DESC
+const getDocumentCategory = `-- name: GetDocumentCategory :one
+SELECT id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at FROM document_categories WHERE id = $1
 `
 
-type ListDocumentsRow struct {
-	ID          int64         `json:"id"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	Category    string        `json:"category"`
-	FileID      int64         `json:"file_id"`
-	FileName    string        `json:"file_name"`
-	Published   bool          `json:"published"`
-	PublishedAt sql.NullTime  `json:"published_at"`
-	CreatedBy   sql.NullInt64 `json:"created_by"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
-	NotifiedAt  sql.NullTime  `json:"notified_at"`
-	FileKey     string        `json:"file_key"`
-	FileType    string        `json:"file_type"`
-	FileSize    int64         `json:"file_size"`
+func (q *Queries) GetDocumentCategory(ctx context.Context, id int64) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, getDocumentCategory, id)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
-// Every document with its file, the published ones first by date, then the
-// drafts; the API filters (category, search) and pages them.
-func (q *Queries) ListDocuments(ctx context.Context, withDrafts bool) ([]ListDocumentsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listDocuments, withDrafts)
+const getDocumentCategoryByName = `-- name: GetDocumentCategoryByName :one
+SELECT id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at FROM document_categories
+WHERE lower(btrim(name)) = lower(btrim($1)) AND archived_at IS NULL
+LIMIT 1
+`
+
+func (q *Queries) GetDocumentCategoryByName(ctx context.Context, name string) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, getDocumentCategoryByName, name)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDocumentCategoryBySlug = `-- name: GetDocumentCategoryBySlug :one
+SELECT id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at FROM document_categories WHERE slug = $1 AND archived_at IS NULL
+`
+
+func (q *Queries) GetDocumentCategoryBySlug(ctx context.Context, slug string) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, getDocumentCategoryBySlug, slug)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getDocumentCategoryBySlugAny = `-- name: GetDocumentCategoryBySlugAny :one
+SELECT id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at FROM document_categories WHERE slug = $1
+`
+
+func (q *Queries) GetDocumentCategoryBySlugAny(ctx context.Context, slug string) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, getDocumentCategoryBySlugAny, slug)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listDocumentCategories = `-- name: ListDocumentCategories :many
+SELECT c.id, c.name, c.slug, c.description, c.color, c.icon, c.parent_id, c.position, c.archived_at, c.created_at, c.updated_at, count(d.id)::int AS document_count
+FROM document_categories c
+LEFT JOIN documents d ON d.category_id = c.id AND ($1::boolean OR d.published)
+WHERE ($2::boolean OR c.archived_at IS NULL)
+GROUP BY c.id
+ORDER BY c.position, lower(c.name)
+`
+
+type ListDocumentCategoriesParams struct {
+	WithDrafts   bool `json:"with_drafts"`
+	WithArchived bool `json:"with_archived"`
+}
+
+type ListDocumentCategoriesRow struct {
+	ID            int64         `json:"id"`
+	Name          string        `json:"name"`
+	Slug          string        `json:"slug"`
+	Description   string        `json:"description"`
+	Color         string        `json:"color"`
+	Icon          string        `json:"icon"`
+	ParentID      sql.NullInt64 `json:"parent_id"`
+	Position      int32         `json:"position"`
+	ArchivedAt    sql.NullTime  `json:"archived_at"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	DocumentCount int32         `json:"document_count"`
+}
+
+func (q *Queries) ListDocumentCategories(ctx context.Context, arg ListDocumentCategoriesParams) ([]ListDocumentCategoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listDocumentCategories, arg.WithDrafts, arg.WithArchived)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListDocumentsRow{}
+	items := []ListDocumentCategoriesRow{}
 	for rows.Next() {
-		var i ListDocumentsRow
+		var i ListDocumentCategoriesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Description,
+			&i.Color,
+			&i.Icon,
+			&i.ParentID,
+			&i.Position,
+			&i.ArchivedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DocumentCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDocumentCategoryCounts = `-- name: ListDocumentCategoryCounts :many
+SELECT c.id, c.name, c.slug, count(d.id)::int AS count
+FROM document_categories c
+JOIN documents d ON d.category_id = c.id AND ($1::boolean OR d.published)
+WHERE c.archived_at IS NULL
+GROUP BY c.id
+ORDER BY c.position, lower(c.name)
+`
+
+type ListDocumentCategoryCountsRow struct {
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Slug  string `json:"slug"`
+	Count int32  `json:"count"`
+}
+
+func (q *Queries) ListDocumentCategoryCounts(ctx context.Context, withDrafts bool) ([]ListDocumentCategoryCountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listDocumentCategoryCounts, withDrafts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDocumentCategoryCountsRow{}
+	for rows.Next() {
+		var i ListDocumentCategoryCountsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDocumentsFiltered = `-- name: ListDocumentsFiltered :many
+SELECT id, title, description, category, file_id, file_name, published, published_at, created_by, created_at, updated_at, notified_at, category_id, search_text, file_key, file_type, file_size, category_slug, category_name
+FROM document_details d
+WHERE ($1::boolean OR d.published)
+  AND ($2::bigint = 0 OR d.category_id = $2)
+  AND ($3::text = '' OR NOT EXISTS (
+      SELECT 1
+      FROM unnest(string_to_array($3::text, ' ')) AS word
+      WHERE word <> '' AND d.search_text NOT LIKE '%' || word || '%'
+  ))
+ORDER BY d.published DESC, d.published_at DESC NULLS LAST, d.updated_at DESC, d.id DESC
+LIMIT $5 OFFSET $4
+`
+
+type ListDocumentsFilteredParams struct {
+	WithDrafts bool   `json:"with_drafts"`
+	CategoryID int64  `json:"category_id"`
+	Search     string `json:"search"`
+	Off        int32  `json:"off"`
+	Lim        int32  `json:"lim"`
+}
+
+// Une page de documents, les publiés d'abord, les plus récents en premier.
+// La recherche et la catégorie sont filtrées en base.
+func (q *Queries) ListDocumentsFiltered(ctx context.Context, arg ListDocumentsFilteredParams) ([]DocumentDetail, error) {
+	rows, err := q.db.QueryContext(ctx, listDocumentsFiltered,
+		arg.WithDrafts,
+		arg.CategoryID,
+		arg.Search,
+		arg.Off,
+		arg.Lim,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DocumentDetail{}
+	for rows.Next() {
+		var i DocumentDetail
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
@@ -167,9 +472,13 @@ func (q *Queries) ListDocuments(ctx context.Context, withDrafts bool) ([]ListDoc
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.NotifiedAt,
+			&i.CategoryID,
+			&i.SearchText,
 			&i.FileKey,
 			&i.FileType,
 			&i.FileSize,
+			&i.CategorySlug,
+			&i.CategoryName,
 		); err != nil {
 			return nil, err
 		}
@@ -189,23 +498,25 @@ UPDATE documents
 SET title = $1,
     description = $2,
     category = $3,
-    file_id = $4,
-    file_name = $5,
-    published = $6,
-    published_at = CASE WHEN $6::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
+    category_id = $4,
+    file_id = $5,
+    file_name = $6,
+    published = $7,
+    published_at = CASE WHEN $7::boolean THEN COALESCE(published_at, now()) ELSE published_at END,
     updated_at = now()
-WHERE id = $7
+WHERE id = $8
 RETURNING id
 `
 
 type UpdateDocumentParams struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Category    string `json:"category"`
-	FileID      int64  `json:"file_id"`
-	FileName    string `json:"file_name"`
-	Published   bool   `json:"published"`
-	ID          int64  `json:"id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Category    string        `json:"category"`
+	CategoryID  sql.NullInt64 `json:"category_id"`
+	FileID      int64         `json:"file_id"`
+	FileName    string        `json:"file_name"`
+	Published   bool          `json:"published"`
+	ID          int64         `json:"id"`
 }
 
 // published_at stays the date of the first publication.
@@ -214,6 +525,7 @@ func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) 
 		arg.Title,
 		arg.Description,
 		arg.Category,
+		arg.CategoryID,
 		arg.FileID,
 		arg.FileName,
 		arg.Published,
@@ -222,4 +534,57 @@ func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) 
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const updateDocumentCategory = `-- name: UpdateDocumentCategory :one
+UPDATE document_categories
+SET name = $1,
+    slug = $2,
+    description = $3,
+    color = $4,
+    icon = $5,
+    parent_id = $6,
+    position = $7,
+    updated_at = now()
+WHERE id = $8
+RETURNING id, name, slug, description, color, icon, parent_id, position, archived_at, created_at, updated_at
+`
+
+type UpdateDocumentCategoryParams struct {
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Position    int32         `json:"position"`
+	ID          int64         `json:"id"`
+}
+
+func (q *Queries) UpdateDocumentCategory(ctx context.Context, arg UpdateDocumentCategoryParams) (DocumentCategory, error) {
+	row := q.db.QueryRowContext(ctx, updateDocumentCategory,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+		arg.Color,
+		arg.Icon,
+		arg.ParentID,
+		arg.Position,
+		arg.ID,
+	)
+	var i DocumentCategory
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.Color,
+		&i.Icon,
+		&i.ParentID,
+		&i.Position,
+		&i.ArchivedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

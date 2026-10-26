@@ -219,6 +219,11 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.POST("/documents", s.createDocument)
 			admin.PUT("/documents/:id", s.updateDocument)
 			admin.DELETE("/documents/:id", s.deleteDocument)
+			// the categories of Nos documents
+			admin.GET("/document-categories", s.adminListDocumentCategories)
+			admin.POST("/document-categories", s.createDocumentCategory)
+			admin.PUT("/document-categories/:id", s.updateDocumentCategory)
+			admin.PUT("/document-categories/:id/archive", s.archiveDocumentCategory)
 			// Enseignements: an MP3 or an M4A each
 			admin.GET("/teachings", s.adminListTeachings)
 			admin.POST("/teachings/files", s.uploadTeachingAudio)

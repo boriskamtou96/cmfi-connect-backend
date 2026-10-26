@@ -23,6 +23,7 @@ type Querier interface {
 	AnswerImportunityInvitation(ctx context.Context, arg AnswerImportunityInvitationParams) (ImportunityMember, error)
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
+	ArchiveDocumentCategory(ctx context.Context, arg ArchiveDocumentCategoryParams) (DocumentCategory, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
 	ClaimDocumentNotification(ctx context.Context, id int64) (string, error)
@@ -46,6 +47,8 @@ type Querier interface {
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
 	CountAnnouncements(ctx context.Context) (int64, error)
 	CountDevicesOfUsers(ctx context.Context, userIds []int64) (int32, error)
+	CountDocumentsFiltered(ctx context.Context, arg CountDocumentsFilteredParams) (int64, error)
+	CountDocumentsInCategory(ctx context.Context, categoryID sql.NullInt64) (int64, error)
 	// A file still listed by another document is kept.
 	CountDocumentsWithFile(ctx context.Context, fileID int64) (int64, error)
 	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
@@ -74,6 +77,7 @@ type Querier interface {
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (Announcement, error)
 	CreateAnnouncementAttachment(ctx context.Context, arg CreateAnnouncementAttachmentParams) error
 	CreateDocument(ctx context.Context, arg CreateDocumentParams) (int64, error)
+	CreateDocumentCategory(ctx context.Context, arg CreateDocumentCategoryParams) (DocumentCategory, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventPhoto(ctx context.Context, arg CreateEventPhotoParams) (EventPhoto, error)
 	CreateEventPost(ctx context.Context, arg CreateEventPostParams) (EventPost, error)
@@ -153,7 +157,11 @@ type Querier interface {
 	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
 	// Every item the user can fill in, with the values entered that day (NULL when empty).
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
-	GetDocument(ctx context.Context, id int64) (GetDocumentRow, error)
+	GetDocument(ctx context.Context, id int64) (DocumentDetail, error)
+	GetDocumentCategory(ctx context.Context, id int64) (DocumentCategory, error)
+	GetDocumentCategoryByName(ctx context.Context, name string) (DocumentCategory, error)
+	GetDocumentCategoryBySlug(ctx context.Context, slug string) (DocumentCategory, error)
+	GetDocumentCategoryBySlugAny(ctx context.Context, slug string) (DocumentCategory, error)
 	GetEvent(ctx context.Context, id int64) (Event, error)
 	GetEventRegistration(ctx context.Context, arg GetEventRegistrationParams) (EventRegistration, error)
 	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
@@ -242,9 +250,11 @@ type Querier interface {
 	ListDisciples(ctx context.Context, memberID int64) ([]ListDisciplesRow, error)
 	// The members whose disciple maker is [fd], accepted links only.
 	ListDisciplesOf(ctx context.Context, linkedUserID sql.NullInt64) ([]int64, error)
-	// Every document with its file, the published ones first by date, then the
-	// drafts; the API filters (category, search) and pages them.
-	ListDocuments(ctx context.Context, withDrafts bool) ([]ListDocumentsRow, error)
+	ListDocumentCategories(ctx context.Context, arg ListDocumentCategoriesParams) ([]ListDocumentCategoriesRow, error)
+	ListDocumentCategoryCounts(ctx context.Context, withDrafts bool) ([]ListDocumentCategoryCountsRow, error)
+	// Une page de documents, les publiés d'abord, les plus récents en premier.
+	// La recherche et la catégorie sont filtrées en base.
+	ListDocumentsFiltered(ctx context.Context, arg ListDocumentsFilteredParams) ([]DocumentDetail, error)
 	ListEventPayouts(ctx context.Context, eventID sql.NullInt64) ([]Payout, error)
 	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
 	// Pinned first, then the latest.
@@ -386,6 +396,7 @@ type Querier interface {
 	UpdateAuthority(ctx context.Context, arg UpdateAuthorityParams) (Authority, error)
 	// published_at stays the date of the first publication.
 	UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (int64, error)
+	UpdateDocumentCategory(ctx context.Context, arg UpdateDocumentCategoryParams) (DocumentCategory, error)
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	// Only writes when something differs, so the caller knows if the book changed.
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)

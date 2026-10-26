@@ -104,6 +104,44 @@ type Document struct {
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 	NotifiedAt  sql.NullTime  `json:"notified_at"`
+	CategoryID  sql.NullInt64 `json:"category_id"`
+	SearchText  string        `json:"search_text"`
+}
+
+type DocumentCategory struct {
+	ID          int64         `json:"id"`
+	Name        string        `json:"name"`
+	Slug        string        `json:"slug"`
+	Description string        `json:"description"`
+	Color       string        `json:"color"`
+	Icon        string        `json:"icon"`
+	ParentID    sql.NullInt64 `json:"parent_id"`
+	Position    int32         `json:"position"`
+	ArchivedAt  sql.NullTime  `json:"archived_at"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
+type DocumentDetail struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	Description  string         `json:"description"`
+	Category     string         `json:"category"`
+	FileID       int64          `json:"file_id"`
+	FileName     string         `json:"file_name"`
+	Published    bool           `json:"published"`
+	PublishedAt  sql.NullTime   `json:"published_at"`
+	CreatedBy    sql.NullInt64  `json:"created_by"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	NotifiedAt   sql.NullTime   `json:"notified_at"`
+	CategoryID   sql.NullInt64  `json:"category_id"`
+	SearchText   string         `json:"search_text"`
+	FileKey      string         `json:"file_key"`
+	FileType     string         `json:"file_type"`
+	FileSize     int64          `json:"file_size"`
+	CategorySlug sql.NullString `json:"category_slug"`
+	CategoryName sql.NullString `json:"category_name"`
 }
 
 type Event struct {

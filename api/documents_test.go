@@ -121,7 +121,17 @@ func TestAnAdminPublishesADocument(t *testing.T) {
 
 	categories := send(t, router, http.MethodGet, boris.Token, "/v1/documents/categories", nil)
 	require.Equal(t, http.StatusOK, categories.Code)
-	require.Contains(t, decode[[]libraryCategoryResponse](t, categories), libraryCategoryResponse{Name: "Règlements", Count: 1})
+	savedCategories := decode[[]libraryCategoryResponse](t, categories)
+	var reglements *libraryCategoryResponse
+	for index := range savedCategories {
+		if savedCategories[index].Name == "Règlements" {
+			reglements = &savedCategories[index]
+		}
+	}
+	require.NotNil(t, reglements)
+	require.Equal(t, "reglements", reglements.Slug)
+	require.Equal(t, 1, reglements.Count)
+	require.NotZero(t, reglements.ID)
 
 	require.Equal(t, http.StatusNoContent, send(t, router, http.MethodDelete, admin.Token, path, nil).Code)
 	require.Equal(t, http.StatusNotFound, send(t, router, http.MethodDelete, admin.Token, path, nil).Code)
