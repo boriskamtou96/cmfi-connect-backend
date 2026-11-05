@@ -13,40 +13,40 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
-	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// The money of an event goes from the KPAY wallet to the event's own mobile
+// The money of an event goes from the Wajub wallet to the event's own mobile
 // money account when an admin asks (« Reverser »): one sending for what was
-// paid and not sent yet, net of KPAY's commission on the payments. The
+// paid and not sent yet, net of Wajub's commission on the payments. The
 // account is confirmed by a test of 100 FCFA first: only a confirmed account
-// receives the money. KPAY tells the outcome by its signed webhook
+// receives the money. Wajub tells the outcome by its signed webhook
 // (payout.completed, payout.failed).
 
 const (
 	payoutTest     = "test"
 	payoutTransfer = "transfer"
 
-	// the test that confirms an account, and KPAY's limits for a withdrawal
+	// the test that confirms an account, and Wajub's limits for a withdrawal
 	payoutTestAmount = 100
 	payoutMin        = 100
 	payoutMax        = 500_000
 )
 
-// feesCache: KPAY's commissions, asked every hour at most (5 % when it can't
+// feesCache: Wajub's commissions, asked every hour at most (5 % when it can't
 // be asked).
 type feesCache struct {
 	mu      sync.Mutex
-	fees    kpay.Fees
+	fees    money.Fees
 	fetched time.Time
 }
 
-var defaultFees = kpay.Fees{PaymentRate: 0.05, WithdrawalRate: 0.05}
+var defaultFees = money.Fees{PaymentRate: 0.05, WithdrawalRate: 0.05}
 
-func (s *Server) kpayFees(ctx context.Context) kpay.Fees {
+func (s *Server) providerFees(ctx context.Context) money.Fees {
 	s.fees.mu.Lock()
 	defer s.fees.mu.Unlock()
 	if !s.fees.fetched.IsZero() && time.Since(s.fees.fetched) < time.Hour {
@@ -54,7 +54,7 @@ func (s *Server) kpayFees(ctx context.Context) kpay.Fees {
 	}
 	fees, err := s.money.PlatformFees(ctx)
 	if err != nil || fees.PaymentRate <= 0 || fees.PaymentRate >= 1 {
-		slog.Warn("kpay fees unknown: 5 % assumed", "error", err)
+		slog.Warn("wajub fees unknown: 5 % assumed", "error", err)
 		return defaultFees
 	}
 	s.fees.fees, s.fees.fetched = fees, time.Now()
@@ -78,7 +78,7 @@ type payoutResponse struct {
 	FailureCode string     `json:"failure_code"`
 	CreatedAt   time.Time  `json:"created_at"`
 	CompletedAt *time.Time `json:"completed_at"`
-	// what reaches the account, KPAY's commission on the withdrawal taken
+	// what reaches the account, Wajub's commission on the withdrawal taken
 	Received int64 `json:"received"`
 }
 
@@ -103,11 +103,11 @@ type toForwardResponse struct {
 type payoutsOverview struct {
 	Account   *payoutAccountResponse `json:"account"`
 	ToForward toForwardResponse      `json:"to_forward"`
-	FeeRates  kpay.Fees              `json:"fee_rates"`
+	FeeRates  money.Fees             `json:"fee_rates"`
 	Payouts   []payoutResponse       `json:"payouts"`
 }
 
-func toPayoutResponse(payout db.Payout, fees kpay.Fees) payoutResponse {
+func toPayoutResponse(payout db.Payout, fees money.Fees) payoutResponse {
 	return payoutResponse{
 		ID: payout.ID.String(), Kind: payout.Kind, Amount: payout.Amount, Currency: payout.Currency,
 		PhoneNumber: payout.PhoneNumber, Provider: payout.Provider, Holder: payout.Holder,
@@ -118,7 +118,7 @@ func toPayoutResponse(payout db.Payout, fees kpay.Fees) payoutResponse {
 }
 
 func (s *Server) payoutsOverview(c *gin.Context, event db.Event) (payoutsOverview, error) {
-	fees := s.kpayFees(c)
+	fees := s.providerFees(c)
 	overview := payoutsOverview{FeeRates: fees, Payouts: []payoutResponse{}}
 	payouts, err := s.store.ListEventPayouts(c, nullID(event.ID))
 	if err != nil {
@@ -205,7 +205,7 @@ func (s *Server) setEventPayoutAccount(c *gin.Context) {
 		return
 	}
 	prediction, err := s.money.PredictProvider(c, req.PhoneNumber)
-	if errors.Is(err, kpay.ErrInvalidPhone) {
+	if errors.Is(err, money.ErrInvalidPhone) {
 		c.JSON(http.StatusBadRequest, NewErrorResponse(http.StatusBadRequest, "INVALID_PHONE", err))
 		return
 	}
@@ -266,7 +266,7 @@ func (s *Server) sendPayoutTest(c *gin.Context, event db.Event) {
 }
 
 // POST /v1/admin/events/:id/payouts: sends what was paid for the event and
-// not sent yet (net of KPAY's commission) to its confirmed account, 500 000
+// not sent yet (net of Wajub's commission) to its confirmed account, 500 000
 // at most at a time.
 func (s *Server) forwardEventMoney(c *gin.Context) {
 	if !s.paymentsEnabled(c) {
@@ -286,7 +286,7 @@ func (s *Server) forwardEventMoney(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	fees := s.kpayFees(c)
+	fees := s.providerFees(c)
 	var amount int64
 	ids := []uuid.UUID{}
 	for _, payment := range payments {
@@ -337,29 +337,29 @@ func (s *Server) forwardEventMoney(c *gin.Context) {
 	s.sendPayoutsOverview(c, event)
 }
 
-// sendPayout asks KPAY for the sending.
+// sendPayout asks Wajub for the sending.
 func (s *Server) sendPayout(ctx context.Context, payout db.Payout, description string) {
-	sent, err := s.money.Withdraw(ctx, kpay.WithdrawRequest{
+	sent, err := s.money.Withdraw(ctx, money.WithdrawRequest{
 		Amount: payout.Amount, Provider: payout.Provider, PhoneNumber: payout.PhoneNumber,
 		ExternalID: payout.ID.String(), Description: description,
 	})
-	var refused *kpay.RefusedError
+	var refused *money.RefusedError
 	switch {
-	case errors.Is(err, kpay.ErrUnknown):
+	case errors.Is(err, money.ErrUnknown):
 		slog.Warn("payout outcome unknown", "payout", payout.ID, "error", err)
-	case errors.Is(err, kpay.ErrBalanceTooLow):
+	case errors.Is(err, money.ErrBalanceTooLow):
 		s.failPayout(ctx, payout.ID, "WALLET_BALANCE_TOO_LOW")
 	case errors.As(err, &refused):
-		slog.Warn("payout refused by kpay", "payout", payout.ID, "status", refused.Status, "reason", refused.Message)
+		slog.Warn("payout refused by wajub", "payout", payout.ID, "status", refused.Status, "reason", refused.Message)
 		code := refusalCode(refused)
 		if code == "REJECTED" {
 			code = "PAYOUT_REFUSED"
 		}
 		s.failPayout(ctx, payout.ID, code)
 	case err != nil:
-		slog.Error("payout not sent to kpay", "payout", payout.ID, "error", err)
+		slog.Error("payout not sent to wajub", "payout", payout.ID, "error", err)
 		s.failPayout(ctx, payout.ID, "PAYMENTS_UNAVAILABLE")
-	case sent.Status == kpay.Failed || sent.Status == kpay.Cancelled:
+	case sent.Status == money.Failed || sent.Status == money.Cancelled:
 		s.failPayout(ctx, payout.ID, "UNSPECIFIED_FAILURE")
 	default:
 		if err := s.store.MarkPayoutPending(ctx, db.MarkPayoutPendingParams{ID: payout.ID, ProviderPayoutID: sent.ID}); err != nil {
@@ -386,9 +386,9 @@ func (s *Server) failPayout(ctx context.Context, id uuid.UUID, code string) {
 	}
 }
 
-// onPayoutWebhook: KPAY says how a sending ended. A test that arrived
+// onPayoutWebhook: Wajub says how a sending ended. A test that arrived
 // confirms the account it went to.
-func (s *Server) onPayoutWebhook(ctx context.Context, hook kpay.Webhook) {
+func (s *Server) onPayoutWebhook(ctx context.Context, hook money.Webhook) {
 	var payout db.Payout
 	found := false
 	if id, err := uuid.Parse(hook.ExternalID); err == nil {
@@ -401,11 +401,11 @@ func (s *Server) onPayoutWebhook(ctx context.Context, hook kpay.Webhook) {
 		found = err == nil
 	}
 	if !found {
-		slog.Warn("kpay webhook for an unknown payout", "event", hook.Event)
+		slog.Warn("wajub webhook for an unknown payout", "event", hook.Event)
 		return
 	}
 	switch {
-	case hook.Event == "payout.completed" || hook.Status == kpay.Completed:
+	case hook.Event == "payout.completed" || hook.Status == money.Completed:
 		completed, err := s.store.CompletePayout(ctx, payout.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			return
@@ -423,7 +423,7 @@ func (s *Server) onPayoutWebhook(ctx context.Context, hook kpay.Webhook) {
 			}
 		}
 	case hook.Event == "payout.failed" || hook.Event == "payout.cancelled" ||
-		hook.Status == kpay.Failed || hook.Status == kpay.Cancelled:
+		hook.Status == money.Failed || hook.Status == money.Cancelled:
 		s.failPayout(ctx, payout.ID, webhookFailure(hook))
 	}
 }

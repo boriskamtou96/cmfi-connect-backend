@@ -17,9 +17,10 @@ const completePayment = `-- name: CompletePayment :one
 UPDATE payments
 SET status = 'completed',
     provider_transaction_id = $1,
+    failure_code = '',
     checked_at = now(),
     updated_at = now()
-WHERE id = $2 AND status IN ('initiated', 'accepted')
+WHERE id = $2 AND status IN ('initiated', 'accepted', 'failed')
 RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
 `
 
@@ -28,7 +29,9 @@ type CompletePaymentParams struct {
 	ID                    uuid.UUID `json:"id"`
 }
 
-// The money arrived. No row when it was already known: done once.
+// The money arrived. No row when it was already known: done once. A
+// payment said failed may still succeed later (Wajub tells it): the money
+// is there, so it completes.
 func (q *Queries) CompletePayment(ctx context.Context, arg CompletePaymentParams) (Payment, error) {
 	row := q.db.QueryRowContext(ctx, completePayment, arg.ProviderTransactionID, arg.ID)
 	var i Payment
@@ -403,7 +406,7 @@ ORDER BY updated_at
 LIMIT 50
 `
 
-// What the reconciler checks: the answers still awaited from KPAY, and
+// What the reconciler checks: the answers still awaited from Wajub, and
 // the completed payments whose work is not done yet.
 func (q *Queries) ListOpenPayments(ctx context.Context, before time.Time) ([]Payment, error) {
 	rows, err := q.db.QueryContext(ctx, listOpenPayments, before)
@@ -599,7 +602,7 @@ type MarkPaymentAcceptedParams struct {
 	ID                uuid.UUID `json:"id"`
 }
 
-// KPAY took it (its id given): the member is asked for their PIN.
+// Wajub took it (its id given): the member is asked for their PIN.
 func (q *Queries) MarkPaymentAccepted(ctx context.Context, arg MarkPaymentAcceptedParams) error {
 	_, err := q.db.ExecContext(ctx, markPaymentAccepted, arg.ProviderPaymentID, arg.ID)
 	return err
@@ -616,7 +619,7 @@ type SetPaymentProviderIDParams struct {
 	ID                uuid.UUID `json:"id"`
 }
 
-// The id KPAY gave, learnt from its webhook when its first answer was lost.
+// The id Wajub gave, learnt from its webhook when its first answer was lost.
 func (q *Queries) SetPaymentProviderID(ctx context.Context, arg SetPaymentProviderIDParams) error {
 	_, err := q.db.ExecContext(ctx, setPaymentProviderID, arg.ProviderPaymentID, arg.ID)
 	return err

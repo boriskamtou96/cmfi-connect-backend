@@ -13,13 +13,13 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
-	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/phoneauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/push"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/revenuecat"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,7 @@ type Server struct {
 	audio        media.AudioCompressor
 	compressSlot chan struct{}
 	compressing  sync.WaitGroup
-	// mobile money (nil without the KPAY keys), and Premium given in
+	// mobile money (nil without WAJUB_SECRET_KEY), and Premium given in
 	// RevenueCat (nil without REVENUECAT_SECRET_KEY)
 	money   MobileMoney
 	premium PremiumGranter
@@ -88,13 +88,13 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 		slog.Warn("ffmpeg not found (FFMPEG_PATH): the sounds of the teachings stay as sent")
 	}
 	var money MobileMoney
-	if cfg.Pay.KPayAPIKey != "" && cfg.Pay.KPaySecretKey != "" {
-		money = kpay.New(cfg.Pay.KPayURL, cfg.Pay.KPayAPIKey, cfg.Pay.KPaySecretKey)
-		if cfg.Pay.KPayWebhookSecret == "" {
-			slog.Warn("KPAY_WEBHOOK_SECRET is not set: the payments will never be confirmed")
+	if cfg.Pay.WajubSecretKey != "" {
+		money = wajub.New(cfg.Pay.WajubURL, cfg.Pay.WajubSecretKey, cfg.Pay.WajubFees)
+		if cfg.Pay.WajubWebhookSecret == "" {
+			slog.Warn("WAJUB_WEBHOOK_SECRET is not set: the payments are confirmed only by asking Wajub")
 		}
 	} else {
-		slog.Warn("KPAY_API_KEY / KPAY_SECRET_KEY are not set: nobody can pay by mobile money")
+		slog.Warn("WAJUB_SECRET_KEY is not set: nobody can pay by mobile money")
 	}
 	var premium PremiumGranter
 	if cfg.Pay.RevenueCatSecretKey != "" {
@@ -292,17 +292,15 @@ func (s *Server) SetupRouter() *gin.Engine {
 			events.POST("/:id/payments", s.payForEvent)
 		}
 
-		// mobile money (KPAY-NOW): the operators, a payment followed by its
-		// member; KPAY's webhooks, believed only when signed (relayed by
-		// cmfi-connect.com/api/kpay/*)
+		// mobile money (Wajub): the operators, a payment followed by its
+		// member; Wajub's webhooks, believed only when signed
 		payments := r.Group("/payments", authMiddleware(s.jwtAuthenticator))
 		{
 			payments.GET("/providers", s.listPaymentProviders)
 			payments.POST("/predict-provider", s.predictPaymentProvider)
 			payments.GET("/:id", s.getPayment)
 		}
-		r.POST("/kpay/callbacks", s.kpayWebhook)
-		r.POST("/kpay/callbacks/*kind", s.kpayWebhook)
+		r.POST("/wajub/webhooks", s.wajubWebhook)
 
 		// Premium sold on the website (the stores forbid it in the apps)
 		r.GET("/premium/plans", s.listPremiumPlans)

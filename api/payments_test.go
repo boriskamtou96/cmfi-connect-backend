@@ -14,8 +14,9 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
-	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -24,53 +25,68 @@ const testWebhookSecret = "whsec-test"
 
 type askedRefund struct {
 	paymentID string
-	req       kpay.RefundRequest
+	req       money.RefundRequest
 }
 
-// fakeMoney is KPAY: payments and refunds are taken, the test then says how
-// they end with a signed webhook ([paymentsWorld.notify]).
+// fakeMoney is Wajub: payments and refunds are taken, the test then says how
+// they end with a signed webhook ([paymentsWorld.notify]), or what asking
+// about a payment answers ([fakeMoney.statuses]).
 type fakeMoney struct {
 	mu sync.Mutex
 	// by externalId (our payment id)
-	inits map[string]kpay.InitRequest
-	// by externalId (our refund id), with KPAY's payment id
+	inits map[string]money.InitRequest
+	// by externalId (our refund id), with Wajub's payment id
 	refunds map[string]askedRefund
 	// what a new payment answers instead of PENDING
 	initErr error
 	// the sendings from the wallet, by externalId; its balance
-	withdrawals map[string]kpay.WithdrawRequest
+	withdrawals map[string]money.WithdrawRequest
 	available   float64
+	// what asking about a payment answers, by Wajub's id (pending otherwise)
+	statuses map[string]money.Webhook
+	lookups  int
 }
 
 func newFakeMoney() *fakeMoney {
 	return &fakeMoney{
-		inits: map[string]kpay.InitRequest{}, refunds: map[string]askedRefund{},
-		withdrawals: map[string]kpay.WithdrawRequest{}, available: 1_000_000,
+		inits: map[string]money.InitRequest{}, refunds: map[string]askedRefund{},
+		withdrawals: map[string]money.WithdrawRequest{}, available: 1_000_000,
+		statuses: map[string]money.Webhook{},
 	}
 }
 
-func (f *fakeMoney) Init(_ context.Context, req kpay.InitRequest) (kpay.Payment, error) {
+func (f *fakeMoney) Init(_ context.Context, req money.InitRequest) (money.Payment, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.inits[req.ExternalID] = req
 	if f.initErr != nil {
-		return kpay.Payment{}, f.initErr
+		return money.Payment{}, f.initErr
 	}
-	payment := kpay.Payment{ID: kpayID(req.ExternalID), Reference: "KPAY-" + req.ExternalID[:8], Status: kpay.Pending}
-	if req.PaymentMethod == kpay.CardPayment {
-		payment.GatewayURL = "https://admin.kpay.site/pay/gw_" + req.ExternalID[:8]
+	payment := money.Payment{ID: wajubID(req.ExternalID), Reference: req.ExternalID, Status: money.Pending}
+	if req.PaymentMethod == money.CardPayment {
+		payment.GatewayURL = "https://pay.wajub.com/" + req.ExternalID[:8]
 	}
 	return payment, nil
 }
 
-// kpayID: the id KPAY gives a payment of ours.
-func kpayID(externalID string) string { return "kp_" + externalID[:8] }
+// wajubID: the id Wajub gives a payment of ours.
+func wajubID(externalID string) string { return "pay_" + externalID[:8] }
 
-func (f *fakeMoney) Refund(_ context.Context, paymentID string, req kpay.RefundRequest) (kpay.Refund, error) {
+func (f *fakeMoney) Lookup(_ context.Context, id string) (money.Webhook, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.lookups++
+	if hook, ok := f.statuses[id]; ok {
+		return hook, nil
+	}
+	return money.Webhook{Event: "payment.pending", PaymentID: id, Status: money.Pending}, nil
+}
+
+func (f *fakeMoney) Refund(_ context.Context, paymentID string, req money.RefundRequest) (money.Refund, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.refunds[req.ExternalID] = askedRefund{paymentID, req}
-	return kpay.Refund{ID: "rf_" + req.ExternalID[:8], Status: kpay.Pending}, nil
+	return money.Refund{ID: "rf_" + req.ExternalID[:8], Status: money.Pending}, nil
 }
 
 // refundOf: our refund id of the payment [externalID], if one was asked.
@@ -78,14 +94,14 @@ func (f *fakeMoney) refundOf(externalID string) (string, bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	for id, refund := range f.refunds {
-		if refund.paymentID == kpayID(externalID) {
+		if refund.paymentID == wajubID(externalID) {
 			return id, true
 		}
 	}
 	return "", false
 }
 
-func (f *fakeMoney) PredictProvider(_ context.Context, phone string) (kpay.Prediction, error) {
+func (f *fakeMoney) PredictProvider(_ context.Context, phone string) (money.Prediction, error) {
 	digits := strings.Map(func(r rune) rune {
 		if r >= '0' && r <= '9' {
 			return r
@@ -93,37 +109,37 @@ func (f *fakeMoney) PredictProvider(_ context.Context, phone string) (kpay.Predi
 		return -1
 	}, phone)
 	if !strings.HasPrefix(digits, "237") || len(digits) != 12 {
-		return kpay.Prediction{}, kpay.ErrInvalidPhone
+		return money.Prediction{}, money.ErrInvalidPhone
 	}
 	provider := "MTN_MOMO_CMR"
 	if strings.HasPrefix(digits, "23769") {
 		provider = "ORANGE_CMR"
 	}
-	return kpay.Prediction{Country: "CMR", Provider: provider, PhoneNumber: digits}, nil
+	return money.Prediction{Country: "CMR", Provider: provider, PhoneNumber: digits}, nil
 }
 
-func (f *fakeMoney) Withdraw(_ context.Context, req kpay.WithdrawRequest) (kpay.Withdrawal, error) {
+func (f *fakeMoney) Withdraw(_ context.Context, req money.WithdrawRequest) (money.Withdrawal, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.withdrawals[req.ExternalID] = req
-	return kpay.Withdrawal{ID: "wd_" + req.ExternalID[:8], Status: kpay.Pending}, nil
+	return money.Withdrawal{ID: "wd_" + req.ExternalID[:8], Status: money.Pending}, nil
 }
 
-func (f *fakeMoney) Balances(context.Context) ([]kpay.Balance, error) {
+func (f *fakeMoney) Balances(context.Context) ([]money.Balance, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	return []kpay.Balance{{Currency: "XAF", AvailableBalance: f.available}}, nil
+	return []money.Balance{{Currency: "XAF", AvailableBalance: f.available}}, nil
 }
 
-func (f *fakeMoney) PlatformFees(context.Context) (kpay.Fees, error) {
-	return kpay.Fees{PaymentRate: 0.05, WithdrawalRate: 0.05}, nil
+func (f *fakeMoney) PlatformFees(context.Context) (money.Fees, error) {
+	return money.Fees{PaymentRate: 0.05, WithdrawalRate: 0.05}, nil
 }
 
 // withdrawalTo: our ids of the sendings asked to [phone], oldest unknown.
-func (f *fakeMoney) withdrawalsTo(phone string) map[string]kpay.WithdrawRequest {
+func (f *fakeMoney) withdrawalsTo(phone string) map[string]money.WithdrawRequest {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	found := map[string]kpay.WithdrawRequest{}
+	found := map[string]money.WithdrawRequest{}
 	for id, req := range f.withdrawals {
 		if req.PhoneNumber == phone {
 			found[id] = req
@@ -164,11 +180,11 @@ func newPaymentsWorld(t *testing.T) paymentsWorld {
 	server, err := New(testStore, &utils.Config{
 		Token: utils.TokenConfig{SecretKey: strings.Repeat("k", 32), Duration: "15m"},
 		Pay: utils.PaymentsConfig{
-			KPayWebhookSecret: testWebhookSecret,
-			KPayCards:         true,
-			ReturnURL:         "https://cmfi-connect.com/paiement",
-			PremiumPrices:     map[string]int64{"monthly": 1500, "yearly": 12000, "lifetime": 50000},
-			PremiumCurrency:   "XAF",
+			WajubWebhookSecret: testWebhookSecret,
+			WajubCards:         true,
+			ReturnURL:          "https://cmfi-connect.com/paiement",
+			PremiumPrices:      map[string]int64{"monthly": 1500, "yearly": 12000, "lifetime": 50000},
+			PremiumCurrency:    "XAF",
 		},
 	})
 	require.NoError(t, err)
@@ -226,28 +242,50 @@ func (w paymentsWorld) payment(t *testing.T, token, id string) paymentResponse {
 	return decode[paymentResponse](t, response)
 }
 
-// webhook posts [body] to the callback, signed with [secret].
+// webhook posts [body] (as Wajub writes it) to the webhook endpoint, signed
+// with [secret].
 func (w paymentsWorld) webhook(t *testing.T, body map[string]any, secret string) *httptest.ResponseRecorder {
 	t.Helper()
 	data, err := json.Marshal(body)
 	require.NoError(t, err)
-	request := httptest.NewRequest(http.MethodPost, "/v1/kpay/callbacks/deposits", bytes.NewReader(data))
+	request := httptest.NewRequest(http.MethodPost, "/v1/wajub/webhooks", bytes.NewReader(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-KPAY-Signature", kpay.Sign(data, secret))
-	request.Header.Set("X-KPAY-Event", fmt.Sprint(body["event"]))
+	signature, timestamp := wajub.Sign(data, secret, time.Now())
+	request.Header.Set("X-Wajub-Signature", signature)
+	request.Header.Set("X-Wajub-Timestamp", timestamp)
 	recorder := httptest.NewRecorder()
 	w.router.ServeHTTP(recorder, request)
 	return recorder
 }
 
-// notify: KPAY says [event] happened to our payment (or refund) [externalID].
+// notify: Wajub says [event] (in the API's words: payment.completed,
+// refund.completed, payout.failed…) happened to our payment, refund or
+// sending [externalID]; [fields]: amount, paymentId (Wajub's id),
+// failureCode.
 func (w paymentsWorld) notify(t *testing.T, event, externalID string, fields map[string]any) {
 	t.Helper()
-	status := strings.ToUpper(strings.SplitN(event, ".", 2)[1])
-	body := map[string]any{"event": event, "externalId": externalID, "status": status, "reference": "KPAY-REF"}
-	for key, value := range fields {
-		body[key] = value
+	kind, outcome, _ := strings.Cut(event, ".")
+	if kind == "payout" {
+		kind = "transfer"
 	}
+	if outcome == "completed" {
+		outcome = "succeeded"
+	}
+	data := map[string]any{"reference": externalID, "status": outcome}
+	if kind == "payment" {
+		data["id"] = wajubID(externalID)
+	}
+	for key, value := range fields {
+		switch key {
+		case "paymentId":
+			data["id"] = value
+		case "failureCode":
+			data["failure_reason"] = strings.ToLower(fmt.Sprint(value))
+		default:
+			data[key] = value
+		}
+	}
+	body := map[string]any{"id": "evt_" + uuid.NewString()[:8], "event": kind + "." + outcome, "data": data}
 	response := w.webhook(t, body, testWebhookSecret)
 	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
 }
@@ -282,8 +320,8 @@ func TestAPaidEventRegistersTheMemberOnceTheMoneyArrived(t *testing.T) {
 	detail := decode[eventResponse](t, send(t, w.router, http.MethodGet, m.Token, eventPath(event, ""), nil))
 	require.False(t, detail.MyRegistration.Paid)
 
-	// the money arrived: told by KPAY's signed webhook
-	w.notify(t, "payment.completed", payment.ID, map[string]any{"amount": 10000, "paymentId": kpayID(payment.ID)})
+	// the money arrived: told by Wajub's signed webhook
+	w.notify(t, "payment.completed", payment.ID, map[string]any{"amount": 10000, "paymentId": wajubID(payment.ID)})
 	require.Equal(t, "completed", w.payment(t, m.Token, payment.ID).Status)
 	detail = decode[eventResponse](t, send(t, w.router, http.MethodGet, m.Token, eventPath(event, ""), nil))
 	require.True(t, detail.MyRegistration.Paid)
@@ -326,7 +364,8 @@ func TestAWebhookThatIsNotSignedChangesNothing(t *testing.T) {
 	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 5000})
 	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237670000011"})
 
-	forged := w.webhook(t, map[string]any{"event": "payment.completed", "externalId": payment.ID, "status": "COMPLETED"}, "guessed")
+	forged := w.webhook(t, map[string]any{"event": "payment.succeeded",
+		"data": map[string]any{"reference": payment.ID, "status": "succeeded", "amount": 5000}}, "guessed")
 	require.Equal(t, http.StatusUnauthorized, forged.Code)
 	require.Equal(t, "pending", w.payment(t, m.Token, payment.ID).Status)
 
@@ -388,7 +427,7 @@ func TestAFailedPaymentRegistersNobody(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, hidden.Code)
 }
 
-func TestPaymentsAreCheckedBeforeKPayIsAsked(t *testing.T) {
+func TestPaymentsAreCheckedBeforeWajubIsAsked(t *testing.T) {
 	w := newPaymentsWorld(t)
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
@@ -404,7 +443,7 @@ func TestPaymentsAreCheckedBeforeKPayIsAsked(t *testing.T) {
 	}{
 		{eventPath(free, "/payments"), map[string]any{"phone_number": "+237670000003"}, http.StatusConflict, "FREE_EVENT"},
 		{eventPath(paid, "/payments"), map[string]any{"phone_number": "+33 6 12 34 56 78"}, http.StatusBadRequest, "INVALID_PHONE"},
-		// below the 50 XAF KPAY takes in Cameroon
+		// below the 50 XAF Wajub takes in Cameroon
 		{eventPath(cheap, "/payments"), map[string]any{"phone_number": "+237670000003"}, http.StatusConflict, "AMOUNT_OUT_OF_BOUNDS"},
 		{eventPath(paid, "/payments"), map[string]any{"people": 4, "phone_number": "+237670000003"}, http.StatusConflict, "EVENT_FULL"},
 		{eventPath(paid, "/payments"), map[string]any{"phone_number": "+237670000003", "provider": "AIRTEL_COD"}, http.StatusConflict, "PROVIDER_UNAVAILABLE"},
@@ -427,7 +466,7 @@ func TestARefusedPaymentIsFailedAtOnce(t *testing.T) {
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
 	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 1000})
-	w.money.initErr = &kpay.RefusedError{Status: http.StatusBadRequest, Message: "amount must not be less than the configured minimum"}
+	w.money.initErr = &money.RefusedError{Status: http.StatusBadRequest, Message: "amount must not be less than the configured minimum"}
 
 	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237670000004"})
 	require.Equal(t, "failed", payment.Status)
@@ -482,7 +521,7 @@ func TestAnAdminRefundsAPaymentAndTheRegistrationGoes(t *testing.T) {
 	twice := send(t, w.router, http.MethodPost, admin.Token, "/v1/admin/payments/"+payment.ID+"/refund", nil)
 	require.Equal(t, http.StatusConflict, twice.Code)
 
-	// KPAY refunds the payment it knows by its own id
+	// Wajub refunds the payment it knows by its own id
 	refundID, ok := w.money.refundOf(payment.ID)
 	require.True(t, ok)
 	require.Equal(t, "admin", w.money.refunds[refundID].req.Reason)
@@ -524,7 +563,7 @@ func TestPremiumBoughtOnTheWebsiteIsGivenInRevenueCat(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, unknown.Code)
 }
 
-func TestWithoutKPayNobodyPays(t *testing.T) {
+func TestWithoutWajubNobodyPays(t *testing.T) {
 	router := newTestRouter(t)
 	m := registerMember(t, router, nil)
 	response := send(t, router, http.MethodGet, m.Token, "/v1/payments/providers", nil)
@@ -532,7 +571,7 @@ func TestWithoutKPayNobodyPays(t *testing.T) {
 	require.Contains(t, response.Body.String(), "PAYMENTS_DISABLED")
 }
 
-func TestTheReconcilerFailsAPaymentKPayNeverAcknowledged(t *testing.T) {
+func TestTheReconcilerFailsAPaymentWajubNeverAcknowledged(t *testing.T) {
 	w := newPaymentsWorld(t)
 	m := registerMember(t, w.router, nil)
 	id := uuid.New()
@@ -551,12 +590,41 @@ func TestTheReconcilerFailsAPaymentKPayNeverAcknowledged(t *testing.T) {
 	require.Equal(t, "NOT_FOUND", payment.FailureCode)
 }
 
+func TestTheReconcilerAsksWajubAboutAPaymentWithoutWebhook(t *testing.T) {
+	w := newPaymentsWorld(t)
+	admin := staffAdmin(t, w.router)
+	m := registerMember(t, w.router, nil)
+	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 2000})
+	paid := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237670000013"})
+	other := registerMember(t, w.router, nil)
+	waiting := w.pay(t, other.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237690000014"})
+	require.Equal(t, "pending", paid.Status)
+
+	// a fresh payment is left to its webhook
+	w.server.reconcileOpenPayments(context.Background(), time.Now())
+	require.Zero(t, w.money.lookups)
+
+	// 10 minutes without a word: Wajub is asked
+	for _, id := range []string{paid.ID, waiting.ID} {
+		runSQL(t, `UPDATE payments SET updated_at = now() - interval '10 minutes' WHERE id = $1`, id)
+	}
+	w.money.statuses[wajubID(paid.ID)] = money.Webhook{Event: "payment.completed", PaymentID: wajubID(paid.ID),
+		ExternalID: paid.ID, Status: money.Completed, Amount: float64(2000)}
+	w.server.reconcileOpenPayments(context.Background(), time.Now())
+	require.Equal(t, 2, w.money.lookups)
+	require.Equal(t, "completed", w.payment(t, m.Token, paid.ID).Status)
+	detail := decode[eventResponse](t, send(t, w.router, http.MethodGet, m.Token, eventPath(event, ""), nil))
+	require.True(t, detail.MyRegistration.Paid)
+	// still waiting at Wajub: looked at again later
+	require.Equal(t, "pending", w.payment(t, other.Token, waiting.ID).Status)
+}
+
 func TestASandboxKeyOnlyTakesTheTestNumbers(t *testing.T) {
 	w := newPaymentsWorld(t)
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
 	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 1000})
-	w.money.initErr = &kpay.RefusedError{Status: http.StatusBadRequest,
+	w.money.initErr = &money.RefusedError{Status: http.StatusBadRequest,
 		Message: "Numéro de test invalide pour le sandbox (CMR). En mode test, seuls les numéros de test dédiés sont acceptés"}
 
 	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237690000012"})
@@ -564,19 +632,19 @@ func TestASandboxKeyOnlyTakesTheTestNumbers(t *testing.T) {
 	require.Equal(t, "SANDBOX_TEST_NUMBER", payment.FailureCode)
 }
 
-func TestAnEventIsPaidByCardOnKPaysPage(t *testing.T) {
+func TestAnEventIsPaidByCardOnWajubsPage(t *testing.T) {
 	w := newPaymentsWorld(t)
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
 	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 5000})
 
-	// no number: KPAY's page asks for the card
+	// no number: Wajub's page asks for the card
 	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"method": "card"})
 	require.Equal(t, "pending", payment.Status)
 	require.Equal(t, "CARD", payment.Provider)
-	require.Equal(t, "https://admin.kpay.site/pay/gw_"+payment.ID[:8], payment.GatewayURL)
+	require.Equal(t, "https://pay.wajub.com/"+payment.ID[:8], payment.GatewayURL)
 	asked := w.money.inits[payment.ID]
-	require.Equal(t, kpay.CardPayment, asked.PaymentMethod)
+	require.Equal(t, money.CardPayment, asked.PaymentMethod)
 	require.Empty(t, asked.PhoneNumber)
 	require.Equal(t, "https://cmfi-connect.com/paiement?payment="+payment.ID, asked.ReturnURL)
 
@@ -601,7 +669,7 @@ func TestAnEventIsPaidByCardOnKPaysPage(t *testing.T) {
 
 func TestCardsCanBeTurnedOff(t *testing.T) {
 	w := newPaymentsWorld(t)
-	w.server.config.Pay.KPayCards = false
+	w.server.config.Pay.WajubCards = false
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
 	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 5000})
@@ -611,4 +679,27 @@ func TestCardsCanBeTurnedOff(t *testing.T) {
 	require.Contains(t, refused.Body.String(), "CARDS_DISABLED")
 	operators := decodeRaw[rawContent](t, send(t, w.router, http.MethodGet, m.Token, "/v1/payments/providers", nil))
 	require.Contains(t, string(operators.Content), `"cards":false`)
+}
+
+func TestALateSuccessAfterAFailureCompletesThePayment(t *testing.T) {
+	w := newPaymentsWorld(t)
+	admin := staffAdmin(t, w.router)
+	m := registerMember(t, w.router, nil)
+	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 3000})
+	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237670000003"})
+
+	// Wajub said it timed out, then the operator confirmed the money
+	w.notify(t, "payment.failed", payment.ID, map[string]any{"failureCode": "TIMEOUT"})
+	require.Equal(t, "failed", w.payment(t, m.Token, payment.ID).Status)
+	w.notify(t, "payment.completed", payment.ID, map[string]any{"amount": 3000})
+
+	paid := w.payment(t, m.Token, payment.ID)
+	require.Equal(t, "completed", paid.Status)
+	require.Empty(t, paid.FailureCode)
+	detail := decode[eventResponse](t, send(t, w.router, http.MethodGet, m.Token, eventPath(event, ""), nil))
+	require.True(t, detail.MyRegistration.Paid)
+
+	// sent again, it does nothing more
+	w.notify(t, "payment.completed", payment.ID, map[string]any{"amount": 3000})
+	require.Equal(t, "completed", w.payment(t, m.Token, payment.ID).Status)
 }

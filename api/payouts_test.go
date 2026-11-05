@@ -88,7 +88,7 @@ func TestTheMoneyOfAnEventIsForwardedToItsAccount(t *testing.T) {
 	require.Contains(t, early.Body.String(), "PAYOUT_ACCOUNT_NOT_CONFIRMED")
 	w.confirmAccount(t, admin.Token, event)
 
-	// 2 × 5 000, KPAY's 5 % kept: 9 500 in the wallet for the event
+	// 2 × 5 000, Wajub's 5 % kept: 9 500 in the wallet for the event
 	overview := w.overview(t, admin.Token, event)
 	require.Equal(t, toForwardResponse{Payments: 2, Amount: 10000, Net: 9500, Currency: "XAF"}, overview.ToForward)
 

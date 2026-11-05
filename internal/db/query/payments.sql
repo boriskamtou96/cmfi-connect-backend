@@ -17,7 +17,7 @@ FROM payments
 WHERE refund_id = $1;
 
 -- name: MarkPaymentAccepted :exec
--- KPAY took it (its id given): the member is asked for their PIN.
+-- Wajub took it (its id given): the member is asked for their PIN.
 UPDATE payments
 SET status = 'accepted', provider_payment_id = @provider_payment_id, updated_at = now()
 WHERE id = @id AND status = 'initiated';
@@ -38,13 +38,16 @@ SET provider_refund_id = @provider_refund_id, updated_at = now()
 WHERE id = @id;
 
 -- name: CompletePayment :one
--- The money arrived. No row when it was already known: done once.
+-- The money arrived. No row when it was already known: done once. A
+-- payment said failed may still succeed later (Wajub tells it): the money
+-- is there, so it completes.
 UPDATE payments
 SET status = 'completed',
     provider_transaction_id = @provider_transaction_id,
+    failure_code = '',
     checked_at = now(),
     updated_at = now()
-WHERE id = @id AND status IN ('initiated', 'accepted')
+WHERE id = @id AND status IN ('initiated', 'accepted', 'failed')
 RETURNING *;
 
 -- name: FailPayment :execrows
@@ -95,7 +98,7 @@ SET status = 'refund_failed',
 WHERE refund_id = @refund_id AND status = 'refund_pending';
 
 -- name: ListOpenPayments :many
--- What the reconciler checks: the answers still awaited from KPAY, and
+-- What the reconciler checks: the answers still awaited from Wajub, and
 -- the completed payments whose work is not done yet.
 SELECT *
 FROM payments
@@ -131,7 +134,7 @@ WHERE user_id = $1
 ORDER BY premium_until DESC NULLS FIRST;
 
 -- name: SetPaymentProviderID :exec
--- The id KPAY gave, learnt from its webhook when its first answer was lost.
+-- The id Wajub gave, learnt from its webhook when its first answer was lost.
 UPDATE payments
 SET provider_payment_id = @provider_payment_id, updated_at = now()
 WHERE id = @id AND provider_payment_id = '';

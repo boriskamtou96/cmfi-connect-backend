@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/joho/godotenv"
 )
 
@@ -77,24 +78,26 @@ type PushConfig struct {
 	PublicURL       string
 }
 
-// PaymentsConfig: the payments by mobile money (KPAY-NOW). Without
-// [KPayAPIKey] and [KPaySecretKey] (KPAY_API_KEY, kpay_test_… in the sandbox,
-// kpay_live_… in production; KPAY_SECRET_KEY) nobody can pay. Its webhooks
-// are believed only when signed with [KPayWebhookSecret]
-// (KPAY_WEBHOOK_SECRET). [KPayProviders] (KPAY_PROVIDERS) are the operators
-// offered, those ticked in the KPAY application. [PremiumPrices] (PREMIUM_PRICES, "monthly:1500,yearly:12000",
+// PaymentsConfig: the payments by mobile money (Wajub). Without
+// [WajubSecretKey] (WAJUB_SECRET_KEY, sk_test.… in the sandbox, sk.… in
+// production) nobody can pay. Its webhooks are believed only when signed with
+// [WajubWebhookSecret] (WAJUB_WEBHOOK_SECRET, the endpoint's secret).
+// [WajubProviders] (WAJUB_PROVIDERS) are the operators offered, all of them
+// when empty. [WajubFees] (WAJUB_PAYMENT_FEE_RATE, WAJUB_PAYOUT_FEE_RATE,
+// 0.05 for 5 %) are the shares Wajub keeps, which its API doesn't tell.
+// [PremiumPrices] (PREMIUM_PRICES, "monthly:1500,yearly:12000",
 // in [PremiumCurrency]) are the Premium plans sold on the website; Premium is
 // then given in RevenueCat with [RevenueCatSecretKey] (REVENUECAT_SECRET_KEY,
 // sk_…) to the entitlement [RevenueCatEntitlement].
 type PaymentsConfig struct {
-	KPayURL           string
-	KPayAPIKey        string
-	KPaySecretKey     string
-	KPayWebhookSecret string
-	KPayProviders     []string
-	// cards (Visa, Mastercard) on KPAY's hosted page: KPAY_CARDS=off
-	// when the KPAY application doesn't take them
-	KPayCards bool
+	WajubURL           string
+	WajubSecretKey     string
+	WajubWebhookSecret string
+	WajubProviders     []string
+	WajubFees          money.Fees
+	// cards (Visa, Mastercard) on Wajub's hosted page: WAJUB_CARDS=on once
+	// the Wajub account takes them
+	WajubCards bool
 	// where a payer comes back after the card page (PAYMENT_RETURN_URL); a
 	// page of the site that says to go back to the app
 	ReturnURL             string
@@ -156,13 +159,23 @@ func (c *Config) loadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	fees := money.Fees{PaymentRate: 0.05, WithdrawalRate: 0.05}
+	for key, rate := range map[string]*float64{"WAJUB_PAYMENT_FEE_RATE": &fees.PaymentRate, "WAJUB_PAYOUT_FEE_RATE": &fees.WithdrawalRate} {
+		if value := os.Getenv(key); value != "" {
+			parsed, err := strconv.ParseFloat(value, 64)
+			if err != nil || parsed < 0 || parsed >= 1 {
+				return nil, fmt.Errorf("%s: a share between 0 and 1 (0.05 for 5 %%)", key)
+			}
+			*rate = parsed
+		}
+	}
 	config.Pay = PaymentsConfig{
-		KPayURL:               getEnv("KPAY_BASE_URL", "https://admin.kpay.site"),
-		KPayAPIKey:            getEnv("KPAY_API_KEY", ""),
-		KPaySecretKey:         getEnv("KPAY_SECRET_KEY", ""),
-		KPayWebhookSecret:     getEnv("KPAY_WEBHOOK_SECRET", ""),
-		KPayProviders:         getEnvList("KPAY_PROVIDERS"),
-		KPayCards:             getEnv("KPAY_CARDS", "on") != "off",
+		WajubURL:              getEnv("WAJUB_BASE_URL", "https://api.wajub.com"),
+		WajubSecretKey:        getEnv("WAJUB_SECRET_KEY", ""),
+		WajubWebhookSecret:    getEnv("WAJUB_WEBHOOK_SECRET", ""),
+		WajubProviders:        getEnvList("WAJUB_PROVIDERS"),
+		WajubFees:             fees,
+		WajubCards:            getEnv("WAJUB_CARDS", "off") == "on",
 		ReturnURL:             getEnv("PAYMENT_RETURN_URL", "https://cmfi-connect.com/paiement"),
 		PremiumPrices:         prices,
 		PremiumCurrency:       getEnv("PREMIUM_CURRENCY", "XAF"),
