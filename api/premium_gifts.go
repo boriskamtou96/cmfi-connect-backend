@@ -21,10 +21,11 @@ import (
 
 // Premium offered by the admins: 1 to 3 months, to one member (by their
 // pseudo) or to a group (the places of the notifications: a country, a
-// city, a church, an assembly; nothing: everyone). Each member's gift is
-// given in RevenueCat after their current Premium (the one bought on the
-// website, the gifts before), one at a time in the background, and the
-// member is told by a push. An offer can be taken back.
+// city, a church, an assembly; nothing: everyone). Each member's gift comes
+// after their current Premium (the one bought on the website, the gifts
+// before), one at a time in the background, and the member is told by a
+// push. An offer can be taken back. All of it is kept here: the apps read it
+// (GET /v1/premium/status).
 
 var premiumGiftTitles = map[string]string{
 	"fr": "Premium t'est offert",
@@ -44,16 +45,6 @@ var premiumGiftBodies = map[string]string{
 	"ar": "استمتع بـ CMFI Connect Premium لمدة %d أشهر. ليباركك الله!",
 	"zh": "尽享 CMFI Connect Premium %d 个月。愿神赐福你！",
 	"hi": "%d महीने CMFI Connect Premium का आनंद लें। परमेश्वर आपको आशीष दे!",
-}
-
-// premiumGiftsEnabled answers 503 PREMIUM_DISABLED without RevenueCat.
-func (s *Server) premiumGiftsEnabled(c *gin.Context) bool {
-	if s.premium == nil {
-		c.JSON(http.StatusServiceUnavailable, NewErrorResponse(http.StatusServiceUnavailable,
-			"PREMIUM_DISABLED", fmt.Errorf("REVENUECAT_SECRET_KEY is not set")))
-		return false
-	}
-	return true
 }
 
 type premiumOfferRequest struct {
@@ -89,9 +80,6 @@ type premiumOfferResponse struct {
 
 // POST /v1/admin/premium/offers: Premium offered to a member or a group.
 func (s *Server) offerPremium(c *gin.Context) {
-	if !s.premiumGiftsEnabled(c) {
-		return
-	}
 	var req premiumOfferRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequestError(c, err)
@@ -195,13 +183,6 @@ func (s *Server) giveGift(ctx context.Context, gift db.PremiumGift) {
 		}
 		end := from.AddDate(0, int(gift.Months), 0)
 		until = &end
-	}
-	if err := s.premium.Grant(ctx, strconv.FormatInt(gift.UserID, 10), until); err != nil {
-		slog.Warn("premium gift not given: will try again", "gift", gift.ID, "error", err)
-		if err := s.store.GiftAttemptFailed(ctx, gift.ID); err != nil {
-			slog.Error("cannot count a gift attempt", "gift", gift.ID, "error", err)
-		}
-		return
 	}
 	given := db.GiveGiftParams{ID: gift.ID}
 	if until != nil {
@@ -322,9 +303,6 @@ func (s *Server) sendPremiumOffer(c *gin.Context, status int, id int64) {
 // DELETE /v1/admin/premium/offers/:id: the offer taken back; its members
 // keep only the Premium they have otherwise.
 func (s *Server) revokePremiumOffer(c *gin.Context) {
-	if !s.premiumGiftsEnabled(c) {
-		return
-	}
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		resourceNotFoundError(c, "PremiumOffer")
@@ -342,41 +320,9 @@ func (s *Server) revokePremiumOffer(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	users := make([]int64, len(rows))
-	for i, row := range rows {
-		users[i] = row.UserID
-	}
-	logFor(c).Info("premium offer taken back", "offer", id, "members", len(users))
-	s.gifting.Add(1)
-	go func() {
-		defer s.gifting.Done()
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
-		defer cancel()
-		for _, user := range users {
-			s.regrantPremium(ctx, user)
-		}
-	}()
+	// its gifts no longer count (premiumBought): nothing else to do
+	logFor(c).Info("premium offer taken back", "offer", id, "members", len(rows))
 	s.sendPremiumOffer(c, http.StatusOK, id)
-}
-
-// regrantPremium takes back the promotional Premium of [userID] and gives
-// again what still stands (bought on the website, other gifts).
-func (s *Server) regrantPremium(ctx context.Context, userID int64) {
-	appUser := strconv.FormatInt(userID, 10)
-	if err := s.premium.Revoke(ctx, appUser); err != nil {
-		slog.Error("cannot take back a premium", "user", userID, "error", err)
-		return
-	}
-	lifetime, until, err := s.premiumBought(ctx, userID)
-	if err != nil || !lifetime && (until == nil || !until.After(time.Now())) {
-		return
-	}
-	if lifetime {
-		until = nil
-	}
-	if err := s.premium.Grant(ctx, appUser, until); err != nil {
-		slog.Error("cannot give back the rest of a premium", "user", userID, "error", err)
-	}
 }
 
 type revokeMemberPremiumRequest struct {
@@ -392,12 +338,8 @@ type revokeMemberPremiumResponse struct {
 
 // POST /v1/admin/premium/members/:username/revoke: the member loses all the
 // Premium offered to them, and with include_paid (a superadmin) the Premium
-// bought on the website too. A subscription of the App Store or Google Play
-// is not ours: it ends in the store (or in RevenueCat).
+// bought on the website too.
 func (s *Server) revokeMemberPremium(c *gin.Context) {
-	if !s.premiumGiftsEnabled(c) {
-		return
-	}
 	var req revokeMemberPremiumRequest
 	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
 		badRequestError(c, err)
@@ -433,7 +375,6 @@ func (s *Server) revokeMemberPremium(c *gin.Context) {
 			return
 		}
 	}
-	s.regrantPremium(c, user.ID)
 	logFor(c).Info("premium of a member taken back", "user", user.ID, "gifts", gifts, "paid", paid)
 	apiResponse(c, http.StatusOK, revokeMemberPremiumResponse{Username: user.Username, GiftsRevoked: gifts, PaidEnded: paid})
 }

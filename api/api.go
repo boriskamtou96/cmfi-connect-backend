@@ -16,7 +16,6 @@ import (
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/phoneauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/push"
-	"github.com/boriskamtou96/cmfi-connect-backend/internal/revenuecat"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
@@ -37,11 +36,9 @@ type Server struct {
 	audio        media.AudioCompressor
 	compressSlot chan struct{}
 	compressing  sync.WaitGroup
-	// mobile money (nil without WAJUB_SECRET_KEY), and Premium given in
-	// RevenueCat (nil without REVENUECAT_SECRET_KEY)
-	money   MobileMoney
-	premium PremiumGranter
-	fees    feesCache
+	// mobile money (nil without WAJUB_SECRET_KEY)
+	money MobileMoney
+	fees  feesCache
 	// the premium gifts given in the background (waited for by tests)
 	gifting sync.WaitGroup
 }
@@ -96,13 +93,8 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 	} else {
 		slog.Warn("WAJUB_SECRET_KEY is not set: nobody can pay by mobile money")
 	}
-	var premium PremiumGranter
-	if cfg.Pay.RevenueCatSecretKey != "" {
-		premium = revenuecat.New(cfg.Pay.RevenueCatSecretKey, cfg.Pay.RevenueCatEntitlement)
-	}
 	return &Server{
 		money:            money,
-		premium:          premium,
 		store:            store,
 		config:           cfg,
 		jwtAuthenticator: jwtAuthenticator,

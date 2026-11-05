@@ -319,8 +319,8 @@ type RevokePremiumOfferRow struct {
 	Status string `json:"status"`
 }
 
-// Taken back: its gifts go (given ones are taken back in RevenueCat by the
-// caller), and the members they were given to are answered.
+// Taken back: its gifts go (a revoked gift no longer counts in the
+// Premium of its member), and the members they were given to are answered.
 func (q *Queries) RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error) {
 	rows, err := q.db.QueryContext(ctx, revokePremiumOffer, id)
 	if err != nil {

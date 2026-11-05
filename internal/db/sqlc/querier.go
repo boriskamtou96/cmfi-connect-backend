@@ -388,8 +388,8 @@ type Querier interface {
 	ReplaceMediaFile(ctx context.Context, arg ReplaceMediaFileParams) (int64, error)
 	ReplyReportSending(ctx context.Context, arg ReplyReportSendingParams) (ReportSending, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
-	// Taken back: its gifts go (given ones are taken back in RevenueCat by the
-	// caller), and the members they were given to are answered.
+	// Taken back: its gifts go (a revoked gift no longer counts in the
+	// Premium of its member), and the members they were given to are answered.
 	RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error)
 	// All the Premium offered to a member, taken back.
 	RevokeUserGifts(ctx context.Context, userID int64) (int64, error)

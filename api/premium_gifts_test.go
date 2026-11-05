@@ -29,9 +29,9 @@ func TestAnAdminOffersPremiumToAMember(t *testing.T) {
 	require.Equal(t, int32(1), offer.MembersCount)
 	require.Equal(t, int32(1), offer.Given)
 
-	granted := w.premium.granted[fmt.Sprint(m.ID)]
-	require.Len(t, granted, 1)
-	require.WithinDuration(t, time.Now().AddDate(0, 2, 0), *granted[0], time.Minute)
+	_, until := w.premiumOf(t, m.Token)
+	require.NotNil(t, until)
+	require.WithinDuration(t, time.Now().AddDate(0, 2, 0), *until, time.Minute)
 	require.Len(t, sender.messages, 1)
 	require.Equal(t, "Premium t'est offert", sender.messages[0].Title)
 	require.Equal(t, "Profite de CMFI Connect Premium pendant 2 mois. Que Dieu te bénisse !", sender.messages[0].Body)
@@ -51,9 +51,9 @@ func TestAGiftComesAfterThePremiumAlreadyBought(t *testing.T) {
 	w.notify(t, "payment.completed", month.ID, map[string]any{"amount": 1500})
 
 	w.offer(t, admin.Token, map[string]any{"months": 3, "username": m.Username})
-	granted := w.premium.granted[fmt.Sprint(m.ID)]
-	require.Len(t, granted, 2)
-	require.WithinDuration(t, time.Now().AddDate(0, 1, 0).AddDate(0, 3, 0), *granted[1], time.Minute)
+	_, until := w.premiumOf(t, m.Token)
+	require.NotNil(t, until)
+	require.WithinDuration(t, time.Now().AddDate(0, 1, 0).AddDate(0, 3, 0), *until, time.Minute)
 }
 
 func TestPremiumIsOfferedToAGroupAndTakenBack(t *testing.T) {
@@ -68,17 +68,20 @@ func TestPremiumIsOfferedToAGroupAndTakenBack(t *testing.T) {
 
 	offer := w.offer(t, admin.Token, map[string]any{"months": 1, "audience": map[string]string{"city": city}, "notify": false})
 	require.Equal(t, int32(2), offer.MembersCount)
-	require.Len(t, w.premium.granted[fmt.Sprint(one.ID)], 1)
-	require.Len(t, w.premium.granted[fmt.Sprint(two.ID)], 1)
-	require.Empty(t, w.premium.granted[fmt.Sprint(outside.ID)])
+	for _, member := range []member{one, two} {
+		_, until := w.premiumOf(t, member.Token)
+		require.NotNil(t, until)
+	}
+	_, none := w.premiumOf(t, outside.Token)
+	require.Nil(t, none)
 
-	// taken back: the promotional Premium goes, nothing else stands
+	// taken back: the Premium offered goes, nothing else stands
 	revoked := send(t, w.router, http.MethodDelete, admin.Token, fmt.Sprintf("/v1/admin/premium/offers/%d", offer.ID), nil)
 	require.Equal(t, http.StatusOK, revoked.Code, revoked.Body.String())
 	w.server.gifting.Wait()
 	require.NotNil(t, decode[premiumOfferResponse](t, revoked).RevokedAt)
-	require.Equal(t, 1, w.premium.revoked[fmt.Sprint(one.ID)])
-	require.Len(t, w.premium.granted[fmt.Sprint(one.ID)], 1)
+	_, gone := w.premiumOf(t, one.Token)
+	require.Nil(t, gone)
 }
 
 func TestOffersAreChecked(t *testing.T) {
@@ -103,19 +106,12 @@ func TestOffersAreChecked(t *testing.T) {
 	// only the admins
 	forbidden := send(t, w.router, http.MethodPost, m.Token, "/v1/admin/premium/offers", map[string]any{"months": 1, "username": m.Username})
 	require.Equal(t, http.StatusForbidden, forbidden.Code)
-
-	// without RevenueCat: said
-	w.server.premium = nil
-	disabled := send(t, w.router, http.MethodPost, admin.Token, "/v1/admin/premium/offers", map[string]any{"months": 1, "username": m.Username})
-	require.Equal(t, http.StatusServiceUnavailable, disabled.Code)
-	require.Contains(t, disabled.Body.String(), "PREMIUM_DISABLED")
 }
 
 func TestTheAdminsTakeBackTheOfferedPremiumOfAMember(t *testing.T) {
 	w := newPaymentsWorld(t)
 	admin := staffAdmin(t, w.router)
 	m := registerMember(t, w.router, nil)
-	user := fmt.Sprint(m.ID)
 	month := w.pay(t, m.Token, "/v1/premium/payments", map[string]any{"plan": "monthly", "phone_number": "+237670000041"})
 	w.notify(t, "payment.completed", month.ID, map[string]any{"amount": 1500})
 	w.offer(t, admin.Token, map[string]any{"months": 2, "username": m.Username})
@@ -125,9 +121,9 @@ func TestTheAdminsTakeBackTheOfferedPremiumOfAMember(t *testing.T) {
 	taken := send(t, w.router, http.MethodPost, admin.Token, path, map[string]any{})
 	require.Equal(t, http.StatusOK, taken.Code, taken.Body.String())
 	require.Equal(t, revokeMemberPremiumResponse{Username: m.Username, GiftsRevoked: 1}, decode[revokeMemberPremiumResponse](t, taken))
-	require.Equal(t, 1, w.premium.revoked[user])
-	granted := w.premium.granted[user]
-	require.WithinDuration(t, time.Now().AddDate(0, 1, 0), *granted[len(granted)-1], time.Minute)
+	_, until := w.premiumOf(t, m.Token)
+	require.NotNil(t, until)
+	require.WithinDuration(t, time.Now().AddDate(0, 1, 0), *until, time.Minute)
 
 	// the paid one too: superadmins only (tests)
 	forbidden := send(t, w.router, http.MethodPost, admin.Token, path, map[string]any{"include_paid": true})
@@ -136,8 +132,6 @@ func TestTheAdminsTakeBackTheOfferedPremiumOfAMember(t *testing.T) {
 	all := send(t, w.router, http.MethodPost, admin.Token, path, map[string]any{"include_paid": true})
 	require.Equal(t, http.StatusOK, all.Code, all.Body.String())
 	require.Equal(t, int64(1), decode[revokeMemberPremiumResponse](t, all).PaidEnded)
-	require.Equal(t, 2, w.premium.revoked[user])
-	require.Len(t, w.premium.granted[user], len(granted))
-	status := decodeRaw[rawContent](t, send(t, w.router, http.MethodGet, m.Token, "/v1/premium/status", nil))
-	require.Contains(t, string(status.Content), `"until":null`)
+	_, ended := w.premiumOf(t, m.Token)
+	require.Nil(t, ended)
 }

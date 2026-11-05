@@ -55,8 +55,8 @@ FROM premium_gifts
 WHERE user_id = $1 AND status = 'given';
 
 -- name: RevokePremiumOffer :many
--- Taken back: its gifts go (given ones are taken back in RevenueCat by the
--- caller), and the members they were given to are answered.
+-- Taken back: its gifts go (a revoked gift no longer counts in the
+-- Premium of its member), and the members they were given to are answered.
 WITH offer AS (
     UPDATE premium_offers
     SET revoked_at = now()
