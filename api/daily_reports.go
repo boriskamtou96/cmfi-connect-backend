@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -153,6 +154,15 @@ func (s *Server) saveDailyReport(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+
+	// 21 days in a row: a month of Premium offered, once
+	s.gifting.Add(1)
+	go func() {
+		defer s.gifting.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		s.giveStreakGift(ctx, authUser.ID)
+	}()
 
 	// send back the saved day, exactly as GET /reports/:date would
 	form, err := s.buildDailyReportForm(c, authUser.ID, date)

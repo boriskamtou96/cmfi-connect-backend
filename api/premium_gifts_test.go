@@ -135,3 +135,39 @@ func TestTheAdminsTakeBackTheOfferedPremiumOfAMember(t *testing.T) {
 	_, ended := w.premiumOf(t, m.Token)
 	require.Nil(t, ended)
 }
+
+func TestTwentyOneDaysInARowOfferAMonthOnce(t *testing.T) {
+	w := newPaymentsWorld(t)
+	sender := &fakeSender{}
+	w.server.push = sender
+	m := registerMember(t, w.router, nil)
+	addPhone(t, w.router, m, "phone-"+uniqueName())
+	t.Cleanup(func() { runSQL(t, `DELETE FROM premium_offers WHERE audience->>'username' = $1`, m.Username) })
+
+	// 20 days: nothing yet
+	for n := 20; n >= 1; n-- {
+		require.Equal(t, http.StatusOK, saveDay(t, w.router, m.Token, daysAgo(n), map[string]any{"goal_percent": 50}).Code)
+	}
+	w.server.gifting.Wait()
+	_, none := w.premiumOf(t, m.Token)
+	require.Nil(t, none)
+
+	// the 21st: a month offered, and said
+	require.Equal(t, http.StatusOK, saveDay(t, w.router, m.Token, daysAgo(0), map[string]any{"goal_percent": 50}).Code)
+	w.server.gifting.Wait()
+	_, until := w.premiumOf(t, m.Token)
+	require.NotNil(t, until)
+	require.WithinDuration(t, time.Now().AddDate(0, 1, 0), *until, time.Minute)
+	sender.mu.Lock()
+	require.Len(t, sender.messages, 1)
+	require.Equal(t, "21 jours de suite !", sender.messages[0].Title)
+	require.Equal(t, "premium_gift", sender.messages[0].Data["type"])
+	sender.mu.Unlock()
+
+	// once only, even when the month ends
+	runSQL(t, `UPDATE premium_gifts SET until = now() - interval '1 day' FROM users WHERE users.id = premium_gifts.user_id AND users.username = $1`, m.Username)
+	require.Equal(t, http.StatusOK, saveDay(t, w.router, m.Token, daysAgo(0), map[string]any{"goal_percent": 80}).Code)
+	w.server.gifting.Wait()
+	_, ended := w.premiumOf(t, m.Token)
+	require.Nil(t, ended)
+}

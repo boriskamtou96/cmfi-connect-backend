@@ -223,6 +223,8 @@ type Querier interface {
 	// After 5 attempts it stays failed.
 	GiftAttemptFailed(ctx context.Context, id int64) error
 	GiveGift(ctx context.Context, arg GiveGiftParams) error
+	// The month offered for a streak was already given to the member (once).
+	HasStreakGift(ctx context.Context, userID int64) (bool, error)
 	// Already invited, joined or declined: left as they are. Gives the members
 	// invited now (they get a push).
 	InviteToImportunity(ctx context.Context, arg InviteToImportunityParams) ([]int64, error)
