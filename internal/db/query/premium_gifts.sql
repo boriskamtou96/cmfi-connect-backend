@@ -84,3 +84,12 @@ WHERE user_id = $1
   AND status = 'completed'
   AND settled_at IS NOT NULL
   AND (premium_until IS NULL OR premium_until > now());
+
+-- name: HasStreakGift :one
+-- The month offered for a streak was already given to the member (once).
+SELECT EXISTS (
+    SELECT 1
+    FROM premium_gifts g
+    JOIN premium_offers o ON o.id = g.offer_id
+    WHERE g.user_id = $1 AND o.audience->>'streak' IS NOT NULL
+) AS given;

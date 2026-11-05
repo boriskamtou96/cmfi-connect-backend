@@ -143,6 +143,23 @@ func (q *Queries) GiveGift(ctx context.Context, arg GiveGiftParams) error {
 	return err
 }
 
+const hasStreakGift = `-- name: HasStreakGift :one
+SELECT EXISTS (
+    SELECT 1
+    FROM premium_gifts g
+    JOIN premium_offers o ON o.id = g.offer_id
+    WHERE g.user_id = $1 AND o.audience->>'streak' IS NOT NULL
+) AS given
+`
+
+// The month offered for a streak was already given to the member (once).
+func (q *Queries) HasStreakGift(ctx context.Context, userID int64) (bool, error) {
+	row := q.db.QueryRowContext(ctx, hasStreakGift, userID)
+	var given bool
+	err := row.Scan(&given)
+	return given, err
+}
+
 const listPendingGifts = `-- name: ListPendingGifts :many
 SELECT id, offer_id, user_id, months, status, until, attempts, created_at, updated_at
 FROM premium_gifts

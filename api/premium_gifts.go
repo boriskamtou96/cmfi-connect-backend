@@ -193,12 +193,17 @@ func (s *Server) giveGift(ctx context.Context, gift db.PremiumGift) {
 		return
 	}
 	if offer, err := s.store.GetPremiumOffer(ctx, gift.OfferID); err == nil && offer.Notify {
-		s.pushPremiumGift(gift)
+		var audience struct {
+			Streak int `json:"streak"`
+		}
+		_ = json.Unmarshal(offer.Audience, &audience)
+		s.pushPremiumGift(gift, audience.Streak)
 	}
 }
 
-// pushPremiumGift tells the member, in the language of each phone.
-func (s *Server) pushPremiumGift(gift db.PremiumGift) {
+// pushPremiumGift tells the member, in the language of each phone; [streak]:
+// the days in a row it rewards (0: offered by the admins).
+func (s *Server) pushPremiumGift(gift db.PremiumGift, streak int) {
 	ctx, cancel := context.WithTimeout(context.Background(), pushTimeout)
 	defer cancel()
 	devices, err := s.store.ListDevicesOfUsers(ctx, []int64{gift.UserID})
@@ -211,9 +216,15 @@ func (s *Server) pushPremiumGift(gift db.PremiumGift) {
 	}
 	dead := []string{}
 	for language, tokens := range byLanguage {
+		title := titleIn(premiumGiftTitles, language, "")
+		body := fmt.Sprintf(titleIn(premiumGiftBodies, language, ""), gift.Months)
+		if streak > 0 {
+			title = fmt.Sprintf(titleIn(streakGiftTitles, language, ""), streak)
+			body = titleIn(streakGiftBodies, language, "")
+		}
 		result, err := s.push.Send(ctx, tokens, push.Message{
-			Title: titleIn(premiumGiftTitles, language, ""),
-			Body:  fmt.Sprintf(titleIn(premiumGiftBodies, language, ""), gift.Months),
+			Title: title,
+			Body:  body,
 			Data:  map[string]string{"type": "premium_gift", "id": strconv.FormatInt(gift.OfferID, 10)},
 		})
 		if err != nil {
@@ -377,4 +388,82 @@ func (s *Server) revokeMemberPremium(c *gin.Context) {
 	}
 	logFor(c).Info("premium of a member taken back", "user", user.ID, "gifts", gifts, "paid", paid)
 	apiResponse(c, http.StatusOK, revokeMemberPremiumResponse{Username: user.Username, GiftsRevoked: gifts, PaidEnded: paid})
+}
+
+// ----- a month offered for a streak -----
+
+// streakGiftDays: the days in a row of reports that offer a month of Premium,
+// once, to a member who doesn't have it: they taste it, and the reminder
+// before its end (in the app) invites them to go on.
+const streakGiftDays = 21
+
+var streakGiftTitles = map[string]string{
+	"fr": "%d jours de suite !",
+	"en": "%d days in a row!",
+	"de": "%d Tage am Stück!",
+	"es": "¡%d días seguidos!",
+	"ar": "%d يومًا متتالية!",
+	"zh": "连续 %d 天！",
+	"hi": "लगातार %d दिन!",
+}
+
+var streakGiftBodies = map[string]string{
+	"fr": "Pour ta fidélité, CMFI Connect Premium t'est offert pendant 1 mois. Continue !",
+	"en": "For your faithfulness, CMFI Connect Premium is yours for 1 month. Keep going!",
+	"de": "Für deine Treue schenken wir dir CMFI Connect Premium für 1 Monat. Mach weiter so!",
+	"es": "Por tu fidelidad, te regalamos CMFI Connect Premium durante 1 mes. ¡Sigue así!",
+	"ar": "لأمانتك، نهديك CMFI Connect Premium لمدة شهر. واصل!",
+	"zh": "感谢你的忠心，送你 1 个月 CMFI Connect Premium。继续加油！",
+	"hi": "तुम्हारी निष्ठा के लिए, CMFI Connect Premium 1 महीने के लिए तुम्हें उपहार में। लगे रहो!",
+}
+
+// giveStreakGift offers a month of Premium to [userID] once their reports
+// reach [streakGiftDays] days in a row, if they never had this gift, have no
+// Premium now and are not on the team. Done in the background after a report
+// is saved; it changes nothing for the report.
+func (s *Server) giveStreakGift(ctx context.Context, userID int64) {
+	given, err := s.store.HasStreakGift(ctx, userID)
+	if err != nil || given {
+		return
+	}
+	if role, err := s.store.GetUserRole(ctx, userID); err != nil || role == roleAdmin || role == roleSuperadmin {
+		return
+	}
+	lifetime, until, err := s.premiumBought(ctx, userID)
+	if err != nil || lifetime || until != nil && until.After(time.Now()) {
+		return
+	}
+	day := today()
+	rows, err := s.store.ListReportDays(ctx, db.ListReportDaysParams{
+		UserIds:  []int64{userID},
+		FromDate: day.AddDate(0, 0, -(streakGiftDays + 1)),
+		ToDate:   day,
+	})
+	if err != nil || regularityOf(rows, day, 0).Streak < streakGiftDays {
+		return
+	}
+	user, err := s.store.GetUserById(ctx, userID)
+	if err != nil {
+		return
+	}
+	audience, _ := json.Marshal(map[string]any{"username": user.Username, "streak": streakGiftDays})
+	offer, err := s.store.CreatePremiumOffer(ctx, db.CreatePremiumOfferParams{
+		Months:       1,
+		Audience:     audience,
+		Note:         fmt.Sprintf("%d jours de suite", streakGiftDays),
+		Notify:       true,
+		MembersCount: 1,
+	})
+	if err != nil {
+		slog.Error("cannot create a streak gift", "user", userID, "error", err)
+		return
+	}
+	if err := s.store.CreatePremiumGifts(ctx, db.CreatePremiumGiftsParams{
+		OfferID: offer.ID, UserIds: []int64{userID}, Months: 1,
+	}); err != nil {
+		slog.Error("cannot create a streak gift", "user", userID, "error", err)
+		return
+	}
+	s.giveGifts(ctx, sql.NullInt64{Int64: offer.ID, Valid: true}, 1)
+	slog.Info("premium offered for a streak", "user", userID, "offer", offer.ID)
 }
