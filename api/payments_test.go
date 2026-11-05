@@ -148,32 +148,10 @@ func (f *fakeMoney) withdrawalsTo(phone string) map[string]money.WithdrawRequest
 	return found
 }
 
-// fakePremium is RevenueCat: what each member was given (nil: for life).
-type fakePremium struct {
-	mu      sync.Mutex
-	granted map[string][]*time.Time
-	revoked map[string]int
-}
-
-func (f *fakePremium) Grant(_ context.Context, user string, until *time.Time) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	f.granted[user] = append(f.granted[user], until)
-	return nil
-}
-
-func (f *fakePremium) Revoke(_ context.Context, user string) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	f.revoked[user]++
-	return nil
-}
-
 type paymentsWorld struct {
-	router  http.Handler
-	server  *Server
-	money   *fakeMoney
-	premium *fakePremium
+	router http.Handler
+	server *Server
+	money  *fakeMoney
 }
 
 func newPaymentsWorld(t *testing.T) paymentsWorld {
@@ -189,12 +167,10 @@ func newPaymentsWorld(t *testing.T) paymentsWorld {
 	})
 	require.NoError(t, err)
 	world := paymentsWorld{
-		server:  server,
-		money:   newFakeMoney(),
-		premium: &fakePremium{granted: map[string][]*time.Time{}, revoked: map[string]int{}},
+		server: server,
+		money:  newFakeMoney(),
 	}
 	server.money = world.money
-	server.premium = world.premium
 	world.router = server.SetupRouter()
 	// the test payments go with the test
 	t.Cleanup(func() {
@@ -533,10 +509,21 @@ func TestAnAdminRefundsAPaymentAndTheRegistrationGoes(t *testing.T) {
 	require.Equal(t, http.StatusNoContent, send(t, w.router, http.MethodDelete, admin.Token, adminEventPath(event, ""), nil).Code)
 }
 
-func TestPremiumBoughtOnTheWebsiteIsGivenInRevenueCat(t *testing.T) {
+// premiumOf: the Premium the apps read for [token] (GET /v1/premium/status).
+func (w paymentsWorld) premiumOf(t *testing.T, token string) (lifetime bool, until *time.Time) {
+	t.Helper()
+	response := send(t, w.router, http.MethodGet, token, "/v1/premium/status", nil)
+	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	status := decode[struct {
+		Lifetime bool       `json:"lifetime"`
+		Until    *time.Time `json:"until"`
+	}](t, response)
+	return status.Lifetime, status.Until
+}
+
+func TestPremiumBoughtOnTheWebsiteIsKeptHere(t *testing.T) {
 	w := newPaymentsWorld(t)
 	m := registerMember(t, w.router, nil)
-	user := fmt.Sprint(m.ID)
 
 	plans := send(t, w.router, http.MethodGet, "", "/v1/premium/plans", nil)
 	require.Equal(t, http.StatusOK, plans.Code)
@@ -551,12 +538,10 @@ func TestPremiumBoughtOnTheWebsiteIsGivenInRevenueCat(t *testing.T) {
 	year := w.pay(t, m.Token, "/v1/premium/payments", map[string]any{"plan": "yearly", "phone_number": "+237670000008"})
 	w.notify(t, "payment.completed", year.ID, map[string]any{"amount": 12000})
 
-	granted := w.premium.granted[user]
-	require.Len(t, granted, 2)
-	require.WithinDuration(t, time.Now().AddDate(0, 1, 0), *granted[0], time.Minute)
-	require.WithinDuration(t, time.Now().AddDate(1, 1, 0), *granted[1], time.Minute)
-	status := decodeRaw[rawContent](t, send(t, w.router, http.MethodGet, m.Token, "/v1/premium/status", nil))
-	require.Contains(t, string(status.Content), `"lifetime":false`)
+	lifetime, until := w.premiumOf(t, m.Token)
+	require.False(t, lifetime)
+	require.NotNil(t, until)
+	require.WithinDuration(t, time.Now().AddDate(1, 1, 0), *until, time.Minute)
 
 	// unknown plans are refused
 	unknown := send(t, w.router, http.MethodPost, m.Token, "/v1/premium/payments", map[string]any{"plan": "weekly", "phone_number": "+237670000008"})

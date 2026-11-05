@@ -86,9 +86,8 @@ type PushConfig struct {
 // when empty. [WajubFees] (WAJUB_PAYMENT_FEE_RATE, WAJUB_PAYOUT_FEE_RATE,
 // 0.05 for 5 %) are the shares Wajub keeps, which its API doesn't tell.
 // [PremiumPrices] (PREMIUM_PRICES, "monthly:1500,yearly:12000",
-// in [PremiumCurrency]) are the Premium plans sold on the website; Premium is
-// then given in RevenueCat with [RevenueCatSecretKey] (REVENUECAT_SECRET_KEY,
-// sk_…) to the entitlement [RevenueCatEntitlement].
+// in [PremiumCurrency]) are the Premium plans sold on the website; the
+// Premium they give is kept here, and the apps read it.
 type PaymentsConfig struct {
 	WajubURL           string
 	WajubSecretKey     string
@@ -100,11 +99,9 @@ type PaymentsConfig struct {
 	WajubCards bool
 	// where a payer comes back after the card page (PAYMENT_RETURN_URL); a
 	// page of the site that says to go back to the app
-	ReturnURL             string
-	PremiumPrices         map[string]int64
-	PremiumCurrency       string
-	RevenueCatSecretKey   string
-	RevenueCatEntitlement string
+	ReturnURL       string
+	PremiumPrices   map[string]int64
+	PremiumCurrency string
 }
 
 // LoadConfig loads the configuration from environment variables and returns a Config struct.
@@ -170,17 +167,15 @@ func (c *Config) loadConfig() (*Config, error) {
 		}
 	}
 	config.Pay = PaymentsConfig{
-		WajubURL:              getEnv("WAJUB_BASE_URL", "https://api.wajub.com"),
-		WajubSecretKey:        getEnv("WAJUB_SECRET_KEY", ""),
-		WajubWebhookSecret:    getEnv("WAJUB_WEBHOOK_SECRET", ""),
-		WajubProviders:        getEnvList("WAJUB_PROVIDERS"),
-		WajubFees:             fees,
-		WajubCards:            getEnv("WAJUB_CARDS", "off") == "on",
-		ReturnURL:             getEnv("PAYMENT_RETURN_URL", "https://cmfi-connect.com/paiement"),
-		PremiumPrices:         prices,
-		PremiumCurrency:       getEnv("PREMIUM_CURRENCY", "XAF"),
-		RevenueCatSecretKey:   getEnv("REVENUECAT_SECRET_KEY", ""),
-		RevenueCatEntitlement: getEnv("REVENUECAT_ENTITLEMENT", "cmfi_connect_pro"),
+		WajubURL:           getEnv("WAJUB_BASE_URL", "https://api.wajub.com"),
+		WajubSecretKey:     getEnv("WAJUB_SECRET_KEY", ""),
+		WajubWebhookSecret: getEnv("WAJUB_WEBHOOK_SECRET", ""),
+		WajubProviders:     getEnvList("WAJUB_PROVIDERS"),
+		WajubFees:          fees,
+		WajubCards:         getEnv("WAJUB_CARDS", "off") == "on",
+		ReturnURL:          getEnv("PAYMENT_RETURN_URL", "https://cmfi-connect.com/paiement"),
+		PremiumPrices:      prices,
+		PremiumCurrency:    getEnv("PREMIUM_CURRENCY", "XAF"),
 	}
 	return config, nil
 }

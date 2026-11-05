@@ -44,13 +44,6 @@ type MobileMoney interface {
 	Lookup(ctx context.Context, id string) (money.Webhook, error)
 }
 
-// PremiumGranter gives Premium in RevenueCat (internal/revenuecat), seen by
-// the apps like a purchase.
-type PremiumGranter interface {
-	Grant(ctx context.Context, appUserID string, until *time.Time) error
-	Revoke(ctx context.Context, appUserID string) error
-}
-
 const (
 	paymentForEvent   = "event"
 	paymentForPremium = "premium"
@@ -575,7 +568,7 @@ func (s *Server) listPremiumPlans(c *gin.Context) {
 		}
 	}
 	apiResponse(c, http.StatusOK, gin.H{
-		"enabled":  s.money != nil && s.premium != nil && len(plans) > 0,
+		"enabled":  s.money != nil && len(plans) > 0,
 		"currency": s.config.Pay.PremiumCurrency,
 		"plans":    plans,
 	})
@@ -590,11 +583,6 @@ type premiumPaymentRequest struct {
 // money arrived.
 func (s *Server) payForPremium(c *gin.Context) {
 	if !s.paymentsEnabled(c) {
-		return
-	}
-	if s.premium == nil {
-		c.JSON(http.StatusServiceUnavailable, NewErrorResponse(http.StatusServiceUnavailable,
-			"PAYMENTS_DISABLED", fmt.Errorf("premium is not sold here")))
 		return
 	}
 	var req premiumPaymentRequest
@@ -833,9 +821,6 @@ func (s *Server) onRefundWebhook(ctx context.Context, hook money.Webhook) {
 // ends: the work of a completed payment, a refund Wajub never got, a payment
 // Wajub never acknowledged.
 func (s *Server) ReconcilePayments(ctx context.Context) {
-	if s.money == nil && s.premium == nil {
-		return
-	}
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
@@ -846,10 +831,8 @@ func (s *Server) ReconcilePayments(ctx context.Context) {
 			if s.money != nil {
 				s.reconcileOpenPayments(ctx, time.Now().Add(-time.Minute))
 			}
-			// the premium gifts RevenueCat refused, again
-			if s.premium != nil {
-				s.giveGifts(ctx, sql.NullInt64{}, 50)
-			}
+			// the premium gifts left undone (a restart), again
+			s.giveGifts(ctx, sql.NullInt64{}, 50)
 		}
 	}
 }
@@ -957,10 +940,6 @@ func (s *Server) settlePremiumPayment(ctx context.Context, payment db.Payment) {
 		_ = s.store.SettlePayment(ctx, db.SettlePaymentParams{ID: payment.ID})
 		return
 	}
-	if s.premium == nil {
-		slog.Error("premium paid but REVENUECAT_SECRET_KEY is not set: waiting", "payment", payment.ID)
-		return
-	}
 	// a plan bought before its end follows it
 	lifetime, current, err := s.premiumBought(ctx, payment.UserID.Int64)
 	if err != nil {
@@ -975,10 +954,7 @@ func (s *Server) settlePremiumPayment(ctx context.Context, payment db.Payment) {
 	if lifetime {
 		until = nil
 	}
-	if err := s.premium.Grant(ctx, strconv.FormatInt(payment.UserID.Int64, 10), until); err != nil {
-		slog.Error("cannot give premium: will try again", "payment", payment.ID, "error", err)
-		return
-	}
+	// kept here: the apps read it (GET /v1/premium/status)
 	settled := db.SettlePaymentParams{ID: payment.ID}
 	if until != nil {
 		settled.PremiumUntil = sql.NullTime{Time: *until, Valid: true}
@@ -1066,30 +1042,12 @@ func (s *Server) failRefund(ctx context.Context, refundID uuid.NullUUID, code st
 	}
 }
 
-// afterRefund takes back what the payment gave: the place, or Premium.
+// afterRefund takes back what the payment gave: the place. Premium goes by
+// itself: a refunded payment no longer counts (premiumBought).
 func (s *Server) afterRefund(ctx context.Context, payment db.Payment) {
-	switch payment.Purpose {
-	case paymentForEvent:
+	if payment.Purpose == paymentForEvent {
 		if _, err := s.store.DeleteRegistrationOfPayment(ctx, uuid.NullUUID{UUID: payment.ID, Valid: true}); err != nil {
 			slog.Error("cannot remove a refunded registration", "payment", payment.ID, "error", err)
-		}
-	case paymentForPremium:
-		if s.premium == nil || !payment.UserID.Valid || !payment.SettledAt.Valid {
-			return
-		}
-		if err := s.premium.Revoke(ctx, strconv.FormatInt(payment.UserID.Int64, 10)); err != nil {
-			slog.Error("cannot take back premium", "payment", payment.ID, "error", err)
-			return
-		}
-		// what other payments still give, given again
-		lifetime, until, err := s.premiumBought(ctx, payment.UserID.Int64)
-		if err == nil && (lifetime || until != nil && until.After(time.Now())) {
-			if lifetime {
-				until = nil
-			}
-			if err := s.premium.Grant(ctx, strconv.FormatInt(payment.UserID.Int64, 10), until); err != nil {
-				slog.Error("cannot give back the other premium", "payment", payment.ID, "error", err)
-			}
 		}
 	}
 }
