@@ -37,7 +37,9 @@ type Querier interface {
 	ClaimTeachingNotification(ctx context.Context, id int64) (ClaimTeachingNotificationRow, error)
 	// The disciple maker of [user_id] stays one of their authorities.
 	ClearDiscipleMaker(ctx context.Context, userID int64) error
-	// The money arrived. No row when it was already known: done once.
+	// The money arrived. No row when it was already known: done once. A
+	// payment said failed may still succeed later (Wajub tells it): the money
+	// is there, so it completes.
 	CompletePayment(ctx context.Context, arg CompletePaymentParams) (Payment, error)
 	CompletePaymentRefund(ctx context.Context, refundID uuid.NullUUID) (Payment, error)
 	// No row when it was already known: done once.
@@ -302,7 +304,7 @@ type Querier interface {
 	// ----- our ministry: the nations -----
 	ListNations(ctx context.Context) ([]MinistryNation, error)
 	ListNewMembersPerDay(ctx context.Context, since time.Time) ([]ListNewMembersPerDayRow, error)
-	// What the reconciler checks: the answers still awaited from KPAY, and
+	// What the reconciler checks: the answers still awaited from Wajub, and
 	// the completed payments whose work is not done yet.
 	ListOpenPayments(ctx context.Context, before time.Time) ([]Payment, error)
 	ListPastEvents(ctx context.Context, arg ListPastEventsParams) ([]Event, error)
@@ -370,7 +372,7 @@ type Querier interface {
 	// One of [user_id]'s authorities (not declined) becomes their disciple maker.
 	MakeDiscipleMaker(ctx context.Context, arg MakeDiscipleMakerParams) (Authority, error)
 	MarkAnnouncementRead(ctx context.Context, arg MarkAnnouncementReadParams) error
-	// KPAY took it (its id given): the member is asked for their PIN.
+	// Wajub took it (its id given): the member is asked for their PIN.
 	MarkPaymentAccepted(ctx context.Context, arg MarkPaymentAcceptedParams) error
 	MarkPayoutPending(ctx context.Context, arg MarkPayoutPendingParams) error
 	// A retreat prayed for them on [day]: the next retreats take the others first.
@@ -398,7 +400,7 @@ type Querier interface {
 	// A new account is not confirmed until its test arrives.
 	SetEventPayoutAccount(ctx context.Context, arg SetEventPayoutAccountParams) (Event, error)
 	SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error
-	// The id KPAY gave, learnt from its webhook when its first answer was lost.
+	// The id Wajub gave, learnt from its webhook when its first answer was lost.
 	SetPaymentProviderID(ctx context.Context, arg SetPaymentProviderIDParams) error
 	SetPaymentProviderRefundID(ctx context.Context, arg SetPaymentProviderRefundIDParams) error
 	SetRegistrationPayment(ctx context.Context, arg SetRegistrationPaymentParams) error

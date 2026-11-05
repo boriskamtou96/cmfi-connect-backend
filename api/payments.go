@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,29 +15,33 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
-	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// Payments by mobile money, through KPAY-NOW (internal/kpay): the
+// Payments by mobile money, through Wajub (internal/wajub): the
 // registration to a paid event (from the app) and Premium (from the website;
 // the stores forbid it in the apps). The member confirms on their phone with
-// their PIN; KPAY tells the outcome by a webhook, believed only when signed
-// with the webhook secret (KPAY can't be asked about a payment). Our id is
-// KPAY's externalId. A reconciler finishes what stays undone (the work of a
-// completed payment, a refund that couldn't be sent). The amount is always
+// their PIN; Wajub tells the outcome by a webhook, believed only when signed
+// with the endpoint's secret, or when asked. Our id is the payment's
+// reference at Wajub. A reconciler finishes what stays undone (the work of a
+// completed payment, a refund that couldn't be sent, a webhook that never
+// came). The amount is always
 // computed here.
 
-// MobileMoney is KPAY (a fake in the tests).
+// MobileMoney is Wajub (a fake in the tests).
 type MobileMoney interface {
-	Init(ctx context.Context, req kpay.InitRequest) (kpay.Payment, error)
-	Refund(ctx context.Context, paymentID string, req kpay.RefundRequest) (kpay.Refund, error)
-	PredictProvider(ctx context.Context, phoneNumber string) (kpay.Prediction, error)
-	Withdraw(ctx context.Context, req kpay.WithdrawRequest) (kpay.Withdrawal, error)
-	Balances(ctx context.Context) ([]kpay.Balance, error)
-	PlatformFees(ctx context.Context) (kpay.Fees, error)
+	Init(ctx context.Context, req money.InitRequest) (money.Payment, error)
+	Refund(ctx context.Context, paymentID string, req money.RefundRequest) (money.Refund, error)
+	PredictProvider(ctx context.Context, phoneNumber string) (money.Prediction, error)
+	Withdraw(ctx context.Context, req money.WithdrawRequest) (money.Withdrawal, error)
+	Balances(ctx context.Context) ([]money.Balance, error)
+	PlatformFees(ctx context.Context) (money.Fees, error)
+	// where a payment is (the provider's id), for a webhook that never came
+	Lookup(ctx context.Context, id string) (money.Webhook, error)
 }
 
 // PremiumGranter gives Premium in RevenueCat (internal/revenuecat), seen by
@@ -78,7 +81,7 @@ func premiumEnd(plan string, from time.Time) *time.Time {
 	return &end
 }
 
-// paymentsEnabled answers 503 PAYMENTS_DISABLED without KPAY.
+// paymentsEnabled answers 503 PAYMENTS_DISABLED without Wajub.
 func (s *Server) paymentsEnabled(c *gin.Context) bool {
 	if s.money == nil {
 		c.JSON(http.StatusServiceUnavailable, NewErrorResponse(http.StatusServiceUnavailable,
@@ -105,7 +108,7 @@ type paymentResponse struct {
 	People      int32     `json:"people"`
 	PremiumPlan string    `json:"premium_plan"`
 	CreatedAt   time.Time `json:"created_at"`
-	// a card: KPAY's page to open, given when the payment starts
+	// a card: Wajub's page to open, given when the payment starts
 	GatewayURL string `json:"gateway_url,omitempty"`
 	// the end of the Premium it gave; null before, or for life
 	PremiumUntil *time.Time `json:"premium_until"`
@@ -148,17 +151,17 @@ func toPaymentResponse(payment db.Payment) paymentResponse {
 
 // ----- the operators -----
 
-// defaultProviders: the operators offered without KPAY_PROVIDERS.
+// defaultProviders: the operators offered without WAJUB_PROVIDERS.
 var defaultProviders = []string{"MTN_MOMO_CMR", "ORANGE_CMR"}
 
-// operators: those of KPAY's catalogue the application offers.
-func (s *Server) operators() []kpay.Operator {
-	allowed := s.config.Pay.KPayProviders
+// operators: those of Wajub's catalogue the application offers.
+func (s *Server) operators() []money.Operator {
+	allowed := s.config.Pay.WajubProviders
 	if len(allowed) == 0 {
 		allowed = defaultProviders
 	}
-	found := []kpay.Operator{}
-	for _, operator := range kpay.Operators {
+	found := []money.Operator{}
+	for _, operator := range money.Operators {
 		if slices.Contains(allowed, operator.Provider) {
 			found = append(found, operator)
 		}
@@ -172,7 +175,7 @@ type providerResponse struct {
 	Logo      string `json:"logo"`
 	MinAmount string `json:"min_amount"`
 	MaxAmount string `json:"max_amount"`
-	// OPERATIONAL (KPAY gives no other state here)
+	// OPERATIONAL (Wajub gives no other state here)
 	Status string `json:"status"`
 }
 
@@ -185,7 +188,7 @@ type countryResponse struct {
 }
 
 // operatorsFor: the countries and operators that take [currency].
-func operatorsFor(operators []kpay.Operator, currency string) []countryResponse {
+func operatorsFor(operators []money.Operator, currency string) []countryResponse {
 	countries := []countryResponse{}
 	index := map[string]int{}
 	for _, operator := range operators {
@@ -216,8 +219,8 @@ func (s *Server) listPaymentProviders(c *gin.Context) {
 	currency := strings.ToUpper(c.DefaultQuery("currency", "XAF"))
 	apiResponse(c, http.StatusOK, gin.H{
 		"countries": operatorsFor(s.operators(), currency),
-		// Visa and Mastercard on KPAY's page
-		"cards": s.config.Pay.KPayCards,
+		// Visa and Mastercard on Wajub's page
+		"cards": s.config.Pay.WajubCards,
 	})
 }
 
@@ -226,7 +229,7 @@ type predictRequest struct {
 }
 
 // POST /v1/payments/predict-provider: the operator of a number, and the
-// number as KPAY writes it.
+// number as Wajub writes it.
 func (s *Server) predictPaymentProvider(c *gin.Context) {
 	if !s.paymentsEnabled(c) {
 		return
@@ -237,7 +240,7 @@ func (s *Server) predictPaymentProvider(c *gin.Context) {
 		return
 	}
 	prediction, err := s.money.PredictProvider(c, req.PhoneNumber)
-	if errors.Is(err, kpay.ErrInvalidPhone) {
+	if errors.Is(err, money.ErrInvalidPhone) {
 		c.JSON(http.StatusBadRequest, NewErrorResponse(http.StatusBadRequest, "INVALID_PHONE", err))
 		return
 	}
@@ -253,7 +256,7 @@ func (s *Server) predictPaymentProvider(c *gin.Context) {
 // ----- starting a payment -----
 
 type payerRequest struct {
-	// mobile_money (by default) or card (KPAY's hosted page)
+	// mobile_money (by default) or card (Wajub's hosted page)
 	Method string `json:"method"`
 	// mobile money, with the country code: +237 6 70 00 00 00
 	PhoneNumber string `json:"phone_number"`
@@ -297,12 +300,12 @@ func (s *Server) returnURL(asked string, id uuid.UUID) string {
 	return result.String()
 }
 
-// startPayment checks the payer, keeps the payment, then asks KPAY. It
+// startPayment checks the payer, keeps the payment, then asks Wajub. It
 // answers the payment (201), failed when refused, or the error.
 func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, payer payerRequest, description string) {
 	switch payer.Method {
 	case methodCard:
-		if !s.config.Pay.KPayCards {
+		if !s.config.Pay.WajubCards {
 			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CARDS_DISABLED", fmt.Errorf("cards are not taken")))
 			return
 		}
@@ -318,7 +321,7 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 		return
 	}
 	prediction, err := s.money.PredictProvider(c, payer.PhoneNumber)
-	if errors.Is(err, kpay.ErrInvalidPhone) {
+	if errors.Is(err, money.ErrInvalidPhone) {
 		c.JSON(http.StatusBadRequest, NewErrorResponse(http.StatusBadRequest, "INVALID_PHONE", err))
 		return
 	}
@@ -342,7 +345,7 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 		internalServerError(c, err)
 		return
 	}
-	started, err := s.money.Init(c, kpay.InitRequest{
+	started, err := s.money.Init(c, money.InitRequest{
 		Amount:      payment.Amount,
 		Currency:    payment.Currency,
 		Provider:    payment.Provider,
@@ -351,18 +354,18 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 		Description: description,
 		Metadata:    map[string]string{"purpose": payment.Purpose},
 	})
-	var refused *kpay.RefusedError
+	var refused *money.RefusedError
 	switch {
-	case errors.Is(err, kpay.ErrUnknown):
+	case errors.Is(err, money.ErrUnknown):
 		// it may have started: its webhook will tell
 		logFor(c).Warn("payment outcome unknown", "payment", payment.ID, "error", err)
 	case errors.As(err, &refused):
-		logFor(c).Warn("payment refused by kpay", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		logFor(c).Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
 		s.failPayment(c, payment.ID, refusalCode(refused))
 	case err != nil:
-		logFor(c).Error("payment not sent to kpay", "payment", payment.ID, "error", err)
+		logFor(c).Error("payment not sent to wajub", "payment", payment.ID, "error", err)
 		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
-	case started.Status == kpay.Failed || started.Status == kpay.Cancelled:
+	case started.Status == money.Failed || started.Status == money.Cancelled:
 		s.failPayment(c, payment.ID, "UNSPECIFIED_FAILURE")
 	default:
 		if err := s.store.MarkPaymentAccepted(c, db.MarkPaymentAcceptedParams{ID: payment.ID, ProviderPaymentID: started.ID}); err != nil {
@@ -378,7 +381,7 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 	apiResponse(c, http.StatusCreated, toPaymentResponse(payment))
 }
 
-// startCardPayment keeps the payment, then asks KPAY for its hosted page,
+// startCardPayment keeps the payment, then asks Wajub for its hosted page,
 // whose address is answered (gateway_url) for the payer to open.
 func (s *Server) startCardPayment(c *gin.Context, params db.CreatePaymentParams, payer payerRequest, description string) {
 	params.ID = uuid.New()
@@ -388,25 +391,32 @@ func (s *Server) startCardPayment(c *gin.Context, params db.CreatePaymentParams,
 		internalServerError(c, err)
 		return
 	}
-	started, err := s.money.Init(c, kpay.InitRequest{
+	email := ""
+	if payment.UserID.Valid {
+		if user, err := s.store.GetUserById(c, payment.UserID.Int64); err == nil {
+			email = user.Email.String
+		}
+	}
+	started, err := s.money.Init(c, money.InitRequest{
 		Amount:        payment.Amount,
 		Currency:      payment.Currency,
-		PaymentMethod: kpay.CardPayment,
+		PaymentMethod: money.CardPayment,
+		Email:         email,
 		ReturnURL:     s.returnURL(payer.ReturnURL, payment.ID),
 		ExternalID:    payment.ID.String(),
 		Description:   description,
 		Metadata:      map[string]string{"purpose": payment.Purpose},
 	})
-	var refused *kpay.RefusedError
+	var refused *money.RefusedError
 	switch {
 	case errors.As(err, &refused):
-		logFor(c).Warn("card payment refused by kpay", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		logFor(c).Warn("card payment refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
 		s.failPayment(c, payment.ID, refusalCode(refused))
 	case err != nil:
-		logFor(c).Error("card payment not sent to kpay", "payment", payment.ID, "error", err)
+		logFor(c).Error("card payment not sent to wajub", "payment", payment.ID, "error", err)
 		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
 	case started.GatewayURL == "":
-		logFor(c).Error("kpay gave no page for a card payment", "payment", payment.ID)
+		logFor(c).Error("wajub gave no page for a card payment", "payment", payment.ID)
 		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
 	default:
 		if err := s.store.MarkPaymentAccepted(c, db.MarkPaymentAcceptedParams{ID: payment.ID, ProviderPaymentID: started.ID}); err != nil {
@@ -426,15 +436,15 @@ func (s *Server) startCardPayment(c *gin.Context, params db.CreatePaymentParams,
 	apiResponse(c, http.StatusCreated, response)
 }
 
-// refusalCode: why KPAY refused a payment, as a code the apps translate.
-func refusalCode(refused *kpay.RefusedError) string {
+// refusalCode: why Wajub refused a payment, as a code the apps translate.
+func refusalCode(refused *money.RefusedError) string {
 	message := strings.ToLower(refused.Message)
 	switch {
 	case refused.Status == http.StatusUnauthorized || refused.Status == http.StatusForbidden:
 		return "PAYMENTS_UNAVAILABLE"
 	case refused.Status == http.StatusTooManyRequests:
 		return "PROVIDER_TEMPORARILY_UNAVAILABLE"
-	// a sandbox key (kpay_test_…) only takes KPAY's test numbers
+	// a sandbox key (sk_test.…) only takes Wajub's test numbers
 	case strings.Contains(message, "test"):
 		return "SANDBOX_TEST_NUMBER"
 	case strings.Contains(message, "minimum") || strings.Contains(message, "maximum") || strings.Contains(message, "amount"):
@@ -447,7 +457,7 @@ func refusalCode(refused *kpay.RefusedError) string {
 }
 
 // checkOperator: [provider] is offered, and takes [amount] in [currency].
-func checkOperator(operators []kpay.Operator, provider, currency string, amount int64) (string, error) {
+func checkOperator(operators []money.Operator, provider, currency string, amount int64) (string, error) {
 	for _, operator := range operators {
 		if operator.Provider != provider {
 			continue
@@ -656,7 +666,7 @@ func (s *Server) premiumBought(ctx context.Context, userID int64) (bool, *time.T
 
 // ----- following a payment -----
 
-// GET /v1/payments/:id: the member waits for the outcome (KPAY's webhook
+// GET /v1/payments/:id: the member waits for the outcome (Wajub's webhook
 // updates it).
 func (s *Server) getPayment(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
@@ -681,49 +691,52 @@ func (s *Server) getPayment(c *gin.Context) {
 	apiResponse(c, http.StatusOK, toPaymentResponse(payment))
 }
 
-// POST /v1/kpay/callbacks[/deposits|/refunds|…]: KPAY tells a final status
-// (relayed by cmfi-connect.com/api/kpay/*). Believed only when X-KPAY-Signature
-// is the HMAC of the body with the webhook secret: else 401, which KPAY
-// doesn't send again. Sent several times, it does its work once.
-func (s *Server) kpayWebhook(c *gin.Context) {
+// POST /v1/wajub/webhooks: Wajub tells a final status. Believed only when
+// X-Wajub-Signature is the HMAC of X-Wajub-Timestamp and the body with the
+// endpoint's secret, sent within 5 minutes: else 401. Sent several times, it
+// does its work once.
+func (s *Server) wajubWebhook(c *gin.Context) {
 	body, err := io.ReadAll(io.LimitReader(c.Request.Body, 1<<20))
 	if err != nil {
 		badRequestError(c, err)
 		return
 	}
-	if !kpay.VerifySignature(body, c.GetHeader("X-KPAY-Signature"), s.config.Pay.KPayWebhookSecret) {
-		logFor(c).Warn("kpay webhook refused: bad signature")
+	if !wajub.VerifySignature(body, c.GetHeader("X-Wajub-Signature"), c.GetHeader("X-Wajub-Timestamp"),
+		s.config.Pay.WajubWebhookSecret, time.Now()) {
+		logFor(c).Warn("wajub webhook refused: bad signature")
 		unauthorizedError(c)
 		return
 	}
-	var hook kpay.Webhook
-	if err := json.Unmarshal(body, &hook); err != nil {
+	hook, err := wajub.ParseWebhook(body)
+	if err != nil {
 		badRequestError(c, err)
 		return
 	}
-	if hook.Event == "" {
-		hook.Event = c.GetHeader("X-KPAY-Event")
-	}
-	switch {
-	case strings.HasPrefix(hook.Event, "payment."):
-		s.onPaymentWebhook(c, hook)
-	case strings.HasPrefix(hook.Event, "refund."):
-		s.onRefundWebhook(c, hook)
-	case strings.HasPrefix(hook.Event, "payout."):
-		s.onPayoutWebhook(c, hook)
-	default:
-		logFor(c).Info("kpay webhook ignored", "event", hook.Event)
-	}
+	s.onWebhook(c, hook)
 	c.JSON(http.StatusOK, gin.H{"received": true})
 }
 
-// webhookFailure: why KPAY says it failed, as a code ("CANCELLED" when the
+// onWebhook: what a change of status does, from a webhook or a lookup.
+func (s *Server) onWebhook(ctx context.Context, hook money.Webhook) {
+	switch {
+	case strings.HasPrefix(hook.Event, "payment."):
+		s.onPaymentWebhook(ctx, hook)
+	case strings.HasPrefix(hook.Event, "refund."):
+		s.onRefundWebhook(ctx, hook)
+	case strings.HasPrefix(hook.Event, "payout."):
+		s.onPayoutWebhook(ctx, hook)
+	default:
+		slog.Info("wajub webhook ignored", "event", hook.Event)
+	}
+}
+
+// webhookFailure: why Wajub says it failed, as a code ("CANCELLED" when the
 // member cancelled it).
-func webhookFailure(hook kpay.Webhook) string {
+func webhookFailure(hook money.Webhook) string {
 	switch {
 	case hook.FailureCode != "":
 		return hook.FailureCode
-	case hook.Status == kpay.Cancelled || strings.HasSuffix(hook.Event, ".cancelled"):
+	case hook.Status == money.Cancelled || strings.HasSuffix(hook.Event, ".cancelled"):
 		return "CANCELLED"
 	case hook.FailureReason != "" && strings.ToUpper(hook.FailureReason) == hook.FailureReason && !strings.Contains(hook.FailureReason, " "):
 		return hook.FailureReason
@@ -732,21 +745,21 @@ func webhookFailure(hook kpay.Webhook) string {
 	}
 }
 
-func (s *Server) onPaymentWebhook(ctx context.Context, hook kpay.Webhook) {
+func (s *Server) onPaymentWebhook(ctx context.Context, hook money.Webhook) {
 	payment, ok := s.paymentOf(ctx, hook)
 	if !ok {
-		slog.Warn("kpay webhook for an unknown payment", "event", hook.Event)
+		slog.Warn("wajub webhook for an unknown payment", "event", hook.Event)
 		return
 	}
 	if hook.PaymentID != "" && payment.ProviderPaymentID == "" {
 		_ = s.store.SetPaymentProviderID(ctx, db.SetPaymentProviderIDParams{ID: payment.ID, ProviderPaymentID: hook.PaymentID})
 	}
 	switch {
-	case hook.Event == "payment.completed" || hook.Status == kpay.Completed:
+	case hook.Event == "payment.completed" || hook.Status == money.Completed:
 		// a card is charged in USD: its amount is not the one asked
 		if amount, err := strconv.ParseFloat(fmt.Sprint(hook.Amount), 64); err == nil &&
 			payment.Provider != cardProvider && int64(amount) < payment.Amount {
-			slog.Error("kpay says completed for less than asked: left pending", "payment", payment.ID)
+			slog.Error("wajub says completed for less than asked: left pending", "payment", payment.ID)
 			return
 		}
 		completed, err := s.store.CompletePayment(ctx, db.CompletePaymentParams{ID: payment.ID, ProviderTransactionID: hook.Reference})
@@ -760,15 +773,15 @@ func (s *Server) onPaymentWebhook(ctx context.Context, hook kpay.Webhook) {
 		slog.Info("payment completed", "payment", payment.ID, "purpose", payment.Purpose)
 		s.settle(ctx, completed)
 	case hook.Event == "payment.failed" || hook.Event == "payment.cancelled" ||
-		hook.Status == kpay.Failed || hook.Status == kpay.Cancelled:
+		hook.Status == money.Failed || hook.Status == money.Cancelled:
 		s.failPayment(ctx, payment.ID, webhookFailure(hook))
 		slog.Info("payment failed", "payment", payment.ID, "code", webhookFailure(hook))
 	}
 }
 
 // paymentOf: the payment a webhook is about (our id is its externalId; else
-// KPAY's id).
-func (s *Server) paymentOf(ctx context.Context, hook kpay.Webhook) (db.Payment, bool) {
+// Wajub's id).
+func (s *Server) paymentOf(ctx context.Context, hook money.Webhook) (db.Payment, bool) {
 	if id, err := uuid.Parse(hook.ExternalID); err == nil {
 		if payment, err := s.store.GetPayment(ctx, id); err == nil {
 			return payment, true
@@ -782,7 +795,7 @@ func (s *Server) paymentOf(ctx context.Context, hook kpay.Webhook) (db.Payment, 
 	return db.Payment{}, false
 }
 
-func (s *Server) onRefundWebhook(ctx context.Context, hook kpay.Webhook) {
+func (s *Server) onRefundWebhook(ctx context.Context, hook money.Webhook) {
 	var payment db.Payment
 	found := false
 	if id, err := uuid.Parse(hook.ExternalID); err == nil {
@@ -795,11 +808,11 @@ func (s *Server) onRefundWebhook(ctx context.Context, hook kpay.Webhook) {
 		found = err == nil
 	}
 	if !found {
-		slog.Warn("kpay webhook for an unknown refund", "event", hook.Event)
+		slog.Warn("wajub webhook for an unknown refund", "event", hook.Event)
 		return
 	}
 	switch {
-	case hook.Event == "refund.completed" || hook.Status == kpay.Completed:
+	case hook.Event == "refund.completed" || hook.Status == money.Completed:
 		refunded, err := s.store.CompletePaymentRefund(ctx, payment.RefundID)
 		if errors.Is(err, sql.ErrNoRows) {
 			return
@@ -811,14 +824,14 @@ func (s *Server) onRefundWebhook(ctx context.Context, hook kpay.Webhook) {
 		slog.Info("payment refunded", "payment", payment.ID)
 		s.afterRefund(ctx, refunded)
 	case hook.Event == "refund.failed" || hook.Event == "refund.cancelled" ||
-		hook.Status == kpay.Failed || hook.Status == kpay.Cancelled:
+		hook.Status == money.Failed || hook.Status == money.Cancelled:
 		s.failRefund(ctx, payment.RefundID, webhookFailure(hook))
 	}
 }
 
 // ReconcilePayments finishes, every minute, what stays undone until [ctx]
-// ends: the work of a completed payment, a refund KPAY never got, a payment
-// KPAY never acknowledged.
+// ends: the work of a completed payment, a refund Wajub never got, a payment
+// Wajub never acknowledged.
 func (s *Server) ReconcilePayments(ctx context.Context) {
 	if s.money == nil && s.premium == nil {
 		return
@@ -852,21 +865,42 @@ func (s *Server) reconcileOpenPayments(ctx context.Context, before time.Time) {
 	}
 }
 
-// reconcile does what is left to do for [payment]. KPAY can't be asked
-// about a payment: one it accepted waits for its webhook.
+// reconcile does what is left to do for [payment]. One Wajub accepted is
+// asked about after 5 minutes without its webhook.
 func (s *Server) reconcile(ctx context.Context, payment db.Payment) {
 	switch {
 	case payment.Status == "completed" && !payment.SettledAt.Valid:
 		s.settle(ctx, payment)
 	case payment.Status == "refund_pending" && payment.ProviderRefundID == "" && time.Since(payment.UpdatedAt) > 2*time.Minute:
-		// the refund never got to KPAY: sent again (the same externalId)
+		// the refund never got to Wajub: sent again (the same externalId)
 		s.sendRefund(ctx, payment)
 		_ = s.store.TouchPaymentCheck(ctx, payment.ID)
+	case payment.Status == "accepted" && payment.ProviderPaymentID != "" && s.money != nil &&
+		time.Since(payment.UpdatedAt) > 5*time.Minute:
+		s.lookUp(ctx, payment)
 	case payment.Status == "initiated" && time.Since(payment.CreatedAt) > 30*time.Minute:
-		// KPAY never acknowledged it, nor sent a webhook
+		// Wajub never acknowledged it, nor sent a webhook
 		s.failPayment(ctx, payment.ID, "NOT_FOUND")
 	default:
 		_ = s.store.TouchPaymentCheck(ctx, payment.ID)
+	}
+}
+
+// lookUp asks Wajub where [payment] is: a final status is done as its
+// webhook would; still waiting, it is looked at again later.
+func (s *Server) lookUp(ctx context.Context, payment db.Payment) {
+	defer func() { _ = s.store.TouchPaymentCheck(ctx, payment.ID) }()
+	hook, err := s.money.Lookup(ctx, payment.ProviderPaymentID)
+	if err != nil {
+		slog.Warn("cannot ask wajub about a payment", "payment", payment.ID, "error", err)
+		return
+	}
+	if hook.ExternalID == "" {
+		hook.ExternalID = payment.ID.String()
+	}
+	switch hook.Status {
+	case money.Completed, money.Failed, money.Cancelled:
+		s.onPaymentWebhook(ctx, hook)
 	}
 }
 
@@ -977,42 +1011,42 @@ func (s *Server) refundPayment(ctx context.Context, payment db.Payment, reason s
 	return s.store.GetPayment(ctx, payment.ID)
 }
 
-// sendRefund asks KPAY to give the whole payment back to its payer (again,
+// sendRefund asks Wajub to give the whole payment back to its payer (again,
 // with the same externalId, when it never got there).
 func (s *Server) sendRefund(ctx context.Context, payment db.Payment) {
 	if payment.ProviderPaymentID == "" {
-		slog.Error("refund impossible: kpay id unknown", "payment", payment.ID)
+		slog.Error("refund impossible: wajub id unknown", "payment", payment.ID)
 		s.failRefund(ctx, payment.RefundID, "PAYMENT_NOT_FOUND")
 		return
 	}
-	refund, err := s.money.Refund(ctx, payment.ProviderPaymentID, kpay.RefundRequest{
+	refund, err := s.money.Refund(ctx, payment.ProviderPaymentID, money.RefundRequest{
 		Reason:     payment.RefundReason,
 		ExternalID: payment.RefundID.UUID.String(),
 	})
-	var refused *kpay.RefusedError
+	var refused *money.RefusedError
 	switch {
-	case errors.Is(err, kpay.ErrUnknown):
+	case errors.Is(err, money.ErrUnknown):
 		slog.Warn("refund outcome unknown", "payment", payment.ID, "error", err)
-	case errors.Is(err, kpay.ErrDuplicate):
+	case errors.Is(err, money.ErrDuplicate):
 		slog.Info("refund already sent", "payment", payment.ID)
 	case errors.As(err, &refused):
-		slog.Warn("refund refused by kpay", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		slog.Warn("refund refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
 		s.failRefund(ctx, payment.RefundID, refundRefusalCode(refused))
 	case err != nil:
-		slog.Error("refund not sent to kpay", "payment", payment.ID, "error", err)
+		slog.Error("refund not sent to wajub", "payment", payment.ID, "error", err)
 		s.failRefund(ctx, payment.RefundID, "REFUNDS_UNAVAILABLE")
-	case refund.Status == kpay.Failed:
+	case refund.Status == money.Failed:
 		s.failRefund(ctx, payment.RefundID, "UNSPECIFIED_FAILURE")
 	default:
 		if err := s.store.SetPaymentProviderRefundID(ctx, db.SetPaymentProviderRefundIDParams{ID: payment.ID, ProviderRefundID: refund.ID}); err != nil {
-			slog.Error("cannot keep the kpay refund id", "payment", payment.ID, "error", err)
+			slog.Error("cannot keep the wajub refund id", "payment", payment.ID, "error", err)
 		}
 		slog.Info("refund started", "payment", payment.ID, "reason", payment.RefundReason)
 	}
 }
 
-// refundRefusalCode: why KPAY refused a refund (7 days past, wallet short…).
-func refundRefusalCode(refused *kpay.RefusedError) string {
+// refundRefusalCode: why Wajub refused a refund (7 days past, wallet short…).
+func refundRefusalCode(refused *money.RefusedError) string {
 	message := strings.ToLower(refused.Message)
 	switch {
 	case strings.Contains(message, "7 jours") || strings.Contains(message, "fenetre") || strings.Contains(message, "fenêtre"):
