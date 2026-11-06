@@ -264,6 +264,9 @@ func (w paymentsWorld) notify(t *testing.T, event, externalID string, fields map
 	body := map[string]any{"id": "evt_" + uuid.NewString()[:8], "event": kind + "." + outcome, "data": data}
 	response := w.webhook(t, body, testWebhookSecret)
 	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	// answered at once, done in the background
+	w.server.hooking.Wait()
+	w.server.gifting.Wait()
 }
 
 func TestAPaidEventRegistersTheMemberOnceTheMoneyArrived(t *testing.T) {

@@ -41,6 +41,8 @@ type Server struct {
 	fees  feesCache
 	// the premium gifts given in the background (waited for by tests)
 	gifting sync.WaitGroup
+	// the webhooks of Wajub done in the background (waited for by tests)
+	hooking sync.WaitGroup
 }
 
 func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
