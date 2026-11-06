@@ -681,8 +681,10 @@ func (s *Server) getPayment(c *gin.Context) {
 
 // POST /v1/wajub/webhooks: Wajub tells a final status. Believed only when
 // X-Wajub-Signature is the HMAC of X-Wajub-Timestamp and the body with the
-// endpoint's secret, sent within 5 minutes: else 401. Sent several times, it
-// does its work once.
+// endpoint's secret, sent within 5 minutes: else 401. Answered 200 at once,
+// its work done in the background (Wajub waits only a few seconds); what
+// fails there, the reconciler catches up. Sent several times, it does its
+// work once.
 func (s *Server) wajubWebhook(c *gin.Context) {
 	body, err := io.ReadAll(io.LimitReader(c.Request.Body, 1<<20))
 	if err != nil {
@@ -700,8 +702,14 @@ func (s *Server) wajubWebhook(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	s.onWebhook(c, hook)
 	c.JSON(http.StatusOK, gin.H{"received": true})
+	s.hooking.Add(1)
+	go func() {
+		defer s.hooking.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		s.onWebhook(ctx, hook)
+	}()
 }
 
 // onWebhook: what a change of status does, from a webhook or a lookup.
