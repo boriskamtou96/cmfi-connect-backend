@@ -736,17 +736,20 @@ func (s *Server) deleteEvent(c *gin.Context) {
 	if !ok {
 		return
 	}
-	// the money of its members is refunded first
-	held, err := s.store.CountHeldEventPayments(c, nullID(event.ID))
-	if err != nil {
-		internalServerError(c, err)
-		return
-	}
-	if held > 0 {
-		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "EVENT_HAS_PAYMENTS",
-			fmt.Errorf("%d payments to refund first", held)))
-		return
-	}
+	// TEMPORARY: an event can be deleted even with payments not refunded yet
+	// (a fake event in production). Its payments stay, without event_id.
+	// Put this back afterwards:
+	//
+	//	held, err := s.store.CountHeldEventPayments(c, nullID(event.ID))
+	//	if err != nil {
+	//		internalServerError(c, err)
+	//		return
+	//	}
+	//	if held > 0 {
+	//		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "EVENT_HAS_PAYMENTS",
+	//			fmt.Errorf("%d payments to refund first", held)))
+	//		return
+	//	}
 	if _, err := s.store.DeleteEvent(c, event.ID); err != nil {
 		internalServerError(c, err)
 		return

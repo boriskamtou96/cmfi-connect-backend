@@ -330,10 +330,10 @@ func TestAPaidEventRegistersTheMemberOnceTheMoneyArrived(t *testing.T) {
 	require.Equal(t, http.StatusConflict, leave.Code)
 	require.Contains(t, leave.Body.String(), "PAID_REGISTRATION")
 
-	// and the event can't be deleted with the money of its members
+	// for now, the event can be deleted even with the money of its members
+	// (deleteEvent: TEMPORARY); its payments stay
 	deleted := send(t, w.router, http.MethodDelete, admin.Token, adminEventPath(event, ""), nil)
-	require.Equal(t, http.StatusConflict, deleted.Code)
-	require.Contains(t, deleted.Body.String(), "EVENT_HAS_PAYMENTS")
+	require.Equal(t, http.StatusNoContent, deleted.Code, deleted.Body.String())
 }
 
 func TestAWebhookThatIsNotSignedChangesNothing(t *testing.T) {
