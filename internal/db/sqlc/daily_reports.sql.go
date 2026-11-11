@@ -94,7 +94,7 @@ func (q *Queries) GetDailyReport(ctx context.Context, arg GetDailyReportParams) 
 const getDailyReportForm = `-- name: GetDailyReportForm :many
 SELECT at.id AS activity_type_id, at.code, at.label, at.tracks_quantity, at.quantity_unit, at.tracks_duration,
        re.quantity, re.duration_minutes,
-       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages, rb.cover_url AS book_cover_url
 FROM activity_types at
 LEFT JOIN daily_reports dr ON dr.user_id = $1::bigint AND dr.report_date = $2::date
 LEFT JOIN report_entries re ON re.report_id = dr.id AND re.activity_type_id = at.id
@@ -122,6 +122,7 @@ type GetDailyReportFormRow struct {
 	BookTitle       sql.NullString `json:"book_title"`
 	BookAuthor      sql.NullString `json:"book_author"`
 	BookTotalPages  sql.NullInt32  `json:"book_total_pages"`
+	BookCoverUrl    sql.NullString `json:"book_cover_url"`
 }
 
 // Every item the user can fill in, with the values entered that day (NULL when empty).
@@ -148,6 +149,7 @@ func (q *Queries) GetDailyReportForm(ctx context.Context, arg GetDailyReportForm
 			&i.BookTitle,
 			&i.BookAuthor,
 			&i.BookTotalPages,
+			&i.BookCoverUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -238,7 +240,7 @@ func (q *Queries) GetReportSummary(ctx context.Context, arg GetReportSummaryPara
 const listDailyReportEntries = `-- name: ListDailyReportEntries :many
 SELECT dr.report_date, dr.note, dr.goal_percent,
        re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes,
-       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages, rb.cover_url AS book_cover_url,
        COALESCE((
            SELECT SUM(re2.quantity)
            FROM report_entries re2
@@ -274,6 +276,7 @@ type ListDailyReportEntriesRow struct {
 	BookTitle       sql.NullString `json:"book_title"`
 	BookAuthor      sql.NullString `json:"book_author"`
 	BookTotalPages  sql.NullInt32  `json:"book_total_pages"`
+	BookCoverUrl    sql.NullString `json:"book_cover_url"`
 	BookPageReached int32          `json:"book_page_reached"`
 }
 
@@ -304,6 +307,7 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 			&i.BookTitle,
 			&i.BookAuthor,
 			&i.BookTotalPages,
+			&i.BookCoverUrl,
 			&i.BookPageReached,
 		); err != nil {
 			return nil, err

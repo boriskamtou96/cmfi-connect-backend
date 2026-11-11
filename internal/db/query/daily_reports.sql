@@ -7,7 +7,7 @@ WHERE user_id = sqlc.arg(user_id) AND report_date = sqlc.arg(report_date);
 -- The book read that day comes with the LLC item (NULL otherwise).
 SELECT at.id AS activity_type_id, at.code, at.label, at.tracks_quantity, at.quantity_unit, at.tracks_duration,
        re.quantity, re.duration_minutes,
-       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages, rb.cover_url AS book_cover_url
 FROM activity_types at
 LEFT JOIN daily_reports dr ON dr.user_id = sqlc.arg(user_id)::bigint AND dr.report_date = sqlc.arg(report_date)::date
 LEFT JOIN report_entries re ON re.report_id = dr.id AND re.activity_type_id = at.id
@@ -39,7 +39,7 @@ VALUES (sqlc.arg(report_id), sqlc.arg(activity_type_id), sqlc.narg(quantity), sq
 -- that day (the pages of every day up to this one).
 SELECT dr.report_date, dr.note, dr.goal_percent,
        re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes,
-       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages, rb.cover_url AS book_cover_url,
        COALESCE((
            SELECT SUM(re2.quantity)
            FROM report_entries re2

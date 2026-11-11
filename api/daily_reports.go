@@ -45,14 +45,15 @@ type entryBook struct {
 	Title       string `json:"title"`
 	Author      string `json:"author"`
 	TotalPages  int32  `json:"total_pages"`
+	CoverURL    string `json:"cover_url"`
 	PageReached *int32 `json:"page_reached,omitempty"`
 }
 
-func toEntryBook(id sql.NullInt64, title, author sql.NullString, totalPages sql.NullInt32) *entryBook {
+func toEntryBook(id sql.NullInt64, title, author sql.NullString, totalPages sql.NullInt32, coverURL sql.NullString) *entryBook {
 	if !id.Valid || !title.Valid {
 		return nil
 	}
-	return &entryBook{ID: id.Int64, Title: title.String, Author: author.String, TotalPages: totalPages.Int32}
+	return &entryBook{ID: id.Int64, Title: title.String, Author: author.String, TotalPages: totalPages.Int32, CoverURL: coverURL.String}
 }
 
 // dailyReportFormResponse is the day form: every available item, with the values entered that day.
@@ -264,7 +265,7 @@ func (s *Server) listDailyReports(c *gin.Context) {
 
 // toHistoryEntry is one item filled in on a day of the history.
 func toHistoryEntry(row db.ListDailyReportEntriesRow) dailyReportHistoryEntry {
-	book := toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages)
+	book := toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages, row.BookCoverUrl)
 	if book != nil {
 		reached := min(row.BookPageReached, book.TotalPages)
 		book.PageReached = &reached
@@ -389,7 +390,7 @@ func (s *Server) buildDailyReportForm(c *gin.Context, userID int64, date time.Ti
 			TracksDuration:  row.TracksDuration,
 			Quantity:        nullInt32Ptr(row.Quantity),
 			DurationMinutes: nullInt32Ptr(row.DurationMinutes),
-			Book:            toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages),
+			Book:            toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages, row.BookCoverUrl),
 		})
 	}
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,12 +26,19 @@ const (
 	bookReading   = "reading"
 	bookFinished  = "finished"
 	bookAbandoned = "abandoned"
-	// covers are only taken from the search's own server
+	// covers are only taken from the servers of the searches
 	openLibraryCovers = "https://covers.openlibrary.org/"
+	googleBooksCovers = "https://books.google.com/books/content?"
+	// the time a book typed by hand waits for its cover
+	coverLookupTimeout = 5 * time.Second
 )
 
-// openLibrarySearchURL is where book searches go (a test server in tests).
-var openLibrarySearchURL = "https://openlibrary.org/search.json"
+// Where book searches go (test servers in tests): Open Library first, Google
+// Books when it finds nothing (it knows more books in French).
+var (
+	openLibrarySearchURL = "https://openlibrary.org/search.json"
+	googleBooksURL       = "https://www.googleapis.com/books/v1/volumes"
+)
 
 var bookSearchClient = &http.Client{Timeout: 6 * time.Second}
 
@@ -107,10 +116,26 @@ func (r *readingBookRequest) clean() error {
 	if r.Title == "" {
 		return errors.New("title is required")
 	}
-	if r.CoverURL != "" && !strings.HasPrefix(r.CoverURL, openLibraryCovers) {
-		return fmt.Errorf("cover_url must come from %s", openLibraryCovers)
+	if r.CoverURL != "" && !strings.HasPrefix(r.CoverURL, openLibraryCovers) && !strings.HasPrefix(r.CoverURL, googleBooksCovers) {
+		return fmt.Errorf("cover_url must come from %s or %s", openLibraryCovers, googleBooksCovers)
 	}
 	return nil
+}
+
+// withCover looks for the cover of a book typed by hand (title and author),
+// so the shelf shows the real book rather than a drawn one. Without one found
+// in time, the book keeps none: the app draws it.
+func (r *readingBookRequest) withCover(c *gin.Context) {
+	if r.CoverURL != "" {
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), coverLookupTimeout)
+	defer cancel()
+	cover, err := findBookCover(ctx, r.Title, r.Author)
+	if err != nil {
+		logFor(c).Info("book cover not found", "error", err)
+	}
+	r.CoverURL = cover
 }
 
 // POST /v1/reading/books: a book added to the shelf, being read. 201 with it.
@@ -124,6 +149,7 @@ func (s *Server) createReadingBook(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
+	req.withCover(c)
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	id, err := s.store.CreateReadingBook(c, db.CreateReadingBookParams{
@@ -165,6 +191,7 @@ func (s *Server) updateReadingBook(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
+	req.withCover(c)
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	changed, err := s.store.UpdateReadingBook(c, db.UpdateReadingBookParams{
@@ -351,15 +378,25 @@ type bookFound struct {
 }
 
 // GET /v1/reading/search?q=: books matching a title or an author, from Open
-// Library (no key). 503 SEARCH_UNAVAILABLE when it can't be reached: the
-// member types the book by hand.
+// Library, else Google Books (no key for either). 503 SEARCH_UNAVAILABLE when
+// neither can be reached: the member types the book by hand.
 func (s *Server) searchBooks(c *gin.Context) {
 	var query bookSearchQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		badRequestError(c, err)
 		return
 	}
-	books, err := searchOpenLibrary(c, strings.TrimSpace(query.Q))
+	q := strings.TrimSpace(query.Q)
+	params := url.Values{}
+	params.Set("q", q)
+	books, err := searchOpenLibrary(c, params, 12)
+	if err != nil || len(books) == 0 {
+		if more, googleErr := searchGoogleBooks(c, q, 12); googleErr == nil {
+			books, err = more, nil
+		} else if err == nil {
+			logFor(c).Info("google books search failed", "error", googleErr)
+		}
+	}
 	if err != nil {
 		logFor(c).Warn("book search failed", "error", err)
 		c.JSON(http.StatusServiceUnavailable, NewErrorResponse(http.StatusServiceUnavailable, "SEARCH_UNAVAILABLE", err))
@@ -368,24 +405,56 @@ func (s *Server) searchBooks(c *gin.Context) {
 	apiResponse(c, http.StatusOK, books)
 }
 
-func searchOpenLibrary(c *gin.Context, q string) ([]bookFound, error) {
+// findBookCover is the cover of the first book found with this title and
+// author: Open Library, then Google Books. "" when neither has one.
+func findBookCover(ctx context.Context, title, author string) (string, error) {
 	params := url.Values{}
-	params.Set("q", q)
-	params.Set("fields", "title,author_name,number_of_pages_median,cover_i")
-	params.Set("limit", "12")
-	request, err := http.NewRequestWithContext(c, http.MethodGet, openLibrarySearchURL+"?"+params.Encode(), nil)
+	params.Set("title", title)
+	if author != "" {
+		params.Set("author", author)
+	}
+	found, libraryErr := searchOpenLibrary(ctx, params, 5)
+	for _, book := range found {
+		if book.CoverURL != "" {
+			return book.CoverURL, nil
+		}
+	}
+
+	q := fmt.Sprintf("intitle:%q", title)
+	if author != "" {
+		q += fmt.Sprintf(" inauthor:%q", author)
+	}
+	found, googleErr := searchGoogleBooks(ctx, q, 5)
+	for _, book := range found {
+		if book.CoverURL != "" {
+			return book.CoverURL, nil
+		}
+	}
+	return "", errors.Join(libraryErr, googleErr)
+}
+
+// getBookSearch asks a search server for its JSON answer, 2 MB at most.
+func getBookSearch(ctx context.Context, address string, params url.Values, into any) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, address+"?"+params.Encode(), nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	request.Header.Set("User-Agent", "CMFI-Connect/1.0")
 	response, err := bookSearchClient.Do(request)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("open library answered %d", response.StatusCode)
+		return fmt.Errorf("%s answered %d", request.URL.Host, response.StatusCode)
 	}
+	return json.NewDecoder(io.LimitReader(response.Body, 2<<20)).Decode(into)
+}
+
+// searchOpenLibrary: params "q", or "title" and "author".
+func searchOpenLibrary(ctx context.Context, params url.Values, limit int) ([]bookFound, error) {
+	params.Set("fields", "title,author_name,number_of_pages_median,cover_i")
+	params.Set("limit", strconv.Itoa(limit))
 
 	var body struct {
 		Docs []struct {
@@ -395,7 +464,7 @@ func searchOpenLibrary(c *gin.Context, q string) ([]bookFound, error) {
 			CoverID    int64    `json:"cover_i"`
 		} `json:"docs"`
 	}
-	if err := json.NewDecoder(io.LimitReader(response.Body, 2<<20)).Decode(&body); err != nil {
+	if err := getBookSearch(ctx, openLibrarySearchURL, params, &body); err != nil {
 		return nil, err
 	}
 
@@ -415,6 +484,65 @@ func searchOpenLibrary(c *gin.Context, q string) ([]bookFound, error) {
 		books = append(books, book)
 	}
 	return books, nil
+}
+
+// searchGoogleBooks: q as Google Books reads it (intitle:, inauthor:).
+func searchGoogleBooks(ctx context.Context, q string, limit int) ([]bookFound, error) {
+	params := url.Values{}
+	params.Set("q", q)
+	params.Set("maxResults", strconv.Itoa(limit))
+	params.Set("printType", "books")
+	params.Set("fields", "items(volumeInfo(title,authors,pageCount,imageLinks/thumbnail))")
+
+	var body struct {
+		Items []struct {
+			VolumeInfo struct {
+				Title      string   `json:"title"`
+				Authors    []string `json:"authors"`
+				PageCount  int32    `json:"pageCount"`
+				ImageLinks struct {
+					Thumbnail string `json:"thumbnail"`
+				} `json:"imageLinks"`
+			} `json:"volumeInfo"`
+		} `json:"items"`
+	}
+	if err := getBookSearch(ctx, googleBooksURL, params, &body); err != nil {
+		return nil, err
+	}
+
+	books := make([]bookFound, 0, len(body.Items))
+	for _, item := range body.Items {
+		info := item.VolumeInfo
+		title := strings.TrimSpace(info.Title)
+		if title == "" {
+			continue
+		}
+		book := bookFound{
+			Title:    cut(title, 300),
+			Author:   cut(strings.Join(info.Authors, ", "), 200),
+			CoverURL: googleBooksCover(info.ImageLinks.Thumbnail),
+		}
+		if info.PageCount > 0 && info.PageCount <= 20000 {
+			book.TotalPages = info.PageCount
+		}
+		books = append(books, book)
+	}
+	return books, nil
+}
+
+// googleBooksCover keeps only the book's id from a Google Books thumbnail
+// ("http://books.google.com/books/content?id=X&printsec=frontcover&img=1
+// &zoom=1&edge=curl&source=gbs_api"): https, without the curled corner.
+func googleBooksCover(thumbnail string) string {
+	link, err := url.Parse(thumbnail)
+	if err != nil || link.Host != "books.google.com" || link.Path != "/books/content" {
+		return ""
+	}
+	id := link.Query().Get("id")
+	if id == "" {
+		return ""
+	}
+	return googleBooksCovers + "id=" + url.QueryEscape(id) + "&printsec=frontcover&img=1&zoom=1"
 }
 
 // cut keeps the first n letters of value.

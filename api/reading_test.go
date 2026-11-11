@@ -169,9 +169,100 @@ func TestBooksAreFoundOnOpenLibrary(t *testing.T) {
 	}, books[0])
 	require.Zero(t, books[1].TotalPages)
 
-	// out of reach: the member types the book
+	// out of reach, both: the member types the book
 	openLibrarySearchURL = "http://127.0.0.1:1/search.json"
 	down := send(t, router, http.MethodGet, m.Token, "/v1/reading/search?q=chemin", nil)
 	require.Equal(t, http.StatusServiceUnavailable, down.Code)
 	require.Equal(t, "SEARCH_UNAVAILABLE", errorCode(t, down))
+}
+
+// bookSearchServers starts an Open Library and a Google Books answering these
+// bodies, and points the searches at them for the test.
+func bookSearchServers(t *testing.T, library, google func(r *http.Request) string) {
+	t.Helper()
+	serve := func(answer func(r *http.Request) string) *httptest.Server {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(answer(r)))
+		}))
+		t.Cleanup(server.Close)
+		return server
+	}
+	previousLibrary, previousGoogle := openLibrarySearchURL, googleBooksURL
+	openLibrarySearchURL = serve(library).URL
+	googleBooksURL = serve(google).URL
+	t.Cleanup(func() { openLibrarySearchURL, googleBooksURL = previousLibrary, previousGoogle })
+}
+
+func TestABookTypedByHandGetsItsCover(t *testing.T) {
+	bookSearchServers(t,
+		func(r *http.Request) string {
+			// searched by its title and author
+			if r.URL.Query().Get("title") == "Le chemin de l'obéissance" {
+				require.Equal(t, "Z. T. Fomum", r.URL.Query().Get("author"))
+				return `{"docs": [{"title": "Le chemin de l'obéissance"}, {"title": "Le chemin de l'obéissance", "cover_i": 7}]}`
+			}
+			return `{"docs": []}`
+		},
+		func(r *http.Request) string {
+			require.Equal(t, `intitle:"La vie de prière" inauthor:"Z. T. Fomum"`, r.URL.Query().Get("q"))
+			return `{"items": [{"volumeInfo": {"title": "La vie de prière", "imageLinks": {"thumbnail": "http://books.google.com/books/content?id=AbC_12&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"}}}]}`
+		})
+
+	router := newTestRouter(t)
+	m := registerMember(t, router, nil)
+
+	// Open Library has it
+	added := send(t, router, http.MethodPost, m.Token, "/v1/reading/books",
+		map[string]any{"title": "Le chemin de l'obéissance", "author": "Z. T. Fomum", "total_pages": 240})
+	require.Equal(t, http.StatusCreated, added.Code, added.Body.String())
+	require.Equal(t, "https://covers.openlibrary.org/b/id/7-M.jpg", decode[readingBookResponse](t, added).CoverURL)
+
+	// else Google Books
+	added = send(t, router, http.MethodPost, m.Token, "/v1/reading/books",
+		map[string]any{"title": "La vie de prière", "author": "Z. T. Fomum", "total_pages": 180})
+	require.Equal(t, http.StatusCreated, added.Code, added.Body.String())
+	require.Equal(t, "https://books.google.com/books/content?id=AbC_12&printsec=frontcover&img=1&zoom=1",
+		decode[readingBookResponse](t, added).CoverURL)
+
+	// neither: the book has none, the app draws it
+	openLibrarySearchURL = "http://127.0.0.1:1/search.json"
+	googleBooksURL = "http://127.0.0.1:1/volumes"
+	added = send(t, router, http.MethodPost, m.Token, "/v1/reading/books",
+		map[string]any{"title": "Un livre introuvable", "total_pages": 90})
+	require.Equal(t, http.StatusCreated, added.Code, added.Body.String())
+	require.Empty(t, decode[readingBookResponse](t, added).CoverURL)
+}
+
+func TestTheSearchAsksGoogleBooksWhenOpenLibraryFindsNothing(t *testing.T) {
+	bookSearchServers(t,
+		func(*http.Request) string { return `{"docs": []}` },
+		func(r *http.Request) string {
+			require.Equal(t, "fomum sanctification", r.URL.Query().Get("q"))
+			return `{"items": [
+				{"volumeInfo": {"title": "Le chemin de la sanctification", "authors": ["Zacharias Tanee Fomum"], "pageCount": 212,
+					"imageLinks": {"thumbnail": "http://books.google.com/books/content?id=Xy9&printsec=frontcover&img=1&zoom=1&source=gbs_api"}}},
+				{"volumeInfo": {"title": "Sans couverture", "imageLinks": {"thumbnail": "http://example.com/x.jpg"}}},
+				{"volumeInfo": {"title": ""}}
+			]}`
+		})
+
+	router := newTestRouter(t)
+	m := registerMember(t, router, nil)
+	found := send(t, router, http.MethodGet, m.Token, "/v1/reading/search?q=fomum+sanctification", nil)
+	require.Equal(t, http.StatusOK, found.Code, found.Body.String())
+	books := decode[[]bookFound](t, found)
+	require.Equal(t, []bookFound{
+		{
+			Title: "Le chemin de la sanctification", Author: "Zacharias Tanee Fomum", TotalPages: 212,
+			CoverURL: "https://books.google.com/books/content?id=Xy9&printsec=frontcover&img=1&zoom=1",
+		},
+		{Title: "Sans couverture"},
+	}, books)
+
+	// a cover from Google Books may be kept
+	added := send(t, router, http.MethodPost, m.Token, "/v1/reading/books",
+		map[string]any{"title": books[0].Title, "total_pages": 212, "cover_url": books[0].CoverURL})
+	require.Equal(t, http.StatusCreated, added.Code, added.Body.String())
+	require.Equal(t, books[0].CoverURL, decode[readingBookResponse](t, added).CoverURL)
 }

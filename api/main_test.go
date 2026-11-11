@@ -35,6 +35,9 @@ func TestMain(m *testing.M) {
 
 	gin.SetMode(gin.TestMode)
 	testStore = db.NewSQLStore(conn)
+	// no test reaches the book searches: those that need one start a server
+	openLibrarySearchURL = "http://127.0.0.1:1/search.json"
+	googleBooksURL = "http://127.0.0.1:1/volumes"
 
 	os.Exit(m.Run())
 }
