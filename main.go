@@ -39,6 +39,15 @@ func main() {
 	// Configure the db connection using the loaded configuration
 	conn := db.New(cfg.DB)
 
+	// the pending migrations, before anything serves (MIGRATE_ON_START=false
+	// to apply them by hand with make migrate-up)
+	if os.Getenv("MIGRATE_ON_START") != "false" {
+		if err := db.Migrate(conn); err != nil {
+			slog.Error("migrations failed", "error", err)
+			os.Exit(1)
+		}
+	}
+
 	// Configure Gin Mode
 	gin.SetMode(cfg.Server.GinMode)
 

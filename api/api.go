@@ -344,6 +344,8 @@ func (s *Server) SetupRouter() *gin.Engine {
 		// the members who chose the signed-in member as one of their authorities,
 		// and the reports they share
 		r.GET("/disciples", authMiddleware(s.jwtAuthenticator), s.listDisciples)
+		r.GET("/disciples/overdue", authMiddleware(s.jwtAuthenticator), s.listOverdueDisciples)
+		r.POST("/disciples/nudge", authMiddleware(s.jwtAuthenticator), s.nudgeDisciples)
 		r.GET("/disciples/:id/reports", authMiddleware(s.jwtAuthenticator), s.listDiscipleReports)
 
 		// a period of reports sent in the app to the member authorities, and

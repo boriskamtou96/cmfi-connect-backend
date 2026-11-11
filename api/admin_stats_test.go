@@ -29,6 +29,15 @@ func TestTheDashboardCountsWithoutNames(t *testing.T) {
 	require.GreaterOrEqual(t, stats.Days[29].NewMembers, int64(2))
 	require.NotEmpty(t, stats.Countries)
 
+	// 12 weeks by default, this one last; the usage by feature
+	require.Len(t, stats.Weeks, 12)
+	monday := time.Now().UTC().AddDate(0, 0, -((int(time.Now().UTC().Weekday()) + 6) % 7))
+	require.Equal(t, monday.Format(time.DateOnly), stats.Weeks[11].Week)
+	require.GreaterOrEqual(t, stats.Weeks[11].NewMembers, int64(2))
+	require.GreaterOrEqual(t, stats.Members.ActiveMonth, stats.Members.Active)
+	require.NotNil(t, stats.Features)
+	require.Len(t, decode[adminStatsResponse](t, send(t, router, http.MethodGet, admin.Token, "/v1/admin/stats?weeks=4", nil)).Weeks, 4)
+
 	week := send(t, router, http.MethodGet, admin.Token, "/v1/admin/stats?days=7", nil)
 	require.Equal(t, http.StatusOK, week.Code)
 	require.Len(t, decode[adminStatsResponse](t, week).Days, 7)

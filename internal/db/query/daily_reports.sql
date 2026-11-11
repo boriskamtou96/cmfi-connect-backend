@@ -89,3 +89,10 @@ FROM daily_reports dr
 WHERE dr.user_id = ANY(sqlc.arg(user_ids)::bigint[])
   AND dr.report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date
 ORDER BY dr.user_id, dr.report_date DESC;
+
+-- name: ListLastReportDays :many
+-- The latest day with a report of each of several members.
+SELECT user_id, MAX(report_date)::date AS last_day
+FROM daily_reports
+WHERE user_id = ANY(sqlc.arg(user_ids)::bigint[])
+GROUP BY user_id;

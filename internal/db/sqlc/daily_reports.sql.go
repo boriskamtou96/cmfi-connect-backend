@@ -323,6 +323,42 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 	return items, nil
 }
 
+const listLastReportDays = `-- name: ListLastReportDays :many
+SELECT user_id, MAX(report_date)::date AS last_day
+FROM daily_reports
+WHERE user_id = ANY($1::bigint[])
+GROUP BY user_id
+`
+
+type ListLastReportDaysRow struct {
+	UserID  int64     `json:"user_id"`
+	LastDay time.Time `json:"last_day"`
+}
+
+// The latest day with a report of each of several members.
+func (q *Queries) ListLastReportDays(ctx context.Context, userIds []int64) ([]ListLastReportDaysRow, error) {
+	rows, err := q.db.QueryContext(ctx, listLastReportDays, pq.Array(userIds))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListLastReportDaysRow{}
+	for rows.Next() {
+		var i ListLastReportDaysRow
+		if err := rows.Scan(&i.UserID, &i.LastDay); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReportDays = `-- name: ListReportDays :many
 SELECT dr.user_id, dr.report_date, dr.goal_percent,
        (SELECT COUNT(*) FROM report_entries re WHERE re.report_id = dr.id) AS filled

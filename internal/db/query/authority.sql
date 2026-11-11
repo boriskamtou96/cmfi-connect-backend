@@ -88,3 +88,23 @@ UPDATE authorities
 SET is_disciple_maker = true
 WHERE id = $1 AND user_id = $2 AND status <> 'declined'
 RETURNING *;
+
+-- name: ListAcceptedDiscipleLinks :many
+-- The links of [member_id] with their disciples, accepted ones only, among [ids]
+-- (all of them when empty).
+SELECT id, user_id, shares_regularity
+FROM authorities
+WHERE linked_user_id = @member_id::bigint
+  AND status = 'accepted'
+  AND (COALESCE(cardinality(@ids::bigint[]), 0) = 0 OR id = ANY(@ids::bigint[]))
+ORDER BY id;
+
+-- name: ListLastNudges :many
+-- When each link was last reminded.
+SELECT authority_id, MAX(sent_at)::timestamptz AS sent_at
+FROM disciple_nudges
+WHERE authority_id = ANY(@authority_ids::bigint[])
+GROUP BY authority_id;
+
+-- name: CreateDiscipleNudge :exec
+INSERT INTO disciple_nudges (authority_id) VALUES ($1);

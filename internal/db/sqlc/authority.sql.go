@@ -8,6 +8,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
+
+	"github.com/lib/pq"
 )
 
 const answerAuthorityRequest = `-- name: AnswerAuthorityRequest :one
@@ -65,6 +68,15 @@ func (q *Queries) CountUserAuthorities(ctx context.Context, userID int64) (int64
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const createDiscipleNudge = `-- name: CreateDiscipleNudge :exec
+INSERT INTO disciple_nudges (authority_id) VALUES ($1)
+`
+
+func (q *Queries) CreateDiscipleNudge(ctx context.Context, authorityID int64) error {
+	_, err := q.db.ExecContext(ctx, createDiscipleNudge, authorityID)
+	return err
 }
 
 const createUserAuthority = `-- name: CreateUserAuthority :one
@@ -203,6 +215,51 @@ func (q *Queries) GetUserAuthorities(ctx context.Context, arg GetUserAuthorities
 	return items, nil
 }
 
+const listAcceptedDiscipleLinks = `-- name: ListAcceptedDiscipleLinks :many
+SELECT id, user_id, shares_regularity
+FROM authorities
+WHERE linked_user_id = $1::bigint
+  AND status = 'accepted'
+  AND (COALESCE(cardinality($2::bigint[]), 0) = 0 OR id = ANY($2::bigint[]))
+ORDER BY id
+`
+
+type ListAcceptedDiscipleLinksParams struct {
+	MemberID int64   `json:"member_id"`
+	Ids      []int64 `json:"ids"`
+}
+
+type ListAcceptedDiscipleLinksRow struct {
+	ID               int64 `json:"id"`
+	UserID           int64 `json:"user_id"`
+	SharesRegularity bool  `json:"shares_regularity"`
+}
+
+// The links of [member_id] with their disciples, accepted ones only, among [ids]
+// (all of them when empty).
+func (q *Queries) ListAcceptedDiscipleLinks(ctx context.Context, arg ListAcceptedDiscipleLinksParams) ([]ListAcceptedDiscipleLinksRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAcceptedDiscipleLinks, arg.MemberID, pq.Array(arg.Ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAcceptedDiscipleLinksRow{}
+	for rows.Next() {
+		var i ListAcceptedDiscipleLinksRow
+		if err := rows.Scan(&i.ID, &i.UserID, &i.SharesRegularity); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAuthorityRequests = `-- name: ListAuthorityRequests :many
 SELECT id, first_name, last_name, phone_number, email, is_disciple_maker, created_at, user_id, linked_user_id, status, shares_regularity
 FROM authorities
@@ -291,6 +348,42 @@ func (q *Queries) ListDisciples(ctx context.Context, memberID int64) ([]ListDisc
 			&i.SharesRegularity,
 			&i.TotalItems,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLastNudges = `-- name: ListLastNudges :many
+SELECT authority_id, MAX(sent_at)::timestamptz AS sent_at
+FROM disciple_nudges
+WHERE authority_id = ANY($1::bigint[])
+GROUP BY authority_id
+`
+
+type ListLastNudgesRow struct {
+	AuthorityID int64     `json:"authority_id"`
+	SentAt      time.Time `json:"sent_at"`
+}
+
+// When each link was last reminded.
+func (q *Queries) ListLastNudges(ctx context.Context, authorityIds []int64) ([]ListLastNudgesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listLastNudges, pq.Array(authorityIds))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListLastNudgesRow{}
+	for rows.Next() {
+		var i ListLastNudgesRow
+		if err := rows.Scan(&i.AuthorityID, &i.SentAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

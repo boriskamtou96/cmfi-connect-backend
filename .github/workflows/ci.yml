@@ -1,0 +1,39 @@
+# Every push and pull request: the code is checked, the migrations are applied
+# to an empty database (as the server does at start), and the API tests run on
+# it. In Render, set « Auto-Deploy » to « After CI checks pass » so a red build
+# never reaches the members.
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cmfi_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DSN: postgresql://postgres:postgres@localhost:5432/cmfi_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
+      - name: Migrations on an empty database
+        run: MIGRATE_TEST_DSN="$DSN" go test ./internal/db -run TestMigrate -count=1
+      - name: API tests
+        run: TEST_DATABASE_URL="$DSN" go test ./api/... -count=1 -p 1

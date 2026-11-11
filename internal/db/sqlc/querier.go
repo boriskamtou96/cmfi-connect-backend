@@ -62,6 +62,8 @@ type Querier interface {
 	// Money kept for an event: it can't be deleted before they are refunded.
 	CountHeldEventPayments(ctx context.Context, eventID sql.NullInt64) (int32, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
+	// The phones that can be reached by a push: the installs that signed in.
+	CountInstalls(ctx context.Context) (int64, error)
 	// The numbers of the back office's dashboard: counts only, never who.
 	CountMembers(ctx context.Context, arg CountMembersParams) (CountMembersRow, error)
 	CountMyAnnouncements(ctx context.Context, userID int64) (CountMyAnnouncementsRow, error)
@@ -87,6 +89,7 @@ type Querier interface {
 	CreateActivityType(ctx context.Context, arg CreateActivityTypeParams) (ActivityType, error)
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (Announcement, error)
 	CreateAnnouncementAttachment(ctx context.Context, arg CreateAnnouncementAttachmentParams) error
+	CreateDiscipleNudge(ctx context.Context, authorityID int64) error
 	CreateDocument(ctx context.Context, arg CreateDocumentParams) (int64, error)
 	CreateDocumentCategory(ctx context.Context, arg CreateDocumentCategoryParams) (DocumentCategory, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
@@ -244,6 +247,12 @@ type Querier interface {
 	// Their proclamations stay in the total.
 	LeaveImportunity(ctx context.Context, arg LeaveImportunityParams) (int64, error)
 	LinkPaymentsToPayout(ctx context.Context, arg LinkPaymentsToPayoutParams) error
+	// The links of [member_id] with their disciples, accepted ones only, among [ids]
+	// (all of them when empty).
+	ListAcceptedDiscipleLinks(ctx context.Context, arg ListAcceptedDiscipleLinksParams) ([]ListAcceptedDiscipleLinksRow, error)
+	// Per week (starting on Monday): the members who filled a report or made a
+	// retreat, and the reports filled.
+	ListActiveMembersPerWeek(ctx context.Context, since time.Time) ([]ListActiveMembersPerWeekRow, error)
 	// The user's daily goals, by item.
 	ListActivityGoals(ctx context.Context, userID int64) ([]ActivityGoal, error)
 	// Every account as the back office shows it (no spiritual data): the
@@ -300,10 +309,16 @@ type Querier interface {
 	ListEventRegistrations(ctx context.Context, eventID int64) ([]EventRegistration, error)
 	ListEventSeriesEditions(ctx context.Context, seriesID sql.NullInt64) ([]Event, error)
 	ListEventSessions(ctx context.Context, eventID int64) ([]EventSession, error)
+	// How many members used each feature since [since]: counts only, never who.
+	ListFeatureUsage(ctx context.Context, since time.Time) ([]ListFeatureUsageRow, error)
 	ListHymnBooks(ctx context.Context) ([]ListHymnBooksRow, error)
 	ListHymnNumbers(ctx context.Context, bookID int64) ([]int32, error)
 	// Who joined, in order. No counts: each member only sees their own.
 	ListImportunityParticipants(ctx context.Context, importunityID int64) ([]int64, error)
+	// When each link was last reminded.
+	ListLastNudges(ctx context.Context, authorityIds []int64) ([]ListLastNudgesRow, error)
+	// The latest day with a report of each of several members.
+	ListLastReportDays(ctx context.Context, userIds []int64) ([]ListLastReportDaysRow, error)
 	ListMediaByIDs(ctx context.Context, ids []int64) ([]Medium, error)
 	// What members show of themselves, the profile first (the user row has the
 	// names of the sign-up). Contact fields are for the handlers to give or hide.
@@ -320,6 +335,7 @@ type Querier interface {
 	// ----- our ministry: the nations -----
 	ListNations(ctx context.Context) ([]MinistryNation, error)
 	ListNewMembersPerDay(ctx context.Context, since time.Time) ([]ListNewMembersPerDayRow, error)
+	ListNewMembersPerWeek(ctx context.Context, since time.Time) ([]ListNewMembersPerWeekRow, error)
 	// What the reconciler checks: the answers still awaited from Wajub, and
 	// the completed payments whose work is not done yet.
 	ListOpenPayments(ctx context.Context, before time.Time) ([]Payment, error)

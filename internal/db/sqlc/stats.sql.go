@@ -27,6 +27,18 @@ func (q *Queries) CountActiveMembers(ctx context.Context, since time.Time) (int6
 	return column_1, err
 }
 
+const countInstalls = `-- name: CountInstalls :one
+SELECT COUNT(*)::bigint FROM devices
+`
+
+// The phones that can be reached by a push: the installs that signed in.
+func (q *Queries) CountInstalls(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countInstalls)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const countMembers = `-- name: CountMembers :one
 
 SELECT COUNT(*)::bigint AS total,
@@ -52,6 +64,108 @@ func (q *Queries) CountMembers(ctx context.Context, arg CountMembersParams) (Cou
 	var i CountMembersRow
 	err := row.Scan(&i.Total, &i.NewThisWeek, &i.NewThisMonth)
 	return i, err
+}
+
+const listActiveMembersPerWeek = `-- name: ListActiveMembersPerWeek :many
+SELECT date_trunc('week', a.day)::date AS week,
+       COUNT(DISTINCT a.user_id)::bigint AS members,
+       COUNT(*) FILTER (WHERE a.is_report)::bigint AS reports
+FROM (
+    SELECT user_id, report_date AS day, true AS is_report
+    FROM daily_reports WHERE report_date >= $1::date
+    UNION ALL
+    SELECT user_id, day, false AS is_report
+    FROM prayer_retreats WHERE day >= $1::date
+) AS a
+GROUP BY 1
+ORDER BY 1
+`
+
+type ListActiveMembersPerWeekRow struct {
+	Week    time.Time `json:"week"`
+	Members int64     `json:"members"`
+	Reports int64     `json:"reports"`
+}
+
+// Per week (starting on Monday): the members who filled a report or made a
+// retreat, and the reports filled.
+func (q *Queries) ListActiveMembersPerWeek(ctx context.Context, since time.Time) ([]ListActiveMembersPerWeekRow, error) {
+	rows, err := q.db.QueryContext(ctx, listActiveMembersPerWeek, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListActiveMembersPerWeekRow{}
+	for rows.Next() {
+		var i ListActiveMembersPerWeekRow
+		if err := rows.Scan(&i.Week, &i.Members, &i.Reports); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFeatureUsage = `-- name: ListFeatureUsage :many
+SELECT f.feature::text AS feature, COUNT(DISTINCT f.user_id)::bigint AS members
+FROM (
+    SELECT 'reports' AS feature, user_id FROM daily_reports WHERE report_date >= $1::date
+    UNION ALL
+    SELECT 'retreats', user_id FROM prayer_retreats WHERE day >= $1::date
+    UNION ALL
+    SELECT 'reading', user_id FROM reading_books WHERE updated_at >= $1::date
+    UNION ALL
+    SELECT 'souls', user_id FROM souls WHERE created_at >= $1::date
+    UNION ALL
+    SELECT 'prayer_lists', user_id FROM prayer_people WHERE created_at >= $1::date
+       OR last_prayed_on >= $1::date
+    UNION ALL
+    SELECT 'importunities', user_id FROM importunity_members
+    WHERE status = 'joined' AND COALESCE(joined_at, created_at) >= $1::date
+    UNION ALL
+    SELECT 'events', user_id FROM event_registrations WHERE created_at >= $1::date
+    UNION ALL
+    SELECT 'authorities', user_id FROM authorities WHERE created_at >= $1::date
+    UNION ALL
+    SELECT 'report_sendings', disciple_id FROM report_sendings WHERE sent_at >= $1::date
+) AS f
+GROUP BY f.feature
+ORDER BY members DESC, feature
+`
+
+type ListFeatureUsageRow struct {
+	Feature string `json:"feature"`
+	Members int64  `json:"members"`
+}
+
+// How many members used each feature since [since]: counts only, never who.
+func (q *Queries) ListFeatureUsage(ctx context.Context, since time.Time) ([]ListFeatureUsageRow, error) {
+	rows, err := q.db.QueryContext(ctx, listFeatureUsage, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFeatureUsageRow{}
+	for rows.Next() {
+		var i ListFeatureUsageRow
+		if err := rows.Scan(&i.Feature, &i.Members); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listMembersByCountry = `-- name: ListMembersByCountry :many
@@ -115,6 +229,42 @@ func (q *Queries) ListNewMembersPerDay(ctx context.Context, since time.Time) ([]
 	for rows.Next() {
 		var i ListNewMembersPerDayRow
 		if err := rows.Scan(&i.Day, &i.Members); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listNewMembersPerWeek = `-- name: ListNewMembersPerWeek :many
+SELECT date_trunc('week', created_at AT TIME ZONE 'UTC')::date AS week, COUNT(*)::bigint AS members
+FROM users
+WHERE created_at >= $1
+GROUP BY 1
+ORDER BY 1
+`
+
+type ListNewMembersPerWeekRow struct {
+	Week    time.Time `json:"week"`
+	Members int64     `json:"members"`
+}
+
+func (q *Queries) ListNewMembersPerWeek(ctx context.Context, since time.Time) ([]ListNewMembersPerWeekRow, error) {
+	rows, err := q.db.QueryContext(ctx, listNewMembersPerWeek, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListNewMembersPerWeekRow{}
+	for rows.Next() {
+		var i ListNewMembersPerWeekRow
+		if err := rows.Scan(&i.Week, &i.Members); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

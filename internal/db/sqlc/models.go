@@ -91,6 +91,12 @@ type Device struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type DiscipleNudge struct {
+	ID          int64     `json:"id"`
+	AuthorityID int64     `json:"authority_id"`
+	SentAt      time.Time `json:"sent_at"`
+}
+
 type Document struct {
 	ID          int64         `json:"id"`
 	Title       string        `json:"title"`

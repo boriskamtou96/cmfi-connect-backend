@@ -18,6 +18,27 @@ type statsMembersResponse struct {
 	NewThisMonth int64 `json:"new_this_month"`
 	// Active: filled a report or made a retreat in the last 7 days.
 	Active int64 `json:"active"`
+	// ActiveMonth: the same, over the last 30 days.
+	ActiveMonth int64 `json:"active_month"`
+	// Installs: the phones registered for pushes (an install that signed in).
+	Installs int64 `json:"installs"`
+}
+
+type statsWeekResponse struct {
+	// Week: its Monday.
+	Week string `json:"week"`
+	// ActiveMembers: filled a report or made a retreat that week.
+	ActiveMembers int64 `json:"active_members"`
+	Reports       int64 `json:"reports"`
+	NewMembers    int64 `json:"new_members"`
+}
+
+type statsFeatureResponse struct {
+	// Feature: reports, retreats, reading, souls, prayer_lists, importunities,
+	// events, authorities, report_sendings.
+	Feature string `json:"feature"`
+	// Members who used it in the last 30 days.
+	Members int64 `json:"members"`
 }
 
 type statsDayResponse struct {
@@ -40,11 +61,17 @@ type adminStatsResponse struct {
 	Members   statsMembersResponse   `json:"members"`
 	Days      []statsDayResponse     `json:"days"`
 	Countries []statsCountryResponse `json:"countries"`
+	// Weeks: the active members and the reports week by week, the oldest first.
+	Weeks []statsWeekResponse `json:"weeks"`
+	// Features: who used what in the last 30 days, the most used first.
+	Features []statsFeatureResponse `json:"features"`
 }
 
 type adminStatsQuery struct {
 	// Days: how many days back, today included (30 by default).
 	Days int `form:"days" binding:"omitempty,min=7,max=90"`
+	// Weeks: how many weeks back, this one included (12 by default).
+	Weeks int `form:"weeks" binding:"omitempty,min=4,max=52"`
 }
 
 // GET /v1/admin/stats?days=30
@@ -56,6 +83,9 @@ func (s *Server) adminStats(c *gin.Context) {
 	}
 	if query.Days == 0 {
 		query.Days = 30
+	}
+	if query.Weeks == 0 {
+		query.Weeks = 12
 	}
 
 	now := time.Now().UTC()
@@ -74,6 +104,32 @@ func (s *Server) adminStats(c *gin.Context) {
 		return
 	}
 	active, err := s.store.CountActiveMembers(c, today.AddDate(0, 0, -6))
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	activeMonth, err := s.store.CountActiveMembers(c, today.AddDate(0, 0, -29))
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	installs, err := s.store.CountInstalls(c)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	firstWeek := monday.AddDate(0, 0, -7*(query.Weeks-1))
+	activeWeeks, err := s.store.ListActiveMembersPerWeek(c, firstWeek)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	newWeeks, err := s.store.ListNewMembersPerWeek(c, firstWeek)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	features, err := s.store.ListFeatureUsage(c, today.AddDate(0, 0, -29))
 	if err != nil {
 		internalServerError(c, err)
 		return
@@ -129,13 +185,41 @@ func (s *Server) adminStats(c *gin.Context) {
 		byCountry = append(byCountry, statsCountryResponse{Country: row.Country, Members: row.Members})
 	}
 
+	// every week of the period, the empty ones too
+	weeks := make([]statsWeekResponse, query.Weeks)
+	weekIndex := make(map[string]int, query.Weeks)
+	for i := range weeks {
+		week := firstWeek.AddDate(0, 0, 7*i).Format(time.DateOnly)
+		weeks[i] = statsWeekResponse{Week: week}
+		weekIndex[week] = i
+	}
+	for _, row := range activeWeeks {
+		if i, ok := weekIndex[row.Week.Format(time.DateOnly)]; ok {
+			weeks[i].ActiveMembers = row.Members
+			weeks[i].Reports = row.Reports
+		}
+	}
+	for _, row := range newWeeks {
+		if i, ok := weekIndex[row.Week.Format(time.DateOnly)]; ok {
+			weeks[i].NewMembers = row.Members
+		}
+	}
+	used := make([]statsFeatureResponse, 0, len(features))
+	for _, row := range features {
+		used = append(used, statsFeatureResponse{Feature: row.Feature, Members: row.Members})
+	}
+
 	apiResponse(c, http.StatusOK, adminStatsResponse{
 		Members: statsMembersResponse{
 			Total:        members.Total,
 			NewThisWeek:  members.NewThisWeek,
 			NewThisMonth: members.NewThisMonth,
 			Active:       active,
+			ActiveMonth:  activeMonth,
+			Installs:     installs,
 		},
+		Weeks:     weeks,
+		Features:  used,
 		Days:      days,
 		Countries: byCountry,
 	})
