@@ -469,11 +469,25 @@ type Profile struct {
 	Email       sql.NullString `json:"email"`
 }
 
+type ReadingBook struct {
+	ID         int64        `json:"id"`
+	UserID     int64        `json:"user_id"`
+	Title      string       `json:"title"`
+	Author     string       `json:"author"`
+	TotalPages int32        `json:"total_pages"`
+	CoverUrl   string       `json:"cover_url"`
+	Status     string       `json:"status"`
+	FinishedOn sql.NullTime `json:"finished_on"`
+	CreatedAt  time.Time    `json:"created_at"`
+	UpdatedAt  time.Time    `json:"updated_at"`
+}
+
 type ReportEntry struct {
 	ReportID        int64         `json:"report_id"`
 	ActivityTypeID  int64         `json:"activity_type_id"`
 	Quantity        sql.NullInt32 `json:"quantity"`
 	DurationMinutes sql.NullInt32 `json:"duration_minutes"`
+	BookID          sql.NullInt64 `json:"book_id"`
 }
 
 type ReportSending struct {

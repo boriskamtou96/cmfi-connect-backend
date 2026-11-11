@@ -33,8 +33,8 @@ func (q *Queries) CountReportedDays(ctx context.Context, arg CountReportedDaysPa
 }
 
 const createReportEntry = `-- name: CreateReportEntry :exec
-INSERT INTO report_entries (report_id, activity_type_id, quantity, duration_minutes)
-VALUES ($1, $2, $3, $4)
+INSERT INTO report_entries (report_id, activity_type_id, quantity, duration_minutes, book_id)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateReportEntryParams struct {
@@ -42,6 +42,7 @@ type CreateReportEntryParams struct {
 	ActivityTypeID  int64         `json:"activity_type_id"`
 	Quantity        sql.NullInt32 `json:"quantity"`
 	DurationMinutes sql.NullInt32 `json:"duration_minutes"`
+	BookID          sql.NullInt64 `json:"book_id"`
 }
 
 func (q *Queries) CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error {
@@ -50,6 +51,7 @@ func (q *Queries) CreateReportEntry(ctx context.Context, arg CreateReportEntryPa
 		arg.ActivityTypeID,
 		arg.Quantity,
 		arg.DurationMinutes,
+		arg.BookID,
 	)
 	return err
 }
@@ -91,10 +93,12 @@ func (q *Queries) GetDailyReport(ctx context.Context, arg GetDailyReportParams) 
 
 const getDailyReportForm = `-- name: GetDailyReportForm :many
 SELECT at.id AS activity_type_id, at.code, at.label, at.tracks_quantity, at.quantity_unit, at.tracks_duration,
-       re.quantity, re.duration_minutes
+       re.quantity, re.duration_minutes,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages
 FROM activity_types at
 LEFT JOIN daily_reports dr ON dr.user_id = $1::bigint AND dr.report_date = $2::date
 LEFT JOIN report_entries re ON re.report_id = dr.id AND re.activity_type_id = at.id
+LEFT JOIN reading_books rb ON rb.id = re.book_id
 WHERE (at.user_id IS NULL OR at.user_id = $1::bigint)
   AND at.archived_at IS NULL
 ORDER BY at.position, at.code
@@ -114,9 +118,14 @@ type GetDailyReportFormRow struct {
 	TracksDuration  bool           `json:"tracks_duration"`
 	Quantity        sql.NullInt32  `json:"quantity"`
 	DurationMinutes sql.NullInt32  `json:"duration_minutes"`
+	BookID          sql.NullInt64  `json:"book_id"`
+	BookTitle       sql.NullString `json:"book_title"`
+	BookAuthor      sql.NullString `json:"book_author"`
+	BookTotalPages  sql.NullInt32  `json:"book_total_pages"`
 }
 
 // Every item the user can fill in, with the values entered that day (NULL when empty).
+// The book read that day comes with the LLC item (NULL otherwise).
 func (q *Queries) GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error) {
 	rows, err := q.db.QueryContext(ctx, getDailyReportForm, arg.UserID, arg.ReportDate)
 	if err != nil {
@@ -135,6 +144,10 @@ func (q *Queries) GetDailyReportForm(ctx context.Context, arg GetDailyReportForm
 			&i.TracksDuration,
 			&i.Quantity,
 			&i.DurationMinutes,
+			&i.BookID,
+			&i.BookTitle,
+			&i.BookAuthor,
+			&i.BookTotalPages,
 		); err != nil {
 			return nil, err
 		}
@@ -224,10 +237,18 @@ func (q *Queries) GetReportSummary(ctx context.Context, arg GetReportSummaryPara
 
 const listDailyReportEntries = `-- name: ListDailyReportEntries :many
 SELECT dr.report_date, dr.note, dr.goal_percent,
-       re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes
+       re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages,
+       COALESCE((
+           SELECT SUM(re2.quantity)
+           FROM report_entries re2
+           JOIN daily_reports dr2 ON dr2.id = re2.report_id
+           WHERE re2.book_id = re.book_id AND dr2.report_date <= dr.report_date
+       ), 0)::int AS book_page_reached
 FROM daily_reports dr
 LEFT JOIN report_entries re ON re.report_id = dr.id
 LEFT JOIN activity_types at ON at.id = re.activity_type_id
+LEFT JOIN reading_books rb ON rb.id = re.book_id
 WHERE dr.user_id = $1::bigint
   AND dr.report_date BETWEEN $2::date AND $3::date
 ORDER BY dr.report_date DESC, at.position, at.code
@@ -249,10 +270,17 @@ type ListDailyReportEntriesRow struct {
 	QuantityUnit    sql.NullString `json:"quantity_unit"`
 	Quantity        sql.NullInt32  `json:"quantity"`
 	DurationMinutes sql.NullInt32  `json:"duration_minutes"`
+	BookID          sql.NullInt64  `json:"book_id"`
+	BookTitle       sql.NullString `json:"book_title"`
+	BookAuthor      sql.NullString `json:"book_author"`
+	BookTotalPages  sql.NullInt32  `json:"book_total_pages"`
+	BookPageReached int32          `json:"book_page_reached"`
 }
 
 // History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 // Archived items still show here: past values are never lost.
+// The book read that day comes with its entry, and the page reached in it
+// that day (the pages of every day up to this one).
 func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listDailyReportEntries, arg.UserID, arg.FromDate, arg.ToDate)
 	if err != nil {
@@ -272,6 +300,11 @@ func (q *Queries) ListDailyReportEntries(ctx context.Context, arg ListDailyRepor
 			&i.QuantityUnit,
 			&i.Quantity,
 			&i.DurationMinutes,
+			&i.BookID,
+			&i.BookTitle,
+			&i.BookAuthor,
+			&i.BookTotalPages,
+			&i.BookPageReached,
 		); err != nil {
 			return nil, err
 		}

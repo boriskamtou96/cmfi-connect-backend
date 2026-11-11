@@ -4,11 +4,14 @@ WHERE user_id = sqlc.arg(user_id) AND report_date = sqlc.arg(report_date);
 
 -- name: GetDailyReportForm :many
 -- Every item the user can fill in, with the values entered that day (NULL when empty).
+-- The book read that day comes with the LLC item (NULL otherwise).
 SELECT at.id AS activity_type_id, at.code, at.label, at.tracks_quantity, at.quantity_unit, at.tracks_duration,
-       re.quantity, re.duration_minutes
+       re.quantity, re.duration_minutes,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages
 FROM activity_types at
 LEFT JOIN daily_reports dr ON dr.user_id = sqlc.arg(user_id)::bigint AND dr.report_date = sqlc.arg(report_date)::date
 LEFT JOIN report_entries re ON re.report_id = dr.id AND re.activity_type_id = at.id
+LEFT JOIN reading_books rb ON rb.id = re.book_id
 WHERE (at.user_id IS NULL OR at.user_id = sqlc.arg(user_id)::bigint)
   AND at.archived_at IS NULL
 ORDER BY at.position, at.code;
@@ -26,17 +29,27 @@ DELETE FROM report_entries
 WHERE report_id = sqlc.arg(report_id);
 
 -- name: CreateReportEntry :exec
-INSERT INTO report_entries (report_id, activity_type_id, quantity, duration_minutes)
-VALUES (sqlc.arg(report_id), sqlc.arg(activity_type_id), sqlc.narg(quantity), sqlc.narg(duration_minutes));
+INSERT INTO report_entries (report_id, activity_type_id, quantity, duration_minutes, book_id)
+VALUES (sqlc.arg(report_id), sqlc.arg(activity_type_id), sqlc.narg(quantity), sqlc.narg(duration_minutes), sqlc.narg(book_id));
 
 -- name: ListDailyReportEntries :many
 -- History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 -- Archived items still show here: past values are never lost.
+-- The book read that day comes with its entry, and the page reached in it
+-- that day (the pages of every day up to this one).
 SELECT dr.report_date, dr.note, dr.goal_percent,
-       re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes
+       re.activity_type_id, at.code, at.label, at.quantity_unit, re.quantity, re.duration_minutes,
+       re.book_id, rb.title AS book_title, rb.author AS book_author, rb.total_pages AS book_total_pages,
+       COALESCE((
+           SELECT SUM(re2.quantity)
+           FROM report_entries re2
+           JOIN daily_reports dr2 ON dr2.id = re2.report_id
+           WHERE re2.book_id = re.book_id AND dr2.report_date <= dr.report_date
+       ), 0)::int AS book_page_reached
 FROM daily_reports dr
 LEFT JOIN report_entries re ON re.report_id = dr.id
 LEFT JOIN activity_types at ON at.id = re.activity_type_id
+LEFT JOIN reading_books rb ON rb.id = re.book_id
 WHERE dr.user_id = sqlc.arg(user_id)::bigint
   AND dr.report_date BETWEEN sqlc.arg(from_date)::date AND sqlc.arg(to_date)::date
 ORDER BY dr.report_date DESC, at.position, at.code;

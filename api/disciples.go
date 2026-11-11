@@ -283,6 +283,8 @@ type discipleReportsResponse struct {
 	TotalItems int `json:"total_items"`
 	// the days with a report, newest first
 	Days []discipleReportDay `json:"days"`
+	// the books they finished in the period (Lecture de la littérature chrétienne)
+	BooksFinished int32 `json:"books_finished"`
 }
 
 // GET /v1/disciples/:id/reports?from=&to=: the reports of a member who chose
@@ -346,6 +348,16 @@ func (s *Server) listDiscipleReports(c *gin.Context) {
 		return
 	}
 
+	booksFinished, err := s.store.CountFinishedBooks(c, db.CountFinishedBooksParams{
+		UserID:   authority.UserID,
+		FromDate: from,
+		ToDate:   to,
+	})
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+
 	total := len(items)
 	// rows are sorted by date: a new date starts a new day
 	days := make([]discipleReportDay, 0)
@@ -379,6 +391,7 @@ func (s *Server) listDiscipleReports(c *gin.Context) {
 		IsDiscipleMaker: authority.IsDiscipleMaker,
 		TotalItems:      total,
 		Days:            days,
+		BooksFinished:   booksFinished,
 	})
 }
 

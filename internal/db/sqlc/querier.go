@@ -56,6 +56,9 @@ type Querier interface {
 	// A file still listed by another document is kept.
 	CountDocumentsWithFile(ctx context.Context, fileID int64) (int64, error)
 	CountEventRegistrations(ctx context.Context, eventIds []int64) ([]CountEventRegistrationsRow, error)
+	CountFinishedBooks(ctx context.Context, arg CountFinishedBooksParams) (int32, error)
+	// The books finished each month between two days (months without any are left out).
+	CountFinishedBooksByMonth(ctx context.Context, arg CountFinishedBooksByMonthParams) ([]CountFinishedBooksByMonthRow, error)
 	// Money kept for an event: it can't be deleted before they are refunded.
 	CountHeldEventPayments(ctx context.Context, eventID sql.NullInt64) (int32, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
@@ -107,6 +110,7 @@ type Querier interface {
 	CreatePremiumGifts(ctx context.Context, arg CreatePremiumGiftsParams) error
 	CreatePremiumOffer(ctx context.Context, arg CreatePremiumOfferParams) (PremiumOffer, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
+	CreateReadingBook(ctx context.Context, arg CreateReadingBookParams) (int64, error)
 	// ----- reports, handled in the back office -----
 	CreateReport(ctx context.Context, arg CreateReportParams) (int64, error)
 	CreateReportEntry(ctx context.Context, arg CreateReportEntryParams) error
@@ -145,6 +149,7 @@ type Querier interface {
 	DeletePrayerRetreat(ctx context.Context, arg DeletePrayerRetreatParams) (int64, error)
 	DeletePrayerTopic(ctx context.Context, id int64) (int64, error)
 	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
+	DeleteReadingBook(ctx context.Context, arg DeleteReadingBookParams) (int64, error)
 	DeleteRegistrationOfPayment(ctx context.Context, paymentID uuid.NullUUID) (int64, error)
 	DeleteReportEntries(ctx context.Context, reportID int64) error
 	DeleteSoul(ctx context.Context, arg DeleteSoulParams) error
@@ -169,6 +174,7 @@ type Querier interface {
 	GetByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	GetDailyReport(ctx context.Context, arg GetDailyReportParams) (DailyReport, error)
 	// Every item the user can fill in, with the values entered that day (NULL when empty).
+	// The book read that day comes with the LLC item (NULL otherwise).
 	GetDailyReportForm(ctx context.Context, arg GetDailyReportFormParams) ([]GetDailyReportFormRow, error)
 	GetDocument(ctx context.Context, id int64) (DocumentDetail, error)
 	GetDocumentCategory(ctx context.Context, id int64) (DocumentCategory, error)
@@ -195,6 +201,7 @@ type Querier interface {
 	GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, error)
 	GetPremiumOffer(ctx context.Context, id int64) (PremiumOffer, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
+	GetReadingBookOwner(ctx context.Context, id int64) (int64, error)
 	// One report, as ListReports gives it.
 	GetReport(ctx context.Context, id int64) (GetReportRow, error)
 	// Totals per available item. The CTE keeps only this user's entries before the LEFT JOIN:
@@ -262,6 +269,8 @@ type Querier interface {
 	ListCurrentPrayerTopics(ctx context.Context, today time.Time) ([]PrayerTopic, error)
 	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
 	// Archived items still show here: past values are never lost.
+	// The book read that day comes with its entry, and the page reached in it
+	// that day (the pages of every day up to this one).
 	ListDailyReportEntries(ctx context.Context, arg ListDailyReportEntriesParams) ([]ListDailyReportEntriesRow, error)
 	ListDeviceTokensOfUsers(ctx context.Context, userIds []int64) ([]string, error)
 	// The phones of members with their language, for a push written by the
@@ -327,6 +336,10 @@ type Querier interface {
 	// Latest first, with how far their gifts went.
 	ListPremiumOffers(ctx context.Context, arg ListPremiumOffersParams) ([]ListPremiumOffersRow, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
+	// The member's books with their progress: the pages of the reports that name
+	// them, and the first day one did (else the day the book was added). Books
+	// being read first, then the finished ones, latest first.
+	ListReadingBooks(ctx context.Context, userID int64) ([]ListReadingBooksRow, error)
 	ListReceivedReportSendings(ctx context.Context, arg ListReceivedReportSendingsParams) ([]ReportSending, error)
 	// The days with a report of several members between two dates, newest first,
 	// with the share of their goals reached and the number of items filled in.
@@ -405,6 +418,8 @@ type Querier interface {
 	// The id Wajub gave, learnt from its webhook when its first answer was lost.
 	SetPaymentProviderID(ctx context.Context, arg SetPaymentProviderIDParams) error
 	SetPaymentProviderRefundID(ctx context.Context, arg SetPaymentProviderRefundIDParams) error
+	// finished_on is set with 'finished' only (the table checks it).
+	SetReadingBookStatus(ctx context.Context, arg SetReadingBookStatusParams) (int64, error)
 	SetRegistrationPayment(ctx context.Context, arg SetRegistrationPaymentParams) error
 	// Archived: no longer offered in the reports; the past entries stay.
 	SetStandardActivityTypeArchived(ctx context.Context, arg SetStandardActivityTypeArchivedParams) (ActivityType, error)
@@ -418,6 +433,8 @@ type Querier interface {
 	ShiftNations(ctx context.Context, arg ShiftNationsParams) error
 	// Only a completed payment, once.
 	StartPaymentRefund(ctx context.Context, arg StartPaymentRefundParams) (Payment, error)
+	// The pages read in books between two days.
+	SumBookPages(ctx context.Context, arg SumBookPagesParams) (int32, error)
 	SumOtherRegistrationsPeople(ctx context.Context, arg SumOtherRegistrationsPeopleParams) (int32, error)
 	// A new version of the book: the apps download it again.
 	TouchHymnBook(ctx context.Context, id int64) error
@@ -442,6 +459,7 @@ type Querier interface {
 	UpdatePrayerPerson(ctx context.Context, arg UpdatePrayerPersonParams) (PrayerPerson, error)
 	UpdatePrayerTopic(ctx context.Context, arg UpdatePrayerTopicParams) (PrayerTopic, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
+	UpdateReadingBook(ctx context.Context, arg UpdateReadingBookParams) (int64, error)
 	// The label, the unit and the place; the code and the measures stay (the
 	// reports and the app rely on them).
 	UpdateStandardActivityType(ctx context.Context, arg UpdateStandardActivityTypeParams) (ActivityType, error)

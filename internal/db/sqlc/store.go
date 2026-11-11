@@ -45,7 +45,13 @@ type ReportEntryInput struct {
 	ActivityTypeID  int64
 	Quantity        sql.NullInt32
 	DurationMinutes sql.NullInt32
+	// the book read that day: LLC only, one of the member's books
+	BookID sql.NullInt64
 }
+
+// bookItemCode is the item whose entries can name a book (Lecture de la
+// littérature chrétienne).
+const bookItemCode = "LLC"
 
 type SaveDailyReportTxParams struct {
 	UserID     int64
@@ -75,6 +81,18 @@ func (s *SQLStore) SaveDailyReportTx(ctx context.Context, arg SaveDailyReportTxP
 		if err := checkReportEntries(arg.Entries, available); err != nil {
 			return err
 		}
+		for _, entry := range arg.Entries {
+			if !entry.BookID.Valid {
+				continue
+			}
+			owner, err := q.GetReadingBookOwner(ctx, entry.BookID.Int64)
+			if errors.Is(err, sql.ErrNoRows) || (err == nil && owner != arg.UserID) {
+				return fmt.Errorf("%w: book %d is not one of yours", ErrInvalidReportEntry, entry.BookID.Int64)
+			}
+			if err != nil {
+				return err
+			}
+		}
 
 		// 2. create the day, or update its note and goals
 		report, err = q.UpsertDailyReport(ctx, UpsertDailyReportParams{
@@ -98,6 +116,7 @@ func (s *SQLStore) SaveDailyReportTx(ctx context.Context, arg SaveDailyReportTxP
 				ActivityTypeID:  entry.ActivityTypeID,
 				Quantity:        entry.Quantity,
 				DurationMinutes: entry.DurationMinutes,
+				BookID:          entry.BookID,
 			})
 			if err != nil {
 				return err
@@ -131,6 +150,9 @@ func checkReportEntries(entries []ReportEntryInput, available map[int64]Activity
 		}
 		if entry.DurationMinutes.Valid && !activityType.TracksDuration {
 			return fmt.Errorf("%w: activity type %d (%s) does not track a duration", ErrInvalidReportEntry, activityType.ID, activityType.Code)
+		}
+		if entry.BookID.Valid && (activityType.UserID.Valid || activityType.Code != bookItemCode) {
+			return fmt.Errorf("%w: activity type %d (%s) can't name a book", ErrInvalidReportEntry, activityType.ID, activityType.Code)
 		}
 	}
 

@@ -34,6 +34,25 @@ type dailyReportFormEntry struct {
 	TracksDuration  bool    `json:"tracks_duration"`
 	Quantity        *int32  `json:"quantity"`
 	DurationMinutes *int32  `json:"duration_minutes"`
+	// the book read that day (LLC), null otherwise
+	Book *entryBook `json:"book"`
+}
+
+// entryBook is the book named by an LLC entry. PageReached (history only)
+// is the page reached in it that day: the pages of every day up to this one.
+type entryBook struct {
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+	TotalPages  int32  `json:"total_pages"`
+	PageReached *int32 `json:"page_reached,omitempty"`
+}
+
+func toEntryBook(id sql.NullInt64, title, author sql.NullString, totalPages sql.NullInt32) *entryBook {
+	if !id.Valid || !title.Valid {
+		return nil
+	}
+	return &entryBook{ID: id.Int64, Title: title.String, Author: author.String, TotalPages: totalPages.Int32}
 }
 
 // dailyReportFormResponse is the day form: every available item, with the values entered that day.
@@ -72,6 +91,8 @@ type saveDailyReportEntry struct {
 	ActivityTypeID  int64  `json:"activity_type_id" binding:"required,min=1"`
 	Quantity        *int32 `json:"quantity" binding:"omitempty,min=0,max=100000"`
 	DurationMinutes *int32 `json:"duration_minutes" binding:"omitempty,min=0,max=1440"`
+	// the book read that day: the LLC item only, one of the member's books
+	BookID *int64 `json:"book_id" binding:"omitempty,min=1"`
 }
 
 type saveDailyReportPayload struct {
@@ -142,6 +163,9 @@ func (s *Server) saveDailyReport(c *gin.Context) {
 				Valid: true,
 			}
 		}
+		if entry.BookID != nil {
+			input.BookID = sql.NullInt64{Int64: *entry.BookID, Valid: true}
+		}
 		params.Entries = append(params.Entries, input)
 	}
 
@@ -186,6 +210,8 @@ type dailyReportHistoryEntry struct {
 	QuantityUnit    *string `json:"quantity_unit"`
 	Quantity        *int32  `json:"quantity"`
 	DurationMinutes *int32  `json:"duration_minutes"`
+	// the book read that day (LLC), with the page reached in it
+	Book *entryBook `json:"book"`
 }
 
 type dailyReportHistoryDay struct {
@@ -238,6 +264,11 @@ func (s *Server) listDailyReports(c *gin.Context) {
 
 // toHistoryEntry is one item filled in on a day of the history.
 func toHistoryEntry(row db.ListDailyReportEntriesRow) dailyReportHistoryEntry {
+	book := toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages)
+	if book != nil {
+		reached := min(row.BookPageReached, book.TotalPages)
+		book.PageReached = &reached
+	}
 	return dailyReportHistoryEntry{
 		ActivityTypeID:  row.ActivityTypeID.Int64,
 		Code:            row.Code.String,
@@ -245,6 +276,7 @@ func toHistoryEntry(row db.ListDailyReportEntriesRow) dailyReportHistoryEntry {
 		QuantityUnit:    nullStringPtr(row.QuantityUnit),
 		Quantity:        nullInt32Ptr(row.Quantity),
 		DurationMinutes: nullInt32Ptr(row.DurationMinutes),
+		Book:            book,
 	}
 }
 
@@ -357,6 +389,7 @@ func (s *Server) buildDailyReportForm(c *gin.Context, userID int64, date time.Ti
 			TracksDuration:  row.TracksDuration,
 			Quantity:        nullInt32Ptr(row.Quantity),
 			DurationMinutes: nullInt32Ptr(row.DurationMinutes),
+			Book:            toEntryBook(row.BookID, row.BookTitle, row.BookAuthor, row.BookTotalPages),
 		})
 	}
 

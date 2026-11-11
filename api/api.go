@@ -356,6 +356,18 @@ func (s *Server) SetupRouter() *gin.Engine {
 			reports.PUT("/:date", s.saveDailyReport)
 		}
 
+		// Mes lectures: the books named by the LLC item of the reports
+		reading := r.Group("/reading").Use(authMiddleware(s.jwtAuthenticator))
+		{
+			reading.GET("/books", s.listReadingBooks)
+			reading.POST("/books", s.createReadingBook)
+			reading.PUT("/books/:id", s.updateReadingBook)
+			reading.PUT("/books/:id/status", s.setReadingBookStatus)
+			reading.DELETE("/books/:id", s.deleteReadingBook)
+			reading.GET("/stats", s.getReadingStats)
+			reading.GET("/search", s.searchBooks)
+		}
+
 		hymnBooks := r.Group("/hymns").Use(authMiddleware(s.jwtAuthenticator))
 		{
 			hymnBooks.GET("/books", s.listHymnBooks)
