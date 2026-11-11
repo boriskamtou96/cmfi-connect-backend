@@ -115,8 +115,19 @@ DELETE FROM daily_reports
 WHERE user_id = $1;
 
 -- name: UpdateUserPassword :exec
+-- A password the member chose (SMS code, settings, after a temporary one).
 UPDATE users
-SET hash_password = $2
+SET hash_password = $2,
+    must_change_password = false,
+    has_password = true
+WHERE id = $1;
+
+-- name: SetTemporaryPassword :exec
+-- A password an admin gave: the member changes it at the next sign-in.
+UPDATE users
+SET hash_password = $2,
+    must_change_password = true,
+    has_password = true
 WHERE id = $1;
 
 -- name: ListAdminMembers :many

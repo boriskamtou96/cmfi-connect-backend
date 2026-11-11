@@ -617,14 +617,24 @@ type TeachingSpeaker struct {
 }
 
 type User struct {
-	ID            int64          `json:"id"`
-	FirstName     string         `json:"first_name"`
-	LastName      sql.NullString `json:"last_name"`
-	HashPassword  []byte         `json:"hash_password"`
-	CreatedAt     time.Time      `json:"created_at"`
-	PhoneNumber   string         `json:"phone_number"`
-	Email         sql.NullString `json:"email"`
-	Role          string         `json:"role"`
-	Username      string         `json:"username"`
-	AvatarMediaID sql.NullInt64  `json:"avatar_media_id"`
+	ID                 int64          `json:"id"`
+	FirstName          string         `json:"first_name"`
+	LastName           sql.NullString `json:"last_name"`
+	HashPassword       []byte         `json:"hash_password"`
+	CreatedAt          time.Time      `json:"created_at"`
+	PhoneNumber        string         `json:"phone_number"`
+	Email              sql.NullString `json:"email"`
+	Role               string         `json:"role"`
+	Username           string         `json:"username"`
+	AvatarMediaID      sql.NullInt64  `json:"avatar_media_id"`
+	MustChangePassword bool           `json:"must_change_password"`
+	HasPassword        bool           `json:"has_password"`
+}
+
+type UserIdentity struct {
+	Provider  string    `json:"provider"`
+	Subject   string    `json:"subject"`
+	UserID    int64     `json:"user_id"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
 }

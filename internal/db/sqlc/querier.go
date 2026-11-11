@@ -122,6 +122,7 @@ type Querier interface {
 	CreateTeachingEdition(ctx context.Context, arg CreateTeachingEditionParams) (TeachingEdition, error)
 	CreateTeachingSpeaker(ctx context.Context, arg CreateTeachingSpeakerParams) (TeachingSpeaker, error)
 	CreateUserAuthority(ctx context.Context, arg CreateUserAuthorityParams) (Authority, error)
+	CreateUserIdentity(ctx context.Context, arg CreateUserIdentityParams) error
 	DeleteActivityGoal(ctx context.Context, arg DeleteActivityGoalParams) error
 	// The authorities of other members that point to this member: their copy
 	// of the name and contact goes with the account.
@@ -222,7 +223,11 @@ type Querier interface {
 	GetUserAuthorities(ctx context.Context, arg GetUserAuthoritiesParams) ([]Authority, error)
 	// The profile photo of a member (no row without one).
 	GetUserAvatar(ctx context.Context, id int64) (Medium, error)
+	// The account that gave this email (sign-up or profile), without case.
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int64) (User, error)
+	// The account a Google or Apple account signs in to.
+	GetUserByIdentity(ctx context.Context, arg GetUserByIdentityParams) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserRole(ctx context.Context, id int64) (string, error)
 	// A standard item or one of the user's own, still active.
@@ -397,6 +402,9 @@ type Querier interface {
 	// The teachings of the merged speakers go to [into_id]; the others are
 	// archived. The name of each teaching follows through its before-save trigger.
 	MergeTeachingSpeakers(ctx context.Context, arg MergeTeachingSpeakersParams) error
+	// An account made with Google or Apple: its password is a random one nobody
+	// knows (has_password false) until the member chooses one.
+	RegisterSocialUser(ctx context.Context, arg RegisterSocialUserParams) (User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
 	// A sound re-encoded smaller: its new file, under the same media (the
 	// teaching that lists it doesn't change). No row once deleted meanwhile.
@@ -423,6 +431,8 @@ type Querier interface {
 	SetRegistrationPayment(ctx context.Context, arg SetRegistrationPaymentParams) error
 	// Archived: no longer offered in the reports; the past entries stay.
 	SetStandardActivityTypeArchived(ctx context.Context, arg SetStandardActivityTypeArchivedParams) (ActivityType, error)
+	// A password an admin gave: the member changes it at the next sign-in.
+	SetTemporaryPassword(ctx context.Context, arg SetTemporaryPasswordParams) error
 	// Puts a profile photo (NULL takes it off) and gives the one it replaces,
 	// for its file to go. No row when the member doesn't exist.
 	SetUserAvatar(ctx context.Context, arg SetUserAvatarParams) (sql.NullInt64, error)
@@ -469,6 +479,7 @@ type Querier interface {
 	UpdateTeachingEdition(ctx context.Context, arg UpdateTeachingEditionParams) (TeachingEdition, error)
 	UpdateTeachingSpeaker(ctx context.Context, arg UpdateTeachingSpeakerParams) (TeachingSpeaker, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	// A password the member chose (SMS code, settings, after a temporary one).
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error)
 	UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error)
@@ -484,6 +495,7 @@ type Querier interface {
 	// Sent again for the same period: new again (unread), the answer kept.
 	UpsertReportSending(ctx context.Context, arg UpsertReportSendingParams) (ReportSending, error)
 	UpsertSoul(ctx context.Context, arg UpsertSoulParams) (Soul, error)
+	UserHasIdentity(ctx context.Context, arg UserHasIdentityParams) (bool, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -141,7 +141,7 @@ func (q *Queries) GetAdminMember(ctx context.Context, id int64) (GetAdminMemberR
 }
 
 const getByPhoneNumber = `-- name: GetByPhoneNumber :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 FROM users
 WHERE phone_number = $1 LIMIT 1
 `
@@ -160,6 +160,8 @@ func (q *Queries) GetByPhoneNumber(ctx context.Context, phoneNumber string) (Use
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }
@@ -190,7 +192,7 @@ func (q *Queries) GetUserAvatar(ctx context.Context, id int64) (Medium, error) {
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 FROM users
 WHERE id = $1 LIMIT 1
 `
@@ -209,12 +211,14 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 FROM users
 WHERE username = $1 LIMIT 1
 `
@@ -233,6 +237,8 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }
@@ -456,7 +462,7 @@ func (q *Queries) ListTakenUsernames(ctx context.Context, candidates []string) (
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 FROM users
 ORDER BY id DESC
 LIMIT $1
@@ -488,6 +494,8 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Role,
 			&i.Username,
 			&i.AvatarMediaID,
+			&i.MustChangePassword,
+			&i.HasPassword,
 		); err != nil {
 			return nil, err
 		}
@@ -503,7 +511,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 }
 
 const listUsersByRoles = `-- name: ListUsersByRoles :many
-SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+SELECT id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 FROM users
 WHERE role = ANY($1::text[])
 ORDER BY role DESC, username
@@ -529,6 +537,8 @@ func (q *Queries) ListUsersByRoles(ctx context.Context, roles []string) ([]User,
 			&i.Role,
 			&i.Username,
 			&i.AvatarMediaID,
+			&i.MustChangePassword,
+			&i.HasPassword,
 		); err != nil {
 			return nil, err
 		}
@@ -553,7 +563,7 @@ INSERT INTO users(
                   username
 )
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 `
 
 type RegisterUserParams struct {
@@ -586,8 +596,29 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (Use
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
+}
+
+const setTemporaryPassword = `-- name: SetTemporaryPassword :exec
+UPDATE users
+SET hash_password = $2,
+    must_change_password = true,
+    has_password = true
+WHERE id = $1
+`
+
+type SetTemporaryPasswordParams struct {
+	ID           int64  `json:"id"`
+	HashPassword []byte `json:"hash_password"`
+}
+
+// A password an admin gave: the member changes it at the next sign-in.
+func (q *Queries) SetTemporaryPassword(ctx context.Context, arg SetTemporaryPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, setTemporaryPassword, arg.ID, arg.HashPassword)
+	return err
 }
 
 const setUserAvatar = `-- name: SetUserAvatar :one
@@ -626,7 +657,7 @@ SET
     email = COALESCE($5, email),
     hash_password = COALESCE($6, hash_password)
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 `
 
 type UpdateUserParams struct {
@@ -659,13 +690,17 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }
 
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users
-SET hash_password = $2
+SET hash_password = $2,
+    must_change_password = false,
+    has_password = true
 WHERE id = $1
 `
 
@@ -674,6 +709,7 @@ type UpdateUserPasswordParams struct {
 	HashPassword []byte `json:"hash_password"`
 }
 
+// A password the member chose (SMS code, settings, after a temporary one).
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.HashPassword)
 	return err
@@ -683,7 +719,7 @@ const updateUserRole = `-- name: UpdateUserRole :one
 UPDATE users
 SET role = $2
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 `
 
 type UpdateUserRoleParams struct {
@@ -705,6 +741,8 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }
@@ -713,7 +751,7 @@ const updateUsername = `-- name: UpdateUsername :one
 UPDATE users
 SET username = $2
 WHERE id = $1
-RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id
+RETURNING id, first_name, last_name, hash_password, created_at, phone_number, email, role, username, avatar_media_id, must_change_password, has_password
 `
 
 type UpdateUsernameParams struct {
@@ -735,6 +773,8 @@ func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) 
 		&i.Role,
 		&i.Username,
 		&i.AvatarMediaID,
+		&i.MustChangePassword,
+		&i.HasPassword,
 	)
 	return i, err
 }

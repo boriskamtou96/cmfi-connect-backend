@@ -16,6 +16,7 @@ import (
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/phoneauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/push"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/socialauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
@@ -31,6 +32,8 @@ type Server struct {
 	push             push.Sender
 	// checks the SMS code of "forgot password" (Firebase Authentication)
 	phones phoneauth.Verifier
+	// checks who signs in with Google or Apple (Firebase Authentication)
+	identities socialauth.Verifier
 	// re-encodes the sounds of the teachings smaller (nil without ffmpeg),
 	// one at a time; compressing waits for them (tests, shutdown)
 	audio        media.AudioCompressor
@@ -67,6 +70,7 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 
 	var sender push.Sender = push.Disabled{}
 	var phones phoneauth.Verifier = phoneauth.Disabled{}
+	var identities socialauth.Verifier = socialauth.Disabled{}
 	if cfg.Push.CredentialsFile != "" {
 		firebaseSender, err := push.NewFirebase(context.Background(), cfg.Push.CredentialsFile)
 		if err != nil {
@@ -78,8 +82,13 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 			return nil, err
 		}
 		phones = firebasePhones
+		firebaseIdentities, err := socialauth.NewFirebase(context.Background(), cfg.Push.CredentialsFile)
+		if err != nil {
+			return nil, err
+		}
+		identities = firebaseIdentities
 	} else {
-		slog.Warn("FIREBASE_CREDENTIALS_FILE is not set: the notifications reach the apps without push, and a forgotten password can't be reset")
+		slog.Warn("FIREBASE_CREDENTIALS_FILE is not set: the notifications reach the apps without push, a forgotten password can't be reset by SMS, and nobody signs in with Google or Apple")
 	}
 
 	audio := media.FindFFmpeg(cfg.Media.FFmpegPath)
@@ -103,6 +112,7 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 		media:            mediaStore,
 		push:             sender,
 		phones:           phones,
+		identities:       identities,
 		audio:            audio,
 		compressSlot:     make(chan struct{}, 1),
 	}, nil
@@ -133,6 +143,11 @@ func (s *Server) SetupRouter() *gin.Engine {
 			users.POST("/login", s.login)
 			// forgot password: proven with an SMS code (Firebase)
 			users.POST("/password/reset", s.resetPassword)
+			// Google or Apple (Firebase): sign in, complete a new account,
+			// or link an account that has a password
+			users.POST("/social", s.socialSignIn)
+			users.POST("/social/register", s.socialRegister)
+			users.POST("/social/link", s.socialLink)
 		}
 		// every other account route needs to be signed in, and acts on one's
 		// own account (admins may read any, superadmins may delete any)
@@ -140,6 +155,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			signedInUsers.GET("/me", s.getMe)
 			signedInUsers.DELETE("/me", s.deleteMe)
+			signedInUsers.PUT("/me/password", s.changeMyPassword)
 			signedInUsers.PUT("/me/username", s.updateMyUsername)
 			signedInUsers.PUT("/me/avatar", s.uploadMyAvatar)
 			signedInUsers.DELETE("/me/avatar", s.deleteMyAvatar)
@@ -173,6 +189,8 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.GET("/members/:id", s.getAdminMember)
 			// moderation: a photo that has no place in the community
 			admin.DELETE("/members/:id/avatar", s.adminDeleteMemberAvatar)
+			// a forgotten password: a temporary one, changed at the next sign-in
+			admin.POST("/members/:id/password", s.adminResetPassword)
 			admin.PUT("/members/:username/role", requireRole(s.store, roleSuperadmin), s.setMemberRole)
 
 			admin.POST("/media", s.uploadMedia)

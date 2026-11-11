@@ -39,6 +39,11 @@ type userResponse struct {
 	PhoneNumber string    `json:"phone_number"`
 	Email       string    `json:"email"`
 	CreatedAt   time.Time `json:"created_at"`
+	// a temporary password given by an admin: the app asks for a new one
+	MustChangePassword bool `json:"must_change_password"`
+	// false for an account made with Google or Apple until the member
+	// chooses a password
+	HasPassword bool `json:"has_password"`
 }
 
 func (s *Server) registerUser(c *gin.Context) {
@@ -156,7 +161,11 @@ func (s *Server) login(c *gin.Context) {
 		invalidCredentialsError(c)
 		return
 	}
+	s.signedIn(c, user, http.StatusOK)
+}
 
+// signedIn answers [user] with a new access token (the login, Google, Apple).
+func (s *Server) signedIn(c *gin.Context, user db.User, status int) {
 	duration, err := time.ParseDuration(s.config.Token.Duration)
 	if err != nil {
 		internalServerError(c, err)
@@ -167,8 +176,7 @@ func (s *Server) login(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-
-	apiResponse(c, http.StatusOK, convertToUserResponse(user, accessToken))
+	apiResponse(c, status, convertToUserResponse(user, accessToken))
 }
 
 // GET /v1/users/me: the signed-in account, with its pseudo and role.
@@ -187,7 +195,10 @@ func (s *Server) getMe(c *gin.Context) {
 }
 
 type deleteMeRequest struct {
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password"`
+	// instead of the password: a new sign-in with the Google or Apple
+	// account linked to this one (an account without a password)
+	FirebaseToken string `json:"firebase_token"`
 }
 
 // DELETE /v1/users/me: the member deletes their account and everything that
@@ -197,6 +208,10 @@ func (s *Server) deleteMe(c *gin.Context) {
 	var req deleteMeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequestError(c, err)
+		return
+	}
+	if req.Password == "" && req.FirebaseToken == "" {
+		badRequestError(c, errors.New("password or firebase_token is required"))
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
@@ -209,7 +224,25 @@ func (s *Server) deleteMe(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	if err := utils.CheckPassword(req.Password, string(user.HashPassword)); err != nil {
+	if req.FirebaseToken != "" {
+		identity, ok := s.identityOf(c, req.FirebaseToken)
+		if !ok {
+			return
+		}
+		linked, err := s.store.UserHasIdentity(c, db.UserHasIdentityParams{
+			UserID:   user.ID,
+			Provider: identity.Provider,
+			Subject:  identity.Subject,
+		})
+		if err != nil {
+			internalServerError(c, err)
+			return
+		}
+		if !linked {
+			invalidCredentialsError(c)
+			return
+		}
+	} else if err := utils.CheckPassword(req.Password, string(user.HashPassword)); err != nil {
 		invalidCredentialsError(c)
 		return
 	}
@@ -338,6 +371,14 @@ func (s *Server) updateUser(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+	// a password chosen: no longer a temporary one
+	if arg.HashPassword != nil {
+		if err := s.store.UpdateUserPassword(c, db.UpdateUserPasswordParams{ID: updatedUser.ID, HashPassword: arg.HashPassword}); err != nil {
+			internalServerError(c, err)
+			return
+		}
+		updatedUser.MustChangePassword, updatedUser.HasPassword = false, true
+	}
 
 	// return updated user
 	apiResponse(c, http.StatusOK, convertToUserResponse(updatedUser))
@@ -398,6 +439,9 @@ func convertToUserResponse(user db.User, accessToken ...string) BaseUserResponse
 			Email:       user.Email.String,
 			PhoneNumber: user.PhoneNumber,
 			CreatedAt:   user.CreatedAt,
+
+			MustChangePassword: user.MustChangePassword,
+			HasPassword:        user.HasPassword,
 		},
 		AccessToken: tokenPtr,
 	}
