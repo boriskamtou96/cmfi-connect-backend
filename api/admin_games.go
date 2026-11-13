@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -26,7 +27,9 @@ const gameDefaultLang = "fr"
 var (
 	gameCourseCode = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,39}$`)
 	gameColor      = regexp.MustCompile(`^#[0-9A-Fa-f]{6}$`)
-	gameKinds      = map[string]bool{"choice": true, "true_false": true, "fill_verse": true}
+	gameKinds      = map[string]bool{"choice": true, "true_false": true, "fill_verse": true, "order": true, "match": true}
+	// the two columns of a « match »: l1, l2… on the left, r1, r2… on the right
+	gameMatchID = regexp.MustCompile(`^[lr][1-9]$`)
 )
 
 const gameDefaultColor = "#0B3B70"
@@ -144,10 +147,89 @@ func (q importGameQuestion) validate() error {
 			return fmt.Errorf("the French text of choice %q is missing", id)
 		}
 	}
+	switch q.Kind {
+	case "order":
+		return q.validateOrder()
+	case "match":
+		return q.validateMatch()
+	}
 	if !ids[q.Answer] {
 		return fmt.Errorf("the answer %q is not one of the choices", q.Answer)
 	}
 	return nil
+}
+
+// validateOrder: 4 to 6 things, and the answer gives each of their ids once,
+// in the right order ("c,a,d,b").
+func (q importGameQuestion) validateOrder() error {
+	if len(q.Choices) < 4 || len(q.Choices) > 6 {
+		return fmt.Errorf("an order question has 4 to 6 things to put in order")
+	}
+	order := strings.Split(q.Answer, ",")
+	if len(order) != len(q.Choices) {
+		return fmt.Errorf("the answer gives every id once, in the right order (\"c,a,d,b\")")
+	}
+	seen := map[string]bool{}
+	for _, id := range order {
+		if seen[id] || !q.hasChoice(id) {
+			return fmt.Errorf("the answer gives every id once, in the right order (\"c,a,d,b\")")
+		}
+		seen[id] = true
+	}
+	return nil
+}
+
+// validateMatch: 3 or 4 pairs, ids l1… on the left and r1… on the right,
+// and the answer links each left to one right, by left id ("l1=r2,l2=r1,…").
+func (q importGameQuestion) validateMatch() error {
+	lefts, rights := 0, 0
+	for _, choice := range q.Choices {
+		if !gameMatchID.MatchString(choice.ID) {
+			return fmt.Errorf("the ids of a match are l1, l2… on the left and r1, r2… on the right")
+		}
+		if choice.ID[0] == 'l' {
+			lefts++
+		} else {
+			rights++
+		}
+	}
+	if lefts != rights || lefts < 3 || lefts > 4 {
+		return fmt.Errorf("a match has 3 or 4 pairs: as many on the left as on the right")
+	}
+	if q.Answer != canonicalMatch(q.Answer) {
+		return fmt.Errorf("the answer links each left to a right, by left id (\"l1=r2,l2=r1,…\")")
+	}
+	used := map[string]bool{}
+	pairs := strings.Split(q.Answer, ",")
+	if len(pairs) != lefts {
+		return fmt.Errorf("the answer links each left to a right, by left id (\"l1=r2,l2=r1,…\")")
+	}
+	for _, pair := range pairs {
+		left, right, ok := strings.Cut(pair, "=")
+		if !ok || left[0] != 'l' || right == "" || right[0] != 'r' ||
+			!q.hasChoice(left) || !q.hasChoice(right) || used[left] || used[right] {
+			return fmt.Errorf("the answer links each left to a right, by left id (\"l1=r2,l2=r1,…\")")
+		}
+		used[left], used[right] = true, true
+	}
+	return nil
+}
+
+func (q importGameQuestion) hasChoice(id string) bool {
+	for _, choice := range q.Choices {
+		if choice.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// canonicalMatch writes the pairs of a match answer by left id, as the
+// phone sends them.
+func canonicalMatch(answer string) string {
+	pairs := strings.Split(answer, ",")
+	sort.Strings(pairs)
+	return strings.Join(pairs, ",")
 }
 
 // encoded is the text as the database keeps it; {} when there is none.

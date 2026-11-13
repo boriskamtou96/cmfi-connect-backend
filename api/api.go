@@ -404,6 +404,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			games.GET("/path", s.getGamePath)
 			games.GET("/lessons/:id", s.getGameLesson)
+			games.GET("/courses/:code/download", s.downloadGameCourse)
 			games.POST("/lessons/:id/results", s.submitGameLesson)
 			games.GET("/leaderboard", s.getGameLeaderboard)
 			games.PUT("/me", s.updateGamePlayer)
