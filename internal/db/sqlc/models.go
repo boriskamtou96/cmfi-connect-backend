@@ -235,6 +235,88 @@ type EventSession struct {
 	Hymns       json.RawMessage `json:"hymns"`
 }
 
+type GameCourse struct {
+	ID          int64           `json:"id"`
+	Code        string          `json:"code"`
+	Position    int32           `json:"position"`
+	Title       json.RawMessage `json:"title"`
+	PublishedAt sql.NullTime    `json:"published_at"`
+	CreatedAt   time.Time       `json:"created_at"`
+}
+
+type GameLesson struct {
+	ID          int64           `json:"id"`
+	LevelID     int64           `json:"level_id"`
+	Position    int32           `json:"position"`
+	Title       json.RawMessage `json:"title"`
+	PublishedAt sql.NullTime    `json:"published_at"`
+}
+
+type GameLessonResult struct {
+	UserID           int64     `json:"user_id"`
+	LessonID         int64     `json:"lesson_id"`
+	BestStars        int16     `json:"best_stars"`
+	BestFirstTry     int16     `json:"best_first_try"`
+	Plays            int32     `json:"plays"`
+	FirstCompletedAt time.Time `json:"first_completed_at"`
+	LastPlayedAt     time.Time `json:"last_played_at"`
+}
+
+type GameLevel struct {
+	ID          int64           `json:"id"`
+	CourseID    int64           `json:"course_id"`
+	Position    int32           `json:"position"`
+	Title       json.RawMessage `json:"title"`
+	Description json.RawMessage `json:"description"`
+	Color       string          `json:"color"`
+	PublishedAt sql.NullTime    `json:"published_at"`
+}
+
+type GamePlay struct {
+	ID         int64         `json:"id"`
+	UserID     int64         `json:"user_id"`
+	LessonID   sql.NullInt64 `json:"lesson_id"`
+	Kind       string        `json:"kind"`
+	ClientID   string        `json:"client_id"`
+	FirstTry   int16         `json:"first_try"`
+	Total      int16         `json:"total"`
+	Stars      int16         `json:"stars"`
+	Points     int32         `json:"points"`
+	ComboBonus int32         `json:"combo_bonus"`
+	LevelUp    bool          `json:"level_up"`
+	PlayedAt   time.Time     `json:"played_at"`
+}
+
+type GamePlayer struct {
+	UserID        int64        `json:"user_id"`
+	TotalPoints   int32        `json:"total_points"`
+	InLeaderboard sql.NullBool `json:"in_leaderboard"`
+	StreakDays    int32        `json:"streak_days"`
+	LastPlayedOn  sql.NullTime `json:"last_played_on"`
+	GraceUsedOn   sql.NullTime `json:"grace_used_on"`
+	DailyGoal     int32        `json:"daily_goal"`
+	DailyDoneOn   sql.NullTime `json:"daily_done_on"`
+}
+
+type GameQuestion struct {
+	ID          int64           `json:"id"`
+	LessonID    int64           `json:"lesson_id"`
+	Position    int32           `json:"position"`
+	Kind        string          `json:"kind"`
+	Prompt      json.RawMessage `json:"prompt"`
+	Choices     json.RawMessage `json:"choices"`
+	Answer      string          `json:"answer"`
+	Explanation json.RawMessage `json:"explanation"`
+	Source      string          `json:"source"`
+	IsActive    bool            `json:"is_active"`
+}
+
+type GameQuestionStat struct {
+	QuestionID int64 `json:"question_id"`
+	Asked      int32 `json:"asked"`
+	Missed     int32 `json:"missed"`
+}
+
 type Hymn struct {
 	ID        int64           `json:"id"`
 	BookID    int64           `json:"book_id"`

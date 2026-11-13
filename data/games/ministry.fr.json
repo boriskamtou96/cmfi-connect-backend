@@ -1,0 +1,2431 @@
+{
+  "code": "ministry",
+  "position": 1,
+  "title": {
+    "fr": "Notre ministère"
+  },
+  "published": true,
+  "levels": [
+    {
+      "title": {
+        "fr": "Notre fondateur"
+      },
+      "description": {
+        "fr": "La vie du Pr Zacharias Tanee Fomum, fondateur de la CMCI."
+      },
+      "color": "#0B3B70",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Ses premières années"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année est né le Pr Zacharias Tanee Fomum ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1935"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1945"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1955"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1965"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il est né le 20 juin 1945."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel jour est-il né ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le 12 mai"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le 13 juin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le 20 juin"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le 14 mars"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il est né le 20 juin 1945, au Cameroun."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays est-il né ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Au Cameroun"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "En Sierra Leone"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En Ouganda"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Au Nigeria"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il est né au Cameroun, dans une famille originaire de Batibo."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle tradition chrétienne était sa famille ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Catholique"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Baptiste"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Pentecôtiste"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Presbytérienne"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il est né dans une famille presbytérienne."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle localité sa famille est-elle originaire ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Yaoundé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Batibo"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douala"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Bafoussam"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Sa famille est originaire de Batibo, dans le Nord-Ouest du Cameroun."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il donné sa vie à Jésus-Christ ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1945"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1966"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1956"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1970"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Encore écolier, il a donné sa vie à Jésus-Christ le 13 juin 1956."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment a-t-il donné sa vie à Jésus-Christ ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "En lisant un tract"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Pendant une croisade"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En écoutant la radio"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lors d'un camp de jeunes"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a donné sa vie à Jésus-Christ en lisant un tract."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel était le titre du tract qu'il a lu ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Viens tel que tu es »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Le chemin de la vie »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Dieu t'aime »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Quelqu'un est mort pour toi »"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le tract était intitulé « Quelqu'un est mort pour toi »."
+              },
+              "source": "ministry:founder"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Livré au Seigneur"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Où étudiait-il quand il s'est livré sans réserve au Seigneur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À l'université Makerere"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Fourah Bay College"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À l'Université de Durham"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À l'Université de Yaoundé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il était étudiant à Fourah Bay College, en Sierra Leone."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays se trouve Fourah Bay College ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "En Ouganda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Au Cameroun"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En Sierra Leone"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En Grande-Bretagne"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Fourah Bay College se trouve en Sierra Leone."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année s'est-il livré sans réserve au Seigneur et à son service ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1966"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1956"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1970"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1975"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il s'est livré sans réserve au Seigneur le 1er octobre 1966."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel jour de 1966 s'est-il livré tout entier au Seigneur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le 13 juin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le 24 octobre"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le 12 mai"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le 1er octobre"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "C'était le 1er octobre 1966, en Sierra Leone."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il été rempli du Saint-Esprit ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1966"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1970"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1975"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1956"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il a été rempli du Saint-Esprit le 24 octobre 1970."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Après combien de jours de prière et de jeûne a-t-il été rempli du Saint-Esprit ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois jours"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Vingt et un jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante jours"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "C'était au terme de sept jours de prière et de jeûne."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Après avoir été rempli du Saint-Esprit, qu'est-ce qui est devenu le centre de sa vie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La prière"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L'enseignement"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les voyages"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "L'écriture"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Dès lors, la prière est devenue le centre de sa vie."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Il a été rempli du Saint-Esprit avant de donner sa vie à Jésus-Christ."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "false",
+              "explanation": {
+                "fr": "Il a donné sa vie à Jésus-Christ en 1956, et a été rempli du Saint-Esprit en 1970."
+              },
+              "source": "ministry:founder"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Le professeur"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle discipline était-il docteur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "En physique"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "En médecine"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En chimie organique"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En mathématiques"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il était docteur en chimie organique."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle université a-t-il obtenu son doctorat en chimie organique ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "L'université Makerere"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L'Université de Durham"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "L'Université de Yaoundé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Fourah Bay College"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il était docteur en chimie organique de l'université Makerere."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays se trouve l'université Makerere ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Au Kenya"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "En Ouganda"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En Sierra Leone"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En Grande-Bretagne"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L'université Makerere se trouve en Ouganda."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle université a-t-il enseigné ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À l'université Makerere"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Fourah Bay College"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À l'Université de Durham"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À l'Université de Yaoundé"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il a enseigné à l'Université de Yaoundé, où il est devenu professeur."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de thèses et de mémoires a-t-il dirigés ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une dizaine"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une centaine"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Une cinquantaine"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Plus de cinq cents"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il a dirigé une centaine de thèses et de mémoires."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle université lui a décerné un doctorat ès sciences pour l'ensemble de ses travaux ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "L'Université de Yaoundé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L'université Makerere"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "L'Université de Durham"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Fourah Bay College"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "L'Université de Durham, en Grande-Bretagne, lui a décerné un doctorat ès sciences."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il reçu ce doctorat ès sciences ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "2005"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1975"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1995"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "2009"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "L'Université de Durham le lui a décerné en 2005."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "L'Université de Durham se trouve en Grande-Bretagne."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "L'Université de Durham, en Grande-Bretagne, lui a décerné un doctorat ès sciences en 2005."
+              },
+              "source": "ministry:founder"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "L'œuvre qu'il a fondée"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il fondé la CMCI ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1966"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1970"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1985"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1975"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il a fondé la CMCI le 12 mai 1975."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel jour de 1975 la CMCI a-t-elle été fondée ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le 12 mai"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le 20 juin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le 1er octobre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le 14 mars"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "La CMCI a été fondée le 12 mai 1975, à Yaoundé."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle ville la CMCI a-t-elle été fondée ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Douala"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Batibo"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Yaoundé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Freetown"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "La CMCI a été fondée à Yaoundé."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que veut dire le sigle CMCI ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Communauté Mondiale des Chrétiens Intercesseurs"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Communauté Missionnaire Chrétienne Internationale"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Centre Missionnaire Chrétien International"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Communauté des Missions Chrétiennes Indépendantes"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "CMCI : Communauté Missionnaire Chrétienne Internationale."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans combien de nations a-t-il fait des voyages missionnaires ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Plus de 20"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Plus de 150"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Plus de 250"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Plus de 70"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il a fait plus de 500 voyages missionnaires dans plus de 70 nations, sur six continents."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de livres a-t-il écrits ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Plus de 150"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Plus de 50"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Plus de 70"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Plus de 700"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a écrit plus de 150 livres sur la prière, le jeûne, la sainteté, la formation des disciples et la mission."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s'appelle son épouse ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Prisca Zei Fomum"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Anna Tanee Fomum"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Esther Zei Fomum"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ruth Tanee Fomum"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Son épouse est Prisca Zei Fomum, servante de Dieu auprès des enfants."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il rejoint le Seigneur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "2005"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "2019"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "2009"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1999"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il est entré dans la présence du Seigneur le 14 mars 2009."
+              },
+              "source": "ministry:founder"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Notre but"
+      },
+      "description": {
+        "fr": "Les trois buts de notre ministère."
+      },
+      "color": "#7A4A98",
+      "lessons": [
+        {
+          "title": {
+            "fr": "La toute-créature gospel crusade"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de buts la CMCI poursuit-elle ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Cinq"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Notre ministère a trois buts : la toute-créature gospel crusade, la formation des disciples et précipiter le réveil global."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s'appelle le premier but ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La toute-créature gospel crusade"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La grande moisson"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La croisade des nations"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La marche de l'Évangile"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le premier but est la toute-créature gospel crusade."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À qui s'agit-il de prêcher l'Évangile ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Aux seuls habitants de l'Afrique"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Aux membres de nos assemblées"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À chacun de ceux qui vivront dans notre génération"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Aux habitants des grandes villes"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il s'agit de prêcher l'Évangile à chacun de ceux qui vivront dans notre génération."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de personnes doivent être atteintes avec l'Évangile ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1 milliard"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "25 millions"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "250 millions"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "10 milliards"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le but est que 10 milliards de personnes soient atteintes avec l'Évangile."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle puissance l'Évangile doit-il être prêché ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Dans la puissance du Saint-Esprit"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Dans la puissance des médias"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Dans la puissance du nombre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Dans la puissance de l'argent"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "L'Évangile est prêché dans la puissance du Saint-Esprit."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Lequel de ces moyens de communication est cité pour ce but ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le théâtre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Notre radio"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les affiches"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le téléphone"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tous les moyens sont utilisés : nos livres, nos traités, nos magazines, nos CD, nos DVD, notre radio, notre télévision et Internet."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Les livres et les traités font partie des moyens utilisés pour atteindre toute créature."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "Nos livres, nos traités, nos magazines, nos CD, nos DVD, notre radio, notre télévision et Internet sont utilisés."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle manière ce but doit-il être poursuivi ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Quand les moyens le permettront"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De la manière la plus urgente possible"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Une nation après l'autre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En commençant par les villes"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L'Évangile doit être prêché de la manière la plus urgente possible."
+              },
+              "source": "ministry:purpose"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Faire des disciples, précipiter le réveil"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le deuxième but ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Précipiter le réveil global"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La construction de temples"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La formation des disciples"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La traduction de la Bible"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Le deuxième but est la formation des disciples."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de personnes s'agit-il d'amener à connaître Jésus-Christ comme Seigneur et Sauveur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1 milliard"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "10 milliards"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "25 millions"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "250 millions"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il s'agit d'amener 1 milliard de personnes à connaître Jésus-Christ comme Seigneur et Sauveur."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans combien de nations ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "70"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "154"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "200"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "250"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le but est d'amener 1 milliard de personnes dans 250 nations à connaître Jésus-Christ."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans combien d'églises de maison ces disciples doivent-ils se réunir ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "250 000"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1 million"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "25 millions"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1 milliard"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Ils sont organisés pour se réunir dans 25 millions d'églises de maison."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "D'ici quelle année ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "2030"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "2050"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "2065"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "2100"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Ce but est fixé d'ici l'an 2065."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le troisième but ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La formation des disciples"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Précipiter le réveil global"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La toute-créature gospel crusade"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "L'unité des Églises"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le troisième but est de précipiter le réveil global."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Par quels moyens coopérons-nous avec Dieu pour le réveil mondial ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Par les conférences et les débats"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Par les voyages et les dons"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Par la musique et les arts"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Par le jeûne et l'intercession"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Nous coopérons avec Dieu par le jeûne et l'intercession pour le réveil mondial."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que doit précipiter ce réveil ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le retour imminent de notre Seigneur Jésus-Christ"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La fin des persécutions"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La construction d'un siège mondial"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La paix entre les nations"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le réveil doit précipiter le retour imminent de notre Seigneur Jésus-Christ pour la rencontre avec son Épouse rendue prête."
+              },
+              "source": "ministry:purpose"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Notre leader"
+      },
+      "description": {
+        "fr": "La vie de Théodore Andoseh, leader de la CMCI depuis 2009."
+      },
+      "color": "#0E7A72",
+      "lessons": [
+        {
+          "title": {
+            "fr": "À l'école du Pr Fomum"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui conduit la CMCI depuis 2009 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Zacharias Tanee Fomum"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Théodore Andoseh"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Prisca Zei Fomum"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Adela Andoseh"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Théodore Andoseh est le leader de la CMCI depuis 2009."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année Théodore Andoseh a-t-il donné sa vie à Jésus-Christ ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1966"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1970"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1978"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1989"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il a donné sa vie à Jésus-Christ en 1978."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sous la prédication de qui a-t-il donné sa vie à Jésus-Christ ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Du Pr Zacharias Tanee Fomum"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "D'un missionnaire venu du Nigeria"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "D'un évangéliste de passage"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "De son père"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a donné sa vie à Jésus-Christ en écoutant prêcher le Pr Zacharias Tanee Fomum."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qu'est devenu le Pr Fomum pour lui ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Son collègue"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Son voisin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Son élève"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Son père spirituel"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le Pr Fomum est devenu son père spirituel et l'a formé comme disciple."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel a été son premier travail aux côtés du Pr Fomum ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Chauffeur"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Assistant de laboratoire à l'Université de Yaoundé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Traducteur"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Professeur de chimie"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il a d'abord été assistant de laboratoire à l'Université de Yaoundé."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quels autres services a-t-il rendus au Pr Fomum ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il a été son médecin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Il a été son éditeur à l'étranger"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il a été son assistant personnel et son secrétaire particulier"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il a été son avocat"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il a été son assistant personnel et son secrétaire particulier."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le titre du premier tract du réveil qu'il a publié ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Quelqu'un est mort pour toi »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Le chemin de la vie »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Viens tel que tu es »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Dieu parle à l'homme qui veut entendre »"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il a publié le premier tract du réveil, « Dieu parle à l'homme qui veut entendre »."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qu'a-t-il lancé à Yaoundé ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La première chaîne de prière"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La première école biblique"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La première radio chrétienne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La première librairie"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a lancé la première chaîne de prière de Yaoundé."
+              },
+              "source": "ministry:leader"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Évêque et missionnaire"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d'églises a-t-il implantées au Cameroun comme missionnaire national ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une dizaine"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Plus de cinquante"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Plus de cinq cents"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quatorze"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Missionnaire national, il a implanté plus de cinquante églises au Cameroun."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quelle année a-t-il été consacré évêque ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "1978"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1994"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1989"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "2009"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il a été consacré évêque à Yaoundé en 1989."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle ville a-t-il été consacré évêque ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Yaoundé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Douala"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Bertoua"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lagos"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a été consacré évêque à Yaoundé."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays est-il parti comme missionnaire en 1994 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Au Ghana"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "En Sierra Leone"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En Ouganda"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Au Nigeria"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "En 1994, il est parti comme missionnaire au Nigeria."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Avec qui est-il parti au Nigeria ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Avec le Pr Fomum"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Avec son épouse, Adela"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Avec une équipe de dix frères"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Seul"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il est parti avec son épouse, Adela."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d'années ont-ils servi au Nigeria ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Quatre ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quatorze ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Vingt ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Ils ont servi quatorze ans au Nigeria."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Où s'est tenue la troisième convention mondiale, en décembre 2019 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Yaoundé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Douala"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À Batibo"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À Koumé, près de Bertoua"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "En décembre 2019, à Koumé, près de Bertoua, il a apporté les messages de la troisième convention mondiale."
+              },
+              "source": "ministry:leader"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De combien de nations venaient les membres de cette convention ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "93"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "70"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "154"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "250"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il a apporté les messages à des membres venus de 93 nations."
+              },
+              "source": "ministry:leader"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -21,6 +21,10 @@ type Querier interface {
 	AddMyPrayedPoint(ctx context.Context, arg AddMyPrayedPointParams) error
 	AnswerAuthorityRequest(ctx context.Context, arg AnswerAuthorityRequestParams) (Authority, error)
 	AnswerImportunityInvitation(ctx context.Context, arg AnswerImportunityInvitationParams) (ImportunityMember, error)
+	AppendGameLesson(ctx context.Context, arg AppendGameLessonParams) error
+	// A new level is a draft, after the others of its course.
+	AppendGameLevel(ctx context.Context, arg AppendGameLevelParams) error
+	AppendGameQuestion(ctx context.Context, arg AppendGameQuestionParams) error
 	// Archive instead of DELETE: report_entries keeps pointing to the item (ON DELETE RESTRICT).
 	ArchiveActivityType(ctx context.Context, arg ArchiveActivityTypeParams) (int64, error)
 	ArchiveDocumentCategory(ctx context.Context, arg ArchiveDocumentCategoryParams) (DocumentCategory, error)
@@ -28,6 +32,10 @@ type Querier interface {
 	ArchiveTeachingSpeaker(ctx context.Context, arg ArchiveTeachingSpeakerParams) (TeachingSpeaker, error)
 	// ----- blocks: a member stops another one's invitations -----
 	BlockMember(ctx context.Context, arg BlockMemberParams) error
+	// ----- the numbers -----
+	// The first answers of a first play: one more asked per question, one more
+	// missed for those of [missed_ids].
+	BumpGameQuestionStats(ctx context.Context, arg BumpGameQuestionStatsParams) error
 	ClaimDocumentNotification(ctx context.Context, id int64) (string, error)
 	// A cancelled event is not announced.
 	ClaimEventNotification(ctx context.Context, id int64) (ClaimEventNotificationRow, error)
@@ -46,6 +54,7 @@ type Querier interface {
 	CompletePayout(ctx context.Context, id uuid.UUID) (Payout, error)
 	// Only when the account is still the one tested.
 	ConfirmEventPayoutAccount(ctx context.Context, arg ConfirmEventPayoutAccountParams) error
+	CountActiveGameQuestions(ctx context.Context, lessonID int64) (int64, error)
 	// Members who filled a report or made a retreat since [since].
 	CountActiveMembers(ctx context.Context, since time.Time) (int64, error)
 	CountAnnouncementReads(ctx context.Context, ids []int64) ([]CountAnnouncementReadsRow, error)
@@ -59,6 +68,14 @@ type Querier interface {
 	CountFinishedBooks(ctx context.Context, arg CountFinishedBooksParams) (int32, error)
 	// The books finished each month between two days (months without any are left out).
 	CountFinishedBooksByMonth(ctx context.Context, arg CountFinishedBooksByMonthParams) ([]CountFinishedBooksByMonthRow, error)
+	// How many of the leaderboard stand before [points] reached at [reached_at]:
+	// the rank is one more.
+	CountGameLeadersAhead(ctx context.Context, arg CountGameLeadersAheadParams) (int64, error)
+	// The lessons of the course already played by someone: importing it again
+	// would erase their progress.
+	CountGameResultsOfCourse(ctx context.Context, code string) (int64, error)
+	CountGameResultsOfLesson(ctx context.Context, lessonID int64) (int64, error)
+	CountGameResultsOfLevel(ctx context.Context, levelID int64) (int64, error)
 	// Money kept for an event: it can't be deleted before they are refunded.
 	CountHeldEventPayments(ctx context.Context, eventID sql.NullInt64) (int32, error)
 	CountImportunityMembers(ctx context.Context, ids []int64) ([]CountImportunityMembersRow, error)
@@ -73,6 +90,8 @@ type Querier interface {
 	CountPrayerPeople(ctx context.Context, userID int64) (int64, error)
 	// How many members prayed for each topic, any day: the apps never show who.
 	CountPrayerTopicPeople(ctx context.Context, topicIds []int64) ([]CountPrayerTopicPeopleRow, error)
+	CountPublishedGameLessons(ctx context.Context, levelID int64) (int64, error)
+	CountPublishedGameLevels(ctx context.Context, courseID int64) (int64, error)
 	CountReceivedReportSendings(ctx context.Context, receiverID int64) (int64, error)
 	CountReportedDays(ctx context.Context, arg CountReportedDaysParams) (int64, error)
 	CountReports(ctx context.Context, status string) (int64, error)
@@ -97,6 +116,12 @@ type Querier interface {
 	CreateEventPost(ctx context.Context, arg CreateEventPostParams) (EventPost, error)
 	CreateEventSeries(ctx context.Context, title string) (EventSeries, error)
 	CreateEventSession(ctx context.Context, arg CreateEventSessionParams) (EventSession, error)
+	// A new course is a draft, after the others.
+	CreateGameCourse(ctx context.Context, arg CreateGameCourseParams) error
+	CreateGameLesson(ctx context.Context, arg CreateGameLessonParams) (int64, error)
+	CreateGameLevel(ctx context.Context, arg CreateGameLevelParams) (int64, error)
+	CreateGamePlay(ctx context.Context, arg CreateGamePlayParams) (GamePlay, error)
+	CreateGameQuestion(ctx context.Context, arg CreateGameQuestionParams) error
 	CreateHymnBook(ctx context.Context, arg CreateHymnBookParams) (HymnBook, error)
 	// ----- importunity topics -----
 	CreateImportunity(ctx context.Context, arg CreateImportunityParams) (Importunity, error)
@@ -140,6 +165,12 @@ type Querier interface {
 	DeleteEventPost(ctx context.Context, arg DeleteEventPostParams) (int64, error)
 	DeleteEventRegistration(ctx context.Context, arg DeleteEventRegistrationParams) (int64, error)
 	DeleteEventSessions(ctx context.Context, eventID int64) error
+	// The course with its levels, lessons, questions and what was played of it.
+	DeleteGameCourse(ctx context.Context, code string) error
+	DeleteGameLesson(ctx context.Context, id int64) error
+	DeleteGameLevel(ctx context.Context, id int64) error
+	DeleteGameLevelsOfCourse(ctx context.Context, courseID int64) error
+	DeleteGameQuestion(ctx context.Context, id int64) error
 	DeleteHymn(ctx context.Context, arg DeleteHymnParams) (int64, error)
 	DeleteHymnBook(ctx context.Context, id int64) error
 	DeleteHymnsNotIn(ctx context.Context, arg DeleteHymnsNotInParams) (int64, error)
@@ -168,9 +199,13 @@ type Querier interface {
 	// The Premium a member bought on the website ends now (tests): the payments
 	// stay, their Premium is over.
 	EndUserPremiumPayments(ctx context.Context, userID sql.NullInt64) (int64, error)
+	EnsureGamePlayer(ctx context.Context, userID int64) error
 	FailPayment(ctx context.Context, arg FailPaymentParams) (int64, error)
 	FailPaymentRefund(ctx context.Context, arg FailPaymentRefundParams) (int64, error)
 	FailPayout(ctx context.Context, arg FailPayoutParams) (Payout, error)
+	GetAdminGameLesson(ctx context.Context, id int64) (GetAdminGameLessonRow, error)
+	GetAdminGameLevel(ctx context.Context, id int64) (GetAdminGameLevelRow, error)
+	GetAdminGameQuestion(ctx context.Context, id int64) (GetAdminGameQuestionRow, error)
 	// One account as the back office shows it (see ListAdminMembers).
 	GetAdminMember(ctx context.Context, id int64) (GetAdminMemberRow, error)
 	GetAnnouncement(ctx context.Context, id int64) (GetAnnouncementRow, error)
@@ -187,6 +222,18 @@ type Querier interface {
 	GetDocumentCategoryBySlugAny(ctx context.Context, slug string) (DocumentCategory, error)
 	GetEvent(ctx context.Context, id int64) (Event, error)
 	GetEventRegistration(ctx context.Context, arg GetEventRegistrationParams) (EventRegistration, error)
+	GetGameCourseByCode(ctx context.Context, code string) (GetGameCourseByCodeRow, error)
+	// A lesson the members can see: published, like its level and its course.
+	GetGameLesson(ctx context.Context, id int64) (GetGameLessonRow, error)
+	GetGameLessonBestStars(ctx context.Context, arg GetGameLessonBestStarsParams) (int16, error)
+	// ----- the plays -----
+	// A play already received (the phone sends it again on a weak network).
+	GetGamePlayByClientID(ctx context.Context, arg GetGamePlayByClientIDParams) (GamePlay, error)
+	// ----- the players -----
+	GetGamePlayer(ctx context.Context, userID int64) (GamePlayer, error)
+	// The points of [user_id] over the period, and when they got there.
+	GetGameStanding(ctx context.Context, arg GetGameStandingParams) (GetGameStandingRow, error)
+	GetGameStats(ctx context.Context, since time.Time) (GetGameStatsRow, error)
 	GetHymn(ctx context.Context, arg GetHymnParams) (GetHymnRow, error)
 	GetHymnBookByCode(ctx context.Context, code string) (HymnBook, error)
 	GetImportunity(ctx context.Context, id int64) (Importunity, error)
@@ -238,6 +285,7 @@ type Querier interface {
 	// After 5 attempts it stays failed.
 	GiftAttemptFailed(ctx context.Context, id int64) error
 	GiveGift(ctx context.Context, arg GiveGiftParams) error
+	HasGameLessonResult(ctx context.Context, arg HasGameLessonResultParams) (bool, error)
 	// The month offered for a streak was already given to the member (once).
 	HasStreakGift(ctx context.Context, userID int64) (bool, error)
 	// Already invited, joined or declined: left as they are. Gives the members
@@ -255,6 +303,12 @@ type Querier interface {
 	ListActiveMembersPerWeek(ctx context.Context, since time.Time) ([]ListActiveMembersPerWeekRow, error)
 	// The user's daily goals, by item.
 	ListActivityGoals(ctx context.Context, userID int64) ([]ActivityGoal, error)
+	// ----- the games in the back-office: drafts included -----
+	ListAdminGameCourses(ctx context.Context) ([]ListAdminGameCoursesRow, error)
+	ListAdminGameLessons(ctx context.Context, courseID int64) ([]ListAdminGameLessonsRow, error)
+	ListAdminGameLevels(ctx context.Context, courseID int64) ([]ListAdminGameLevelsRow, error)
+	// The questions of a lesson with what the members missed of each.
+	ListAdminGameQuestions(ctx context.Context, lessonID int64) ([]ListAdminGameQuestionsRow, error)
 	// Every account as the back office shows it (no spiritual data): the
 	// profile first, the last time the app was opened on a phone, how many
 	// phones get the push and the profile photo. The newest first.
@@ -279,6 +333,9 @@ type Querier interface {
 	// Who among [user_ids] blocked [blocked_id]: no invitation from them.
 	ListBlockersAmong(ctx context.Context, arg ListBlockersAmongParams) ([]int64, error)
 	ListBookHymns(ctx context.Context, bookID int64) ([]ListBookHymnsRow, error)
+	// The questions of the lessons [user_id] finished: the challenge of the day
+	// draws from them.
+	ListCompletedGameQuestions(ctx context.Context, userID int64) ([]ListCompletedGameQuestionsRow, error)
 	// The published topics of [today]: started and not over, the latest first.
 	ListCurrentPrayerTopics(ctx context.Context, today time.Time) ([]PrayerTopic, error)
 	// History: one row per (day, entry). A day with only a note gives one row with NULL entry columns.
@@ -311,6 +368,29 @@ type Querier interface {
 	ListEventSessions(ctx context.Context, eventID int64) ([]EventSession, error)
 	// How many members used each feature since [since]: counts only, never who.
 	ListFeatureUsage(ctx context.Context, since time.Time) ([]ListFeatureUsageRow, error)
+	// The circle of [user_id]: their authorities on the app and their disciples.
+	ListGameCircleIDs(ctx context.Context, userID int64) ([]int64, error)
+	// ----- the content: courses, levels, lessons, questions -----
+	// The published courses, in the order of the tab.
+	ListGameCourses(ctx context.Context) ([]ListGameCoursesRow, error)
+	// ----- the leaderboard -----
+	// The 50 first of those who chose to appear, over a period ([since] NULL:
+	// since ever) and a scope ([ids] empty: every member). On a tie, whoever got
+	// there first. [viewer_id] sees neither those they blocked nor those who
+	// blocked them.
+	ListGameLeaderboard(ctx context.Context, arg ListGameLeaderboardParams) ([]ListGameLeaderboardRow, error)
+	ListGameLessonIDs(ctx context.Context, levelID int64) ([]int64, error)
+	// The lessons of a course in the order of its path, with what [user_id] did
+	// of each: a lesson opens once the one before it is done.
+	ListGameLessonsOfCourse(ctx context.Context, arg ListGameLessonsOfCourseParams) ([]ListGameLessonsOfCourseRow, error)
+	// ----- the order of a list: every position is written again -----
+	ListGameLevelIDs(ctx context.Context, courseID int64) ([]int64, error)
+	ListGameLevelsOfCourse(ctx context.Context, courseID int64) ([]ListGameLevelsOfCourseRow, error)
+	ListGameQuestionIDs(ctx context.Context, lessonID int64) ([]int64, error)
+	ListGameQuestionsOfLesson(ctx context.Context, lessonID int64) ([]ListGameQuestionsOfLessonRow, error)
+	// The questions missed the most at the first answer, among those asked
+	// often enough to say something.
+	ListHardestGameQuestions(ctx context.Context, arg ListHardestGameQuestionsParams) ([]ListHardestGameQuestionsRow, error)
 	ListHymnBooks(ctx context.Context) ([]ListHymnBooksRow, error)
 	ListHymnNumbers(ctx context.Context, bookID int64) ([]int32, error)
 	// Who joined, in order. No counts: each member only sees their own.
@@ -404,6 +484,8 @@ type Querier interface {
 	// Taken before counting the registrations, so two people can't pass the
 	// capacity at the same time.
 	LockEvent(ctx context.Context, id int64) (Event, error)
+	// Inside the transaction of a play: two plays of one member wait in line.
+	LockGamePlayer(ctx context.Context, userID int64) (GamePlayer, error)
 	LockImportunity(ctx context.Context, id int64) (Importunity, error)
 	// One of [user_id]'s authorities (not declined) becomes their disciple maker.
 	MakeDiscipleMaker(ctx context.Context, arg MakeDiscipleMakerParams) (Authority, error)
@@ -432,13 +514,21 @@ type Querier interface {
 	RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error)
 	// All the Premium offered to a member, taken back.
 	RevokeUserGifts(ctx context.Context, userID int64) (int64, error)
+	SaveGamePlayerProgress(ctx context.Context, arg SaveGamePlayerProgressParams) error
+	SaveGamePlayerSettings(ctx context.Context, arg SaveGamePlayerSettingsParams) error
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
+	SetAsideGameLessonPositions(ctx context.Context, levelID int64) error
+	// (course, position) is unique: the positions leave the way first.
+	SetAsideGameLevelPositions(ctx context.Context, courseID int64) error
 	// Whether [user_id] shares their reports with this authority (disciple maker or not).
 	SetAuthoritySharing(ctx context.Context, arg SetAuthoritySharingParams) (Authority, error)
 	// A new account is not confirmed until its test arrives.
 	SetEventPayoutAccount(ctx context.Context, arg SetEventPayoutAccountParams) (Event, error)
 	SetEventSeries(ctx context.Context, arg SetEventSeriesParams) error
+	SetGameLessonPosition(ctx context.Context, arg SetGameLessonPositionParams) error
+	SetGameLevelPosition(ctx context.Context, arg SetGameLevelPositionParams) error
+	SetGameQuestionPosition(ctx context.Context, arg SetGameQuestionPositionParams) error
 	// The id Wajub gave, learnt from its webhook when its first answer was lost.
 	SetPaymentProviderID(ctx context.Context, arg SetPaymentProviderIDParams) error
 	SetPaymentProviderRefundID(ctx context.Context, arg SetPaymentProviderRefundIDParams) error
@@ -461,6 +551,10 @@ type Querier interface {
 	StartPaymentRefund(ctx context.Context, arg StartPaymentRefundParams) (Payment, error)
 	// The pages read in books between two days.
 	SumBookPages(ctx context.Context, arg SumBookPagesParams) (int32, error)
+	// The points of [user_id] since [since]: the goal of the day.
+	SumGamePointsSince(ctx context.Context, arg SumGamePointsSinceParams) (int32, error)
+	// The points of the lessons played again since [since]: capped by day.
+	SumGameReplayPointsSince(ctx context.Context, arg SumGameReplayPointsSinceParams) (int32, error)
 	SumOtherRegistrationsPeople(ctx context.Context, arg SumOtherRegistrationsPeopleParams) (int32, error)
 	// A new version of the book: the apps download it again.
 	TouchHymnBook(ctx context.Context, id int64) error
@@ -477,6 +571,10 @@ type Querier interface {
 	UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (int64, error)
 	UpdateDocumentCategory(ctx context.Context, arg UpdateDocumentCategoryParams) (DocumentCategory, error)
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
+	UpdateGameCourse(ctx context.Context, arg UpdateGameCourseParams) error
+	UpdateGameLesson(ctx context.Context, arg UpdateGameLessonParams) error
+	UpdateGameLevel(ctx context.Context, arg UpdateGameLevelParams) error
+	UpdateGameQuestion(ctx context.Context, arg UpdateGameQuestionParams) error
 	// Only writes when something differs, so the caller knows if the book changed.
 	UpdateHymnBook(ctx context.Context, arg UpdateHymnBookParams) (int64, error)
 	UpdateImportunity(ctx context.Context, arg UpdateImportunityParams) (Importunity, error)
@@ -505,6 +603,10 @@ type Querier interface {
 	// A token already known moves to the member signed in now on that phone.
 	UpsertDevice(ctx context.Context, arg UpsertDeviceParams) (Device, error)
 	UpsertEventRegistration(ctx context.Context, arg UpsertEventRegistrationParams) (EventRegistration, error)
+	// ----- the import of a course (admins) -----
+	UpsertGameCourse(ctx context.Context, arg UpsertGameCourseParams) (int64, error)
+	// Keeps the best play of the lesson.
+	UpsertGameLessonResult(ctx context.Context, arg UpsertGameLessonResultParams) (int16, error)
 	// 1 row when the hymn is new or changed, 0 when it is already identical.
 	UpsertHymn(ctx context.Context, arg UpsertHymnParams) (int64, error)
 	UpsertPrayerRetreat(ctx context.Context, arg UpsertPrayerRetreatParams) (PrayerRetreat, error)

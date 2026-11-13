@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/boriskamtou96/cmfi-connect-backend/api"
+	gamedata "github.com/boriskamtou96/cmfi-connect-backend/data/games"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/db"
 	dbs "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
@@ -59,6 +60,15 @@ func main() {
 		os.Exit(1)
 	}
 	router := srv.SetupRouter()
+
+	// the courses of the games shipped in data/games that the database
+	// lacks (never over one that exists): a failure is said, the server
+	// still starts
+	importCtx, stopImport := context.WithTimeout(context.Background(), time.Minute)
+	if err := srv.ImportShippedGameCourses(importCtx, gamedata.Courses); err != nil {
+		slog.Error("shipped game courses not all imported", "error", err)
+	}
+	stopImport()
 
 	// the mobile money payments whose answer was lost are asked again
 	reconcileCtx, stopReconciling := context.WithCancel(context.Background())

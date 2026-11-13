@@ -1,0 +1,6439 @@
+{
+  "code": "quiz",
+  "position": 5,
+  "title": {
+    "fr": "Quiz biblique"
+  },
+  "published": true,
+  "levels": [
+    {
+      "title": {
+        "fr": "La Genèse"
+      },
+      "description": {
+        "fr": "Des origines à Joseph."
+      },
+      "color": "#0B3B70",
+      "lessons": [
+        {
+          "title": {
+            "fr": "D’Adam à Hénoc"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En combien de bras se divisait le fleuve qui sortait d’Éden ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quatre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Un fleuve sortait d’Éden pour arroser le jardin, et de là il se divisait en quatre bras."
+              },
+              "source": "Genèse 2.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Après Caïn et Abel, comment s’appelait le troisième fils d’Adam et Ève ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Seth"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Hénoc"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lémec"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Noé"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Adam connut encore sa femme ; elle enfanta un fils, et l’appela du nom de Seth."
+              },
+              "source": "Genèse 4.25"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays Caïn alla-t-il habiter, à l’orient d’Éden ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Canaan"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Nod"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Havila"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Schinear"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Caïn s’éloigna de la face de l’Éternel, et habita dans la terre de Nod, à l’orient d’Éden."
+              },
+              "source": "Genèse 4.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel nom Caïn donna-t-il à la ville qu’il bâtit ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Babel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ninive"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Hénoc"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ur"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il bâtit une ville, et il donna à cette ville le nom de son fils Hénoc."
+              },
+              "source": "Genèse 4.17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quel âge Adam mourut-il ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "130 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "365 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "930 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "969 ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Tous les jours qu’Adam vécut furent de neuf cent trente ans. (130 ans, c’est son âge à la naissance de Seth.)"
+              },
+              "source": "Genèse 5.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Élie fut enlevé au ciel. Quel autre homme Dieu « prit » sans qu’il voie la mort ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Hénoc"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Noé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Abraham"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Hénoc marcha avec Dieu ; puis il ne fut plus, parce que Dieu le prit."
+              },
+              "source": "Genèse 5.24 ; Hébreux 11.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’années vécut Hénoc ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "120 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "365 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "600 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "969 ans"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tous les jours d’Hénoc furent de trois cent soixante-cinq ans."
+              },
+              "source": "Genèse 5.23"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quels hommes la Genèse dit-elle qu’ils « marchaient avec Dieu » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Caïn et Abel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Hénoc et Noé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Seth et Lémec"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Abraham et Lot"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Hénoc marcha avec Dieu (5.24) ; Noé était un homme juste… Noé marchait avec Dieu (6.9)."
+              },
+              "source": "Genèse 5.24 ; 6.9"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Noé et ses fils"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui est l’homme le plus âgé dont parle la Bible ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Adam"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Mathusalem"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Noé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Hénoc"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tous les jours de Mathusalem furent de neuf cent soixante-neuf ans."
+              },
+              "source": "Genèse 5.27"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’années vécut Mathusalem ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "777"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "930"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "950"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "969"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Neuf cent soixante-neuf ans ; puis il mourut."
+              },
+              "source": "Genèse 5.27"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quel bois Noé devait-il faire l’arche ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Cèdre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Acacia"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Gopher"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Olivier"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Fais-toi une arche de bois de gopher. »"
+              },
+              "source": "Genèse 6.14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel âge avait Noé quand le déluge vint sur la terre ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "100 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "500 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "600 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "950 ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Noé avait six cents ans, lorsque le déluge d’eaux fut sur la terre."
+              },
+              "source": "Genèse 7.6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de personnes furent sauvées dans l’arche ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Quatre"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Huit"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Un petit nombre de personnes, c’est-à-dire huit, furent sauvées à travers l’eau."
+              },
+              "source": "1 Pierre 3.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui est le premier dont la Bible dit qu’il bâtit un autel à l’Éternel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Abel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Noé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Abraham"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Noé bâtit un autel à l’Éternel, à la sortie de l’arche."
+              },
+              "source": "Genèse 8.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelaient les trois fils de Noé ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sem, Cham et Japhet"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Caïn, Abel et Seth"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ruben, Siméon et Lévi"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Isaac, Ismaël et Lot"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Les fils de Noé, qui sortirent de l’arche, étaient Sem, Cham et Japhet."
+              },
+              "source": "Genèse 9.18"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était le père de Nimrod ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Cham"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Cusch"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Japhet"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Assur"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Cusch engendra Nimrod ; c’est lui qui commença à être puissant sur la terre."
+              },
+              "source": "1 Chroniques 1.10"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Abraham et ses fils"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel était le nom d’Abraham avant que Dieu le change ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Abram"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Térach"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Nachor"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Haran"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« On ne t’appellera plus Abram ; mais ton nom sera Abraham. »"
+              },
+              "source": "Genèse 17.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel âge avait Abraham quand il fut circoncis ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "75 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "86 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "99 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "100 ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Abraham était âgé de quatre-vingt-dix-neuf ans, lorsqu’il fut circoncis."
+              },
+              "source": "Genèse 17.24"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelaient les deux fils d’Abraham, dans l’ordre de leur naissance ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Isaac et Ismaël"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ismaël et Isaac"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ésaü et Jacob"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Isaac et Jacob"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Agar enfanta Ismaël ; quatorze ans plus tard, Sara enfanta Isaac."
+              },
+              "source": "Genèse 16.15 ; 21.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel fils Dieu demanda-t-il à Abraham d’offrir en holocauste ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ismaël"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Isaac"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lot"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jacob"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Prends ton fils, ton unique, celui que tu aimes, Isaac. »"
+              },
+              "source": "Genèse 22.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Après la mort de Sara, quelle femme Abraham prit-il ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Agar"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ketura"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Milca"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Rebecca"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Abraham prit encore une femme, nommée Ketura."
+              },
+              "source": "Genèse 25.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de sicles d’argent Abraham paya-t-il le champ de Macpéla ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trente"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Cent"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quatre cents"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Mille"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Abraham pesa à Éphron quatre cents sicles d’argent, ayant cours chez le marchand."
+              },
+              "source": "Genèse 23.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quel roi Isaac fit-il croire que Rebecca était sa sœur ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pharaon"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Abimélec"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Melchisédek"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Nimrod"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Abimélec, roi des Philistins, vit Isaac plaisanter avec Rebecca, sa femme."
+              },
+              "source": "Genèse 26.7-9"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui étaient les parents de Jacob et d’Ésaü ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Abraham et Sara"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Isaac et Rebecca"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jacob et Rachel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Laban et Léa"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Isaac implora l’Éternel pour sa femme Rebecca, et elle enfanta des jumeaux."
+              },
+              "source": "Genèse 25.21-26"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Jacob et Joseph"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment Jacob appela-t-il le lieu où il vit en songe une échelle jusqu’au ciel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Béthel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Péniel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Mahanaïm"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sichem"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il donna à ce lieu le nom de Béthel, la maison de Dieu."
+              },
+              "source": "Genèse 28.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’années Jacob servit-il Laban pour Rachel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Dix"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jacob servit sept années pour Rachel ; elles furent à ses yeux comme quelques jours, parce qu’il l’aimait."
+              },
+              "source": "Genèse 29.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quels fils Jacob eut-il de Rachel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ruben et Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Joseph et Benjamin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lévi et Siméon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Dan et Nephthali"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Fils de Rachel : Joseph et Benjamin."
+              },
+              "source": "Genèse 35.24"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel frère de Joseph proposa de le jeter dans une citerne plutôt que de le tuer ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ruben"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Siméon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Benjamin"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ruben dit : « Ne répandez point de sang ; jetez-le dans cette citerne. » Il voulait le ramener à son père."
+              },
+              "source": "Genèse 37.21-22"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Pour combien de sicles d’argent Joseph fut-il vendu aux Ismaélites ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Dix"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Vingt"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trente"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Cinquante"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ils vendirent Joseph pour vingt sicles d’argent aux Ismaélites."
+              },
+              "source": "Genèse 37.28"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À qui Joseph fut-il vendu en Égypte ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Pharaon"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Potiphar"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À un prêtre d’On"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Au chef des échansons"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les Madianites le vendirent à Potiphar, officier de Pharaon, chef des gardes."
+              },
+              "source": "Genèse 37.36"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel songe de Pharaon Joseph expliqua-t-il ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une échelle jusqu’au ciel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept vaches grasses et sept vaches maigres"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Onze étoiles qui se prosternaient"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Une statue d’or et d’argile"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Sept vaches belles et grasses, puis sept vaches laides et maigres : sept années d’abondance, puis sept de famine."
+              },
+              "source": "Genèse 41.1-4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle région d’Égypte s’installa la famille de Jacob ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Gosen"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "On"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ramsès"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Pithom"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Qu’ils demeurent dans le pays de Gosen. »"
+              },
+              "source": "Genèse 47.6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "L’Exode et la conquête"
+      },
+      "description": {
+        "fr": "Les plaies, Moïse et l’entrée en Canaan."
+      },
+      "color": "#7A4A98",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les dix plaies"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fut la première plaie d’Égypte ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les eaux changées en sang"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les grenouilles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La grêle"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les ténèbres"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Toutes les eaux du fleuve furent changées en sang."
+              },
+              "source": "Exode 7.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fut la deuxième plaie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les poux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les grenouilles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les sauterelles"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les ulcères"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les grenouilles montèrent et couvrirent le pays d’Égypte."
+              },
+              "source": "Exode 8.2-6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fut la troisième plaie, née de la poussière frappée par la verge d’Aaron ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les poux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les mouches"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La grêle"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La mortalité du bétail"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Toute la poussière de la terre fut changée en poux dans tout le pays d’Égypte."
+              },
+              "source": "Exode 8.16-17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle plaie vint de la cendre de fournaise lancée vers le ciel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La grêle"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les ulcères"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les ténèbres"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les sauterelles"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Elle produisit sur les hommes et sur les animaux des ulcères formés par une éruption de pustules. C’est la sixième plaie."
+              },
+              "source": "Exode 9.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fut la septième plaie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La grêle mêlée de feu"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les sauterelles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les grenouilles"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le sang"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "L’Éternel envoya des tonnerres et de la grêle, et le feu se promenait sur la terre."
+              },
+              "source": "Exode 9.23"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle plaie dévora tout ce que la grêle avait laissé ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les mouches"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Les sauterelles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les poux"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les ulcères"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les sauterelles couvrirent toute la surface de la terre ; il ne resta aucune verdure. C’est la huitième plaie."
+              },
+              "source": "Exode 10.13-15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jours dura la plaie des ténèbres ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un jour"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante jours"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il y eut d’épaisses ténèbres dans tout le pays d’Égypte, pendant trois jours."
+              },
+              "source": "Exode 10.22"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fut la dixième et dernière plaie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La mort des premiers-nés"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La grêle"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les ténèbres"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La mortalité du bétail"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Au milieu de la nuit, l’Éternel frappa tous les premiers-nés dans le pays d’Égypte."
+              },
+              "source": "Exode 12.29"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Moïse"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle tribu d’Israël était Moïse ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Lévi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Benjamin"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ruben"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Un homme de la maison de Lévi avait pris pour femme une fille de Lévi ; elle devint enceinte et enfanta un fils."
+              },
+              "source": "Exode 2.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays Moïse s’enfuit-il après avoir tué l’Égyptien ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Canaan"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Madian"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Édom"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Moab"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Moïse s’enfuit de devant Pharaon, et il se retira dans le pays de Madian."
+              },
+              "source": "Exode 2.15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De qui Moïse faisait-il paître le troupeau quand il vit le buisson ardent ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "De Jéthro, son beau-père"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De Pharaon"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "D’Aaron"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "De Laban"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Moïse faisait paître le troupeau de Jéthro, son beau-père, sacrificateur de Madian."
+              },
+              "source": "Exode 3.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui étendit sa verge sur les eaux d’Égypte pour les changer en sang ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Aaron"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Josué"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Hur"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L’Éternel dit à Moïse : « Dis à Aaron : Prends ta verge, et étends ta main sur les eaux des Égyptiens. »"
+              },
+              "source": "Exode 7.19-20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui fut le premier souverain sacrificateur d’Israël ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Aaron"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Éléazar"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Fais approcher de toi Aaron, ton frère, et ses fils… et qu’ils soient à mon service dans le sacerdoce. »"
+              },
+              "source": "Exode 28.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qu’est-ce que Moïse emporta d’Égypte lors de la sortie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les ossements de Joseph"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le trésor de Pharaon"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le bâton de Jacob"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les tables de la loi"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Moïse prit avec lui les os de Joseph, car Joseph avait fait jurer les fils d’Israël."
+              },
+              "source": "Exode 13.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’années dura le séjour des Israélites en Égypte ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "40 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "70 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "400 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "430 ans"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le séjour des enfants d’Israël en Égypte fut de quatre cent trente ans."
+              },
+              "source": "Exode 12.40"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel âge avait Moïse à sa mort ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "80 ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "100 ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "120 ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "130 ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Moïse était âgé de cent vingt ans lorsqu’il mourut ; sa vue n’était point affaiblie."
+              },
+              "source": "Deutéronome 34.7"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Le désert et l’entrée en Canaan"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui enterra Moïse ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Josué"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Aaron"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "L’Éternel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les anciens d’Israël"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "L’Éternel l’enterra dans la vallée, au pays de Moab ; personne n’a connu son sépulcre."
+              },
+              "source": "Deutéronome 34.6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Du haut de quelle montagne Moïse vit-il Canaan avant de mourir ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le Sinaï"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le Nebo"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le Carmel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "L’Hermon"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Monte sur le mont Nebo… et regarde le pays de Canaan. »"
+              },
+              "source": "Deutéronome 32.49-50"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’hommes de vingt ans et plus furent comptés au premier recensement dans le désert ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "70 000"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "185 000"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "603 550"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1 000 000"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Tous ceux dont on fit le dénombrement furent six cent trois mille cinq cent cinquante."
+              },
+              "source": "Nombres 1.46"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel animal parla à Balaam ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un serpent"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Son ânesse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un corbeau"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un lion"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L’Éternel ouvrit la bouche de l’ânesse, et elle dit à Balaam : « Que t’ai-je fait ? »"
+              },
+              "source": "Nombres 22.28"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle tribu n’eut pas de part de territoire en Canaan ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Lévi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Dan"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Gad"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les sacrificateurs, les Lévites : « L’Éternel sera leur héritage. »"
+              },
+              "source": "Deutéronome 18.1-2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui cacha les espions de Josué à Jéricho ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Rahab"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Débora"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ruth"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jaël"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Rahab prit les deux hommes, et les cacha."
+              },
+              "source": "Josué 2.1-4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle eau Dieu sépara-t-il pour que Josué et le peuple passent à pied sec ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La mer Rouge"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le Jourdain"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le Nil"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La mer Morte"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les eaux du Jourdain s’arrêtèrent, et tout Israël passa à sec."
+              },
+              "source": "Josué 3.15-17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de fois le peuple fit-il le tour de Jéricho le septième jour ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une fois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois fois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept fois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Douze fois"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Le septième jour… ils firent de la même manière sept fois le tour de la ville."
+              },
+              "source": "Josué 6.15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Juges et rois"
+      },
+      "description": {
+        "fr": "De Josué à l’exil à Babylone."
+      },
+      "color": "#0E7A72",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Josué, les juges et Samuel"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui dit : « Moi et ma maison, nous servirons l’Éternel » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Josué"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "David"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Josué, devant tout Israël rassemblé à Sichem."
+              },
+              "source": "Josué 24.15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de nations Dieu détruisit-il au pays de Canaan pour le donner à Israël ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Cinq"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il détruisit sept nations au pays de Canaan, et leur en accorda le territoire comme propriété."
+              },
+              "source": "Actes 13.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Avec quoi Samson tua-t-il mille Philistins ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une épée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une mâchoire d’âne"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un bâton"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Des pierres"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il trouva une mâchoire d’âne fraîche ; il la prit, et tua avec elle mille hommes."
+              },
+              "source": "Juges 15.15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui mangea du miel trouvé dans le cadavre d’un lion ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "David"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Samson"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Gédéon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Benaja"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Samson trouva un essaim d’abeilles et du miel dans le corps du lion ; il en prit et en mangea en marchant."
+              },
+              "source": "Juges 14.8-9"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle femme jugea Israël ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Débora"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ruth"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Miriam"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Débora, prophétesse, femme de Lappidoth, jugeait Israël."
+              },
+              "source": "Juges 4.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était la belle-mère de Ruth ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Orpa"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Naomi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Rachel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tamar"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Naomi revint du pays de Moab, et avec elle Ruth la Moabite, sa belle-fille."
+              },
+              "source": "Ruth 1.22"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À Mitspa, quel holocauste Samuel offrit-il à l’Éternel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un taureau"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un agneau de lait"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un bouc"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Deux tourterelles"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Samuel prit un agneau de lait, et l’offrit tout entier en holocauste à l’Éternel."
+              },
+              "source": "1 Samuel 7.9"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait le fils aîné de Samuel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Joël"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Abija"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Éli"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jonathan"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Son fils premier-né s’appelait Joël, et le second Abija."
+              },
+              "source": "1 Samuel 8.2"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Saül et David"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle tribu était le roi Saül ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Benjamin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Éphraïm"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lévi"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ne suis-je pas Benjamite, de l’une des plus petites tribus d’Israël ? »"
+              },
+              "source": "1 Samuel 9.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait la femme de Saül ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Mical"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Achinoam"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Abigaïl"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Bath-Schéba"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le nom de la femme de Saül était Achinoam, fille d’Achimaats."
+              },
+              "source": "1 Samuel 14.50"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que se passa-t-il quand Jonathan et son écuyer attaquèrent les Philistins ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il plut"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La terre trembla"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le soleil s’arrêta"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le feu tomba du ciel"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L’effroi se répandit dans le camp ; la terre trembla : ce fut une terreur de Dieu."
+              },
+              "source": "1 Samuel 14.15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui Saül demanda-t-il à la femme d’En-Dor de faire monter ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Élie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jonathan"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Fais-moi monter Samuel. »"
+              },
+              "source": "1 Samuel 28.11"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle était la taille de Goliath ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois coudées"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Six coudées et un empan"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Dix coudées"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Douze coudées"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Goliath, de Gath, avait une taille de six coudées et un empan (près de trois mètres)."
+              },
+              "source": "1 Samuel 17.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était le père de David ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Boaz"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Obed"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Isaï"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "David était fils d’Isaï, Éphratien de Bethléhem de Juda."
+              },
+              "source": "1 Samuel 17.12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel âge avait David quand il devint roi ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Seize ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trente ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quarante ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Cinquante ans"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "David était âgé de trente ans lorsqu’il devint roi, et il régna quarante ans."
+              },
+              "source": "2 Samuel 5.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Luc 2.4, quelle ville est appelée « la ville de David » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jérusalem"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Bethléhem"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Hébron"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Nazareth"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Joseph monta en Judée, dans la ville de David, appelée Bethléhem."
+              },
+              "source": "Luc 2.4"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les rois après David"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était le mari de Jézabel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Achab"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jéroboam"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jéhu"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Omri"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Achab prit pour femme Jézabel, fille d’Ethbaal, roi des Sidoniens."
+              },
+              "source": "1 Rois 16.31"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel roi conduisait son char « comme un insensé » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Achab"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jéhu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Joram"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Salomon"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« La manière de conduire est celle de Jéhu, fils de Nimschi, car il conduit d’une manière insensée. »"
+              },
+              "source": "2 Rois 9.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel roi de Juda fut frappé de lèpre jusqu’à sa mort ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ozias (Azaria)"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ézéchias"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Josias"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Manassé"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le roi Ozias fut lépreux jusqu’au jour de sa mort (appelé Azaria en 2 Rois 15.5)."
+              },
+              "source": "2 Chroniques 26.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle prophétesse fut consultée sous le roi Josias ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Débora"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Hulda"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Miriam"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ils allèrent auprès de la prophétesse Hulda, qui habitait à Jérusalem."
+              },
+              "source": "2 Rois 22.14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle fête Josias rétablit-elle, comme aucun roi ne l’avait célébrée depuis les juges ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La Pâque"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Pourim"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les Tabernacles"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La Pentecôte"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Aucune Pâque pareille n’avait été célébrée depuis le temps des juges."
+              },
+              "source": "2 Rois 23.21-22"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de soldats assyriens l’ange de l’Éternel frappa-t-il devant Jérusalem ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "18 500"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "85 000"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "185 000"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1 850 000"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "L’ange de l’Éternel frappa dans le camp des Assyriens cent quatre-vingt-cinq mille hommes."
+              },
+              "source": "2 Rois 19.35"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle grande ville gouvernait Nebucadnetsar ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ninive"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Babylone"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Suse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Damas"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« N’est-ce pas ici Babylone la grande, que j’ai bâtie… ? »"
+              },
+              "source": "Daniel 4.30"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de Juifs, en tout, Nebucadnetsar emmena-t-il en captivité selon Jérémie 52 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "600"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "4 600"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "46 000"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "185 000"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "En tout, quatre mille six cents personnes."
+              },
+              "source": "Jérémie 52.30"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Prophètes et sagesse"
+      },
+      "description": {
+        "fr": "Les prophètes, Daniel, Job, les Psaumes et les Proverbes."
+      },
+      "color": "#B4521E",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les prophètes"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui dit à Naaman de se laver sept fois dans le Jourdain pour être guéri de sa lèpre ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Élie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Élisée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ésaïe"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Élisée lui fit dire : « Va, et lave-toi sept fois dans le Jourdain. »"
+              },
+              "source": "2 Rois 5.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sous quel arbre Élie se coucha-t-il quand il fuyait pour sauver sa vie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un figuier"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un genêt"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un chêne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un palmier"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il alla s’asseoir sous un genêt, et demanda la mort."
+              },
+              "source": "1 Rois 19.4-5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel roi païen Dieu appelle-t-il « son oint » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Nebucadnetsar"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Cyrus"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Darius"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Pharaon"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ainsi parle l’Éternel à son oint, à Cyrus. »"
+              },
+              "source": "Ésaïe 45.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel prophète écrivit : « J’appelai mon fils hors d’Égypte » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Osée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Amos"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Michée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Joël"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Osée 11.1, accompli quand Jésus revint d’Égypte (Matthieu 2.15)."
+              },
+              "source": "Osée 11.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel nom, le plus long de la Bible, Dieu fit-il donner au fils d’Ésaïe ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Emmanuel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Maher-Schalal-Chasch-Baz"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Schear-Jaschub"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lo-Ruchama"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Appelle-le du nom de Maher-Schalal-Chasch-Baz » : il se hâte de piller, il se précipite sur le butin."
+              },
+              "source": "Ésaïe 8.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que veut dire le nom donné à la ville à la fin d’Ézéchiel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Dieu est fort »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« L’Éternel est ici »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« La paix de Dieu »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Dieu se souvient »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le nom de la ville sera dès ce jour : l’Éternel est ici (Yahvé-Schamma)."
+              },
+              "source": "Ézéchiel 48.35"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel prophète vit une vallée pleine d’ossements desséchés revenir à la vie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jérémie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ézéchiel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Daniel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Zacharie"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ossements desséchés, écoutez la parole de l’Éternel ! » Un souffle entra en eux, et ils reprirent vie."
+              },
+              "source": "Ézéchiel 37.1-10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel prophète répondit à son appel : « Voici, je ne sais point parler, car je suis un enfant » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jérémie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jonas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ésaïe"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "L’Éternel lui répondit : « Ne dis pas : Je suis un enfant. Car tu iras vers tous ceux auprès de qui je t’enverrai. »"
+              },
+              "source": "Jérémie 1.6"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Daniel à Babylone"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel nom babylonien fut donné à Daniel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Schadrac"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Beltschatsar"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Abed-Nego"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Belschatsar"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le chef des eunuques donna à Daniel le nom de Beltschatsar."
+              },
+              "source": "Daniel 1.7"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que demandèrent Daniel et ses compagnons à manger, plutôt que les mets du roi ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Du pain et du vin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Des légumes et de l’eau"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Du miel et des dattes"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Rien du tout"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Qu’on nous donne des légumes à manger et de l’eau à boire. »"
+              },
+              "source": "Daniel 1.12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui put dire et expliquer le songe de Nebucadnetsar ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les mages"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Daniel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les Chaldéens"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Schadrac"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le secret fut révélé à Daniel dans une vision pendant la nuit."
+              },
+              "source": "Daniel 2.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de fois plus que d’habitude le roi fit-il chauffer la fournaise ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux fois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois fois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept fois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Dix fois"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il ordonna de chauffer la fournaise sept fois plus qu’il ne convenait de la chauffer."
+              },
+              "source": "Daniel 3.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Au festin de Belschatsar, où des doigts de main écrivirent-ils ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sur une table de pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sur la muraille du palais"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sur le sable"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sur un rouleau"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les doigts d’une main d’homme sortirent, et écrivirent sur la chaux de la muraille du palais royal."
+              },
+              "source": "Daniel 5.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quels mots furent écrits sur la muraille ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Mené, mené, thekel, upharsin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Alléluia, amen"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Saint, saint, saint"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Maranatha"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Voici l’écriture qui a été tracée : Compté, compté, pesé, et divisé."
+              },
+              "source": "Daniel 5.25"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel roi fit jeter Daniel dans la fosse aux lions ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Nebucadnetsar"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Belschatsar"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Darius le Mède"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Cyrus"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Darius signa le décret ; ses chefs le forcèrent à faire jeter Daniel dans la fosse."
+              },
+              "source": "Daniel 6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de temps Daniel resta-t-il dans la fosse aux lions ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une nuit"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante jours"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le roi se leva au point du jour, et alla en hâte à la fosse : Daniel était vivant."
+              },
+              "source": "Daniel 6.19-20"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Job, Psaumes, Proverbes et Esther"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’amis de Job vinrent le consoler ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Éliphaz de Théman, Bildad de Schuach et Tsophar de Naama."
+              },
+              "source": "Job 2.11"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À qui Dieu dit-il de Job : « Il n’y a personne comme lui sur la terre » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Élihu"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Satan"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À ses anges"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À la femme de Job"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L’Éternel dit à Satan : « As-tu remarqué mon serviteur Job ? C’est un homme intègre et droit. »"
+              },
+              "source": "Job 1.8"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le chapitre le plus court de la Bible ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Psaume 23"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Psaume 117"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Psaume 150"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jean 11"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le Psaume 117 n’a que deux versets : « Louez l’Éternel, vous toutes les nations ! »"
+              },
+              "source": "Psaume 117"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le chapitre le plus long de la Bible ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Psaume 119"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ésaïe 53"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Genèse 1"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Matthieu 5"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le Psaume 119 compte 176 versets, tous sur la Parole de Dieu."
+              },
+              "source": "Psaume 119"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel psaume lit-on : « Il me fait reposer dans de verts pâturages » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Psaume 1"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Psaume 23"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Psaume 51"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Psaume 91"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« L’Éternel est mon berger… Il me fait reposer dans de verts pâturages, il me dirige près des eaux paisibles. »"
+              },
+              "source": "Psaume 23.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "La crainte de l’Éternel est le commencement de… ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La force"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La sagesse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La richesse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La paix"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "La crainte de l’Éternel est le commencement de la sagesse."
+              },
+              "source": "Psaume 111.10 ; Proverbes 9.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Proverbes 13.12, qu’est-ce qui « rend le cœur malade » quand il est différé ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "L’espoir"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le repas"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le repos"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le pardon"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Un espoir différé rend le cœur malade, mais un désir accompli est un arbre de vie."
+              },
+              "source": "Proverbes 13.12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Devant qui Mardochée refusa-t-il de se prosterner ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le roi Assuérus"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Haman"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Darius"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Hégaï"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Mardochée ne fléchissait point le genou et ne se prosternait point devant Haman."
+              },
+              "source": "Esther 3.2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Les Évangiles"
+      },
+      "description": {
+        "fr": "Jean-Baptiste, les miracles, la croix et la résurrection."
+      },
+      "color": "#2E9E5B",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Avant le ministère de Jésus"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel ange annonça à Zacharie que sa femme aurait un fils ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Michel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Gabriel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Raphaël"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un ange sans nom"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Je suis Gabriel, je me tiens devant Dieu ; j’ai été envoyé pour te parler. »"
+              },
+              "source": "Luc 1.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était le père de Jean-Baptiste ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Joseph"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Zacharie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Siméon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Joachim"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ta femme Élisabeth t’enfantera un fils, et tu lui donneras le nom de Jean. »"
+              },
+              "source": "Luc 1.13"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui tressaillit dans le sein de sa mère quand Marie vint la saluer ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jésus"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jean-Baptiste"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jacques"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Dès qu’Élisabeth entendit la salutation de Marie, son enfant tressaillit dans son sein."
+              },
+              "source": "Luc 1.41"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon l’ange, Jésus règnera éternellement sur la maison de qui ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "De David"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De Jacob"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "D’Abraham"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "De Juda"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Il règnera sur la maison de Jacob éternellement, et son règne n’aura point de fin. »"
+              },
+              "source": "Luc 1.33"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que veut dire le nom « Emmanuel » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sauveur"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Dieu avec nous"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Fils de David"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Prince de la paix"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "On lui donnera le nom d’Emmanuel, ce qui signifie Dieu avec nous."
+              },
+              "source": "Matthieu 1.23"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment Jean-Baptiste appela-t-il la foule venue se faire baptiser ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Brebis perdues »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Races de vipères »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Enfants d’Abraham »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Pécheurs aimés »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Races de vipères, qui vous a appris à fuir la colère à venir ? »"
+              },
+              "source": "Luc 3.7"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quoi se nourrissait Jean-Baptiste au désert ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "De manne"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De sauterelles et de miel sauvage"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "De pain et de poisson"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "De figues et d’eau"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il se nourrissait de sauterelles et de miel sauvage."
+              },
+              "source": "Matthieu 3.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quels furent les deux premiers disciples appelés par Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jacques et Jean"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Simon et André"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Philippe et Nathanaël"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Matthieu et Thomas"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus vit Simon et André, frère de Simon, qui jetaient un filet dans la mer."
+              },
+              "source": "Marc 1.16"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les miracles de Jésus"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Avec Pierre et Jean, quel disciple vit la transfiguration de Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "André"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jacques"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Thomas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Philippe"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus prit avec lui Pierre, Jacques, et Jean, son frère, et les conduisit à l’écart sur une haute montagne."
+              },
+              "source": "Matthieu 17.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui apparut et parla avec Jésus à la transfiguration ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Abraham et David"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Moïse et Élie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Élie et Élisée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Hénoc et Noé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Moïse et Élie leur apparurent, s’entretenant avec lui."
+              },
+              "source": "Matthieu 17.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quel moment de la journée Jésus monta-t-il dans la barque avant d’apaiser la tempête ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le matin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À midi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le soir"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Au milieu de la nuit"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Ce même jour, sur le soir, Jésus leur dit : « Passons à l’autre bord. »"
+              },
+              "source": "Marc 4.35"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de démons étaient sortis de Marie de Magdala ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Une légion"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Marie, dite de Magdala, de laquelle étaient sortis sept démons."
+              },
+              "source": "Luc 8.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Depuis combien de jours Lazare était-il mort quand Jésus le ressuscita ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quatre"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Marthe lui dit : « Seigneur, il sent déjà, car il y a quatre jours qu’il est là. »"
+              },
+              "source": "Jean 11.39"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel arbre Jésus maudit-il ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un olivier"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un figuier"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un sycomore"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un cèdre"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus prit la parole et dit au figuier : « Que jamais personne ne mange de ton fruit ! »"
+              },
+              "source": "Marc 11.13-14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que trouva Pierre dans la bouche d’un poisson ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une perle"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un statère"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Une bague"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Une clé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ouvre-lui la bouche, et tu trouveras un statère. Prends-le, et donne-le-leur pour moi et pour toi. »"
+              },
+              "source": "Matthieu 17.27"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quoi servaient les vases de pierre dont Jésus changea l’eau en vin ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À garder le vin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Aux purifications des Juifs"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À puiser au puits"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Aux sacrifices du temple"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il y avait là six vases de pierre, destinés aux purifications des Juifs."
+              },
+              "source": "Jean 2.6"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Paroles et rencontres"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel est le verset le plus court de la Bible ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Jésus pleura. »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Priez sans cesse. »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Dieu est amour. »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Réjouissez-vous toujours. »"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Jean 11.35, devant le tombeau de Lazare."
+              },
+              "source": "Jean 11.35"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de fois Jésus dit-il à Pierre de pardonner à son frère ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sept fois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Soixante-dix fois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Soixante-dix fois sept fois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Trois fois"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Je ne te dis pas jusqu’à sept fois, mais jusqu’à septante fois sept fois. »"
+              },
+              "source": "Matthieu 18.22"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À qui Jésus répondit-il : « L’homme ne vivra pas de pain seulement » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Au tentateur"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Aux pharisiens"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À la foule"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le tentateur lui dit : « Ordonne que ces pierres deviennent des pains. »"
+              },
+              "source": "Matthieu 4.3-4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel disciple était publicain, collecteur d’impôts ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Thomas"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Matthieu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Barthélemy"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Judas"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus vit un homme assis au lieu des péages, et qui s’appelait Matthieu."
+              },
+              "source": "Matthieu 9.9 ; 10.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quelle ville Zachée monta-t-il sur un arbre pour voir Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Capernaüm"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jéricho"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Béthanie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Nazareth"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus traversait la ville de Jéricho ; Zachée, chef des publicains, cherchait à voir qui était Jésus."
+              },
+              "source": "Luc 19.1-4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sur quel arbre Zachée monta-t-il ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un figuier"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un sycomore"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un olivier"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un palmier"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il courut en avant et monta sur un sycomore pour le voir."
+              },
+              "source": "Luc 19.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de paniers furent remplis des restes, quand Jésus nourrit cinq mille hommes ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Cinq"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Vingt"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "On emporta douze paniers pleins des morceaux qui restaient. (Sept corbeilles, c’est pour les quatre mille, Matthieu 15.37.)"
+              },
+              "source": "Matthieu 14.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Où Jésus passa-t-il la nuit après son entrée triomphale à Jérusalem ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Jérusalem"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Béthanie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À Bethléhem"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À Emmaüs"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il sortit pour aller à Béthanie avec les douze."
+              },
+              "source": "Marc 11.11"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "La croix et la résurrection"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel prisonnier Pilate relâcha-t-il à la place de Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Barabbas"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Simon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lazare"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Pilate leur relâcha Barabbas ; et, après avoir fait battre de verges Jésus, il le livra."
+              },
+              "source": "Matthieu 27.26"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui fut forcé de porter la croix de Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Simon de Cyrène"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Joseph d’Arimathée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jean"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ils forcèrent à porter la croix de Jésus un passant, Simon de Cyrène, père d’Alexandre et de Rufus."
+              },
+              "source": "Marc 15.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que portait l’écriteau placé sur la croix ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Fils de Dieu »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Jésus de Nazareth, roi des Juifs »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Le Christ »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Le prophète de Galilée »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Pilate fit une inscription : Jésus de Nazareth, roi des Juifs."
+              },
+              "source": "Jean 19.19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de temps les ténèbres couvrirent-elles le pays pendant la crucifixion ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une heure"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois heures"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Six heures"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Toute la nuit"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Depuis la sixième heure jusqu’à la neuvième, il y eut des ténèbres sur toute la terre : de midi à trois heures."
+              },
+              "source": "Matthieu 27.45"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui déposa le corps de Jésus dans son propre sépulcre neuf ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Nicodème seul"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Joseph d’Arimathée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lazare"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Joseph, homme riche d’Arimathée, demanda le corps de Jésus et le déposa dans un sépulcre neuf."
+              },
+              "source": "Matthieu 27.57-60"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Avec Marie de Magdala et Marie, mère de Jacques, quelle femme est nommée au tombeau vide en Luc 24.10 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Marthe"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jeanne"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Salomé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Suzanne"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "C’étaient Marie de Magdala, Jeanne, Marie, mère de Jacques, et les autres."
+              },
+              "source": "Luc 24.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui alla annoncer aux disciples : « J’ai vu le Seigneur » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Marie de Magdala"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jean"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Thomas"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Marie de Magdala alla annoncer aux disciples qu’elle avait vu le Seigneur."
+              },
+              "source": "Jean 20.18"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel disciple ne voulut croire qu’après avoir vu les marques des clous ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Thomas"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "André"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Philippe"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Si je ne vois dans ses mains la marque des clous… je ne croirai point. »"
+              },
+              "source": "Jean 20.25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Les Actes, les lettres et l’Apocalypse"
+      },
+      "description": {
+        "fr": "L’Église naissante et la fin du livre."
+      },
+      "color": "#8A5A0F",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les premiers pas de l’Église"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui remplaça Judas parmi les douze apôtres ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Barnabas"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Matthias"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Étienne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Silas"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le sort tomba sur Matthias, qui fut associé aux onze apôtres."
+              },
+              "source": "Actes 1.26"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À la Pentecôte, il vint du ciel un bruit comme celui d’un… ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Tonnerre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Vent impétueux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Torrent"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tremblement de terre"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tout à coup il vint du ciel un bruit comme celui d’un vent impétueux."
+              },
+              "source": "Actes 2.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui dit : « Je n’ai ni argent, ni or ; mais ce que j’ai, je te le donne » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Paul"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jean"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Philippe"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Pierre, au boiteux de la porte du temple : « Au nom de Jésus-Christ de Nazareth, lève-toi et marche. »"
+              },
+              "source": "Actes 3.6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui proposa de l’argent pour recevoir le pouvoir de donner le Saint-Esprit ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Simon le magicien"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ananias"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Corneille"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Élymas"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Simon leur offrit de l’argent : « Accordez-moi aussi ce pouvoir. »"
+              },
+              "source": "Actes 8.18-19"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment l’apôtre Jacques, frère de Jean, fut-il mis à mort ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Lapidé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Par l’épée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Crucifié"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jeté aux lions"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Hérode fit mourir par l’épée Jacques, frère de Jean."
+              },
+              "source": "Actes 12.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À Damas, à qui Ananias rendit-il la vue ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À Saul"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À Bartimée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À Corneille"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À Barnabas"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Ananias imposa les mains à Saul ; il tomba de ses yeux comme des écailles, et il recouvra la vue."
+              },
+              "source": "Actes 9.17-18"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jours Saul resta-t-il aveugle après sa rencontre avec Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il resta trois jours sans voir, et il ne mangea ni ne but."
+              },
+              "source": "Actes 9.9"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui envoya Paul vers les païens ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pierre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jésus"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Barnabas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "L’Église de Jérusalem"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus lui dit : « Je t’ai délivré du peuple et des païens, vers qui je t’envoie. »"
+              },
+              "source": "Actes 26.17"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les voyages de Paul"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle tribu d’Israël était l’apôtre Paul ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Juda"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Benjamin"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lévi"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Éphraïm"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Circoncis le huitième jour, de la race d’Israël, de la tribu de Benjamin."
+              },
+              "source": "Philippiens 3.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui s’enfuirent d’Icone en apprenant qu’on voulait les lapider ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pierre et Jean"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Paul et Barnabas"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Paul et Silas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Philippe et Étienne"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Paul et Barnabas, en ayant eu connaissance, se réfugièrent dans les villes de la Lycaonie."
+              },
+              "source": "Actes 14.5-6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait le vent violent qui frappa le navire de Paul près de la Crète ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sirocco"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Euraquilon"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Mistral"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Aquilon"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Un vent impétueux, qu’on appelle Euraquilon, se déchaîna sur l’île."
+              },
+              "source": "Actes 27.14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sur quelle île Paul fit-il naufrage ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Chypre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Malte"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Crète"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Patmos"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Après nous être sauvés, nous reconnûmes que l’île s’appelait Malte."
+              },
+              "source": "Actes 28.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel animal mordit Paul à Malte, sans lui faire de mal ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un scorpion"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une vipère"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un chien"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un lion"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Une vipère s’attacha à sa main ; Paul secoua l’animal dans le feu, et ne ressentit aucun mal."
+              },
+              "source": "Actes 28.3-5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui accompagnait le roi Agrippa quand Paul comparut devant lui ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Drusille"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Bérénice"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Hérodias"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Lydie"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Agrippa et Bérénice vinrent en grande pompe. (Bérénice était sa sœur, pas sa femme.)"
+              },
+              "source": "Actes 25.23"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel pays Paul voulait-il aller en passant par Rome ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "L’Égypte"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L’Espagne"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La Gaule"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La Grèce"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« J’espère vous voir en passant, quand je me rendrai en Espagne. »"
+              },
+              "source": "Romains 15.24"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle femme Paul salue-t-il dans sa lettre à Philémon ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Lydie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Apphia"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Priscille"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Phoebé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "À Philémon… à la sœur Apphia, à Archippe, notre compagnon de combat."
+              },
+              "source": "Philémon 2"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les lettres"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Paul, qu’est-ce qui est l’accomplissement de la loi ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le jeûne"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L’amour"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La circoncision"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le sabbat"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L’amour ne fait point de mal au prochain : l’amour est donc l’accomplissement de la loi."
+              },
+              "source": "Romains 13.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Romains 3.10, combien y a-t-il de justes ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Aucun, pas même un seul"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un seul"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept mille"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tous ceux qui jeûnent"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Il n’y a point de juste, pas même un seul. »"
+              },
+              "source": "Romains 3.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui nous fait comprendre les choses de Dieu ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les sages de ce monde"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L’Esprit de Dieu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les anges"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Notre intelligence seule"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Personne ne connaît les choses de Dieu, si ce n’est l’Esprit de Dieu ; nous avons reçu l’Esprit qui vient de Dieu, afin que nous connaissions."
+              },
+              "source": "1 Corinthiens 2.11-14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui juge Paul, selon 1 Corinthiens 4.4 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les Corinthiens"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le Seigneur"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les apôtres"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sa conscience"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Celui qui me juge, c’est le Seigneur. »"
+              },
+              "source": "1 Corinthiens 4.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Laquelle de ces lettres vient en premier dans la Bible ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Philippiens"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Colossiens"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Galates"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Éphésiens"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "L’ordre est : Galates, Éphésiens, Philippiens, Colossiens."
+              },
+              "source": "Le Nouveau Testament"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de chapitres compte la lettre aux Hébreux ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Dix"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Treize"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Seize"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "La lettre aux Hébreux compte treize chapitres."
+              },
+              "source": "Hébreux"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de livres de la Bible portent le nom de Jean ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quatre"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "L’Évangile selon Jean et les trois lettres de Jean. (L’Apocalypse n’en porte pas le nom.)"
+              },
+              "source": "Jean ; 1, 2 et 3 Jean"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui Paul appelle-t-il « mon enfant légitime en la foi » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Tite"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Timothée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Philémon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Luc"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« À Timothée, mon enfant légitime en la foi. »"
+              },
+              "source": "1 Timothée 1.2"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "L’Apocalypse"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À combien d’Églises d’Asie Jean devait-il envoyer son livre ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Vingt-quatre"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Envoie-le aux sept Églises : à Éphèse, à Smyrne, à Pergame, à Thyatire, à Sardes, à Philadelphie, et à Laodicée. »"
+              },
+              "source": "Apocalypse 1.11"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faut-il pour recevoir la couronne de vie ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Être riche"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Être fidèle jusqu’à la mort"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Connaître toute la loi"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Vivre longtemps"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Sois fidèle jusqu’à la mort, et je te donnerai la couronne de vie. »"
+              },
+              "source": "Apocalypse 2.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien furent marqués du sceau parmi les tribus d’Israël ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "12 000"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "70 000"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "144 000"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1 000 000"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "J’entendis le nombre de ceux qui avaient été marqués du sceau, cent quarante-quatre mille."
+              },
+              "source": "Apocalypse 7.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que reçut le cavalier du cheval roux ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une balance"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le pouvoir d’enlever la paix de la terre"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Une couronne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un arc"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Celui qui le montait reçut le pouvoir d’enlever la paix de la terre, et une grande épée lui fut donnée."
+              },
+              "source": "Apocalypse 6.4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait le cavalier du cheval d’une couleur pâle ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La guerre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La famine"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La mort"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La victoire"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Celui qui le montait se nommait la mort, et le séjour des morts l’accompagnait."
+              },
+              "source": "Apocalypse 6.8"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle ville est décrite aussi longue, large et haute ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Babylone"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La nouvelle Jérusalem"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ninive"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Rome"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "La ville avait la forme d’un carré ; la longueur, la largeur et la hauteur en étaient égales."
+              },
+              "source": "Apocalypse 21.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "En quoi sont faites les douze portes de la nouvelle Jérusalem ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "En or"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "En perles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "En jaspe"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En cristal"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les douze portes étaient douze perles ; chaque porte était d’une seule perle."
+              },
+              "source": "Apocalypse 21.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment Jésus se nomme-t-il à la fin de l’Apocalypse ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "L’alpha et l’oméga"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le lion de Juda"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le bon berger"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le pain de vie"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Je suis l’alpha et l’oméga, le premier et le dernier, le commencement et la fin. »"
+              },
+              "source": "Apocalypse 22.13"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

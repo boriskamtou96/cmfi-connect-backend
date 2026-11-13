@@ -1,0 +1,1861 @@
+{
+  "code": "versets",
+  "position": 3,
+  "title": {
+    "fr": "Versets à connaître"
+  },
+  "published": true,
+  "levels": [
+    {
+      "title": {
+        "fr": "Le salut"
+      },
+      "description": {
+        "fr": "L’amour de Dieu et sa grâce."
+      },
+      "color": "#0B3B70",
+      "lessons": [
+        {
+          "title": {
+            "fr": "L’amour de Dieu"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car Dieu a tant ___ le monde qu’il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu’il ait la vie éternelle. (Jean 3.16)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "appelé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "jugé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "aimé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "béni"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Car Dieu a tant aimé le monde qu’il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu’il ait la vie éternelle. » (Jean 3.16, Louis Segond)"
+              },
+              "source": "Jean 3.16"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car tous ont ___ et sont privés de la gloire de Dieu. (Romains 3.23)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "souffert"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "péché"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "cru"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "douté"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Car tous ont péché et sont privés de la gloire de Dieu. » (Romains 3.23, Louis Segond)"
+              },
+              "source": "Romains 3.23"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car le salaire du péché, c’est la ___ ; mais le don gratuit de Dieu, c’est la vie éternelle en Jésus-Christ notre Seigneur. (Romains 6.23)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "peine"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "colère"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "mort"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "honte"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Car le salaire du péché, c’est la mort ; mais le don gratuit de Dieu, c’est la vie éternelle en Jésus-Christ notre Seigneur. » (Romains 6.23, Louis Segond)"
+              },
+              "source": "Romains 6.23"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais Dieu prouve son amour envers nous, en ce que, lorsque nous étions encore des ___, Christ est mort pour nous. (Romains 5.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "pécheurs"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "enfants"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "étrangers"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "ennemis"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Mais Dieu prouve son amour envers nous, en ce que, lorsque nous étions encore des pécheurs, Christ est mort pour nous. » (Romains 5.8, Louis Segond)"
+              },
+              "source": "Romains 5.8"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Jésus lui dit : Je suis le chemin, la vérité, et la ___. Nul ne vient au Père que par moi. (Jean 14.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "paix"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "vie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "lumière"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "porte"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Jésus lui dit : Je suis le chemin, la vérité, et la vie. Nul ne vient au Père que par moi. » (Jean 14.6, Louis Segond)"
+              },
+              "source": "Jean 14.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais à tous ceux qui l’ont reçue, à ceux qui croient en son nom, elle a donné le pouvoir de devenir ___ de Dieu. (Jean 1.12)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "enfants"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "serviteurs"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "amis"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "prophètes"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Mais à tous ceux qui l’ont reçue, à ceux qui croient en son nom, elle a donné le pouvoir de devenir enfants de Dieu. » (Jean 1.12, Louis Segond)"
+              },
+              "source": "Jean 1.12"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Voici, je me tiens à la porte, et je ___. Si quelqu’un entend ma voix et ouvre la porte, j’entrerai chez lui, je souperai avec lui, et lui avec moi. (Apocalypse 3.20)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "frappe"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "appelle"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "attends"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "prie"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Voici, je me tiens à la porte, et je frappe. Si quelqu’un entend ma voix et ouvre la porte, j’entrerai chez lui, je souperai avec lui, et lui avec moi. » (Apocalypse 3.20, Louis Segond)"
+              },
+              "source": "Apocalypse 3.20"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si nous ___ nos péchés, il est fidèle et juste pour nous les pardonner, et pour nous purifier de toute iniquité. (1 Jean 1.9)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "regrettons"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "confessons"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "oublions"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "cachons"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Si nous confessons nos péchés, il est fidèle et juste pour nous les pardonner, et pour nous purifier de toute iniquité. » (1 Jean 1.9, Louis Segond)"
+              },
+              "source": "1 Jean 1.9"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "La grâce et la vie nouvelle"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car c’est par la ___ que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c’est le don de Dieu. (Éphésiens 2.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "grâce"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "loi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "force"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "prière"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Car c’est par la grâce que vous êtes sauvés, par le moyen de la foi. Et cela ne vient pas de vous, c’est le don de Dieu. » (Éphésiens 2.8, Louis Segond)"
+              },
+              "source": "Éphésiens 2.8"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si quelqu’un est en Christ, il est une nouvelle ___. Les choses anciennes sont passées ; voici, toutes choses sont devenues nouvelles. (2 Corinthiens 5.17)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "alliance"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "créature"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "personne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "naissance"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Si quelqu’un est en Christ, il est une nouvelle créature. Les choses anciennes sont passées ; voici, toutes choses sont devenues nouvelles. » (2 Corinthiens 5.17, Louis Segond)"
+              },
+              "source": "2 Corinthiens 5.17"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "J’ai été ___ avec Christ ; et si je vis, ce n’est plus moi qui vis, c’est Christ qui vit en moi. (Galates 2.20)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "appelé"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "crucifié"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "baptisé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "enseveli"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« J’ai été crucifié avec Christ ; et si je vis, ce n’est plus moi qui vis, c’est Christ qui vit en moi. » (Galates 2.20, Louis Segond)"
+              },
+              "source": "Galates 2.20"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si tu confesses de ta bouche le Seigneur Jésus, et si tu crois dans ton cœur que Dieu l’a ressuscité des morts, tu seras ___. (Romains 10.9)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "béni"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "guéri"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "pardonné"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "sauvé"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Si tu confesses de ta bouche le Seigneur Jésus, et si tu crois dans ton cœur que Dieu l’a ressuscité des morts, tu seras sauvé. » (Romains 10.9, Louis Segond)"
+              },
+              "source": "Romains 10.9"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Il n’y a donc maintenant aucune ___ pour ceux qui sont en Jésus-Christ. (Romains 8.1)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "condamnation"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "crainte"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "tristesse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "faiblesse"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Il n’y a donc maintenant aucune condamnation pour ceux qui sont en Jésus-Christ. » (Romains 8.1, Louis Segond)"
+              },
+              "source": "Romains 8.1"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Venez à moi, vous tous qui êtes fatigués et chargés, et je vous donnerai du ___. (Matthieu 11.28)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "travail"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "repos"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "pain"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "courage"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Venez à moi, vous tous qui êtes fatigués et chargés, et je vous donnerai du repos. » (Matthieu 11.28, Louis Segond)"
+              },
+              "source": "Matthieu 11.28"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si donc le Fils vous affranchit, vous serez réellement ___. (Jean 8.36)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "sauvés"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "heureux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "saints"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "libres"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Si donc le Fils vous affranchit, vous serez réellement libres. » (Jean 8.36, Louis Segond)"
+              },
+              "source": "Jean 8.36"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Jésus-Christ est le même hier, aujourd’hui, et ___. (Hébreux 13.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "demain"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "toujours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "partout"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "éternellement"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Jésus-Christ est le même hier, aujourd’hui, et éternellement. » (Hébreux 13.8, Louis Segond)"
+              },
+              "source": "Hébreux 13.8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "La marche avec Dieu"
+      },
+      "description": {
+        "fr": "La Parole, la prière, la foi."
+      },
+      "color": "#7A4A98",
+      "lessons": [
+        {
+          "title": {
+            "fr": "La Parole et la prière"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ta parole est une ___ à mes pieds, Et une lumière sur mon sentier. (Psaume 119.105)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "force"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "source"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "lampe"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "pierre"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier. » (Psaume 119.105, Louis Segond)"
+              },
+              "source": "Psaume 119.105"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Jésus répondit : Il est écrit : L’homme ne vivra pas de ___ seulement, mais de toute parole qui sort de la bouche de Dieu. (Matthieu 4.4)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "travail"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "pain"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "eau"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "force"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Jésus répondit : Il est écrit : L’homme ne vivra pas de pain seulement, mais de toute parole qui sort de la bouche de Dieu. » (Matthieu 4.4, Louis Segond)"
+              },
+              "source": "Matthieu 4.4"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Que ce livre de la loi ne s’éloigne point de ta bouche ; ___-le jour et nuit, pour agir fidèlement selon tout ce qui y est écrit. (Josué 1.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "lis"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "garde"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "chante"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "médite"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Que ce livre de la loi ne s’éloigne point de ta bouche ; médite-le jour et nuit, pour agir fidèlement selon tout ce qui y est écrit. » (Josué 1.8, Louis Segond)"
+              },
+              "source": "Josué 1.8"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Toute Écriture est ___ de Dieu, et utile pour enseigner, pour convaincre, pour corriger, pour instruire dans la justice. (2 Timothée 3.16)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "donnée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "aimée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "gardée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "inspirée"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Toute Écriture est inspirée de Dieu, et utile pour enseigner, pour convaincre, pour corriger, pour instruire dans la justice. » (2 Timothée 3.16, Louis Segond)"
+              },
+              "source": "2 Timothée 3.16"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Priez sans ___. (1 Thessaloniciens 5.17)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "cesse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "crainte"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "bruit"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "doute"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Priez sans cesse. » (1 Thessaloniciens 5.17, Louis Segond)"
+              },
+              "source": "1 Thessaloniciens 5.17"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ne vous ___ de rien ; mais en toute chose faites connaître vos besoins à Dieu par des prières et des supplications, avec des actions de grâces. (Philippiens 4.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "plaignez"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "privez"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "vantez"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "inquiétez"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Ne vous inquiétez de rien ; mais en toute chose faites connaître vos besoins à Dieu par des prières et des supplications, avec des actions de grâces. » (Philippiens 4.6, Louis Segond)"
+              },
+              "source": "Philippiens 4.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais quand tu pries, entre dans ta chambre, ferme ta porte, et prie ton Père qui est là dans le lieu ___. (Matthieu 6.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "calme"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "secret"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "saint"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "haut"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Mais quand tu pries, entre dans ta chambre, ferme ta porte, et prie ton Père qui est là dans le lieu secret. » (Matthieu 6.6, Louis Segond)"
+              },
+              "source": "Matthieu 6.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Cherchez premièrement le royaume et la ___ de Dieu ; et toutes ces choses vous seront données par-dessus. (Matthieu 6.33)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "volonté"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "justice"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "gloire"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "paix"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Cherchez premièrement le royaume et la justice de Dieu ; et toutes ces choses vous seront données par-dessus. » (Matthieu 6.33, Louis Segond)"
+              },
+              "source": "Matthieu 6.33"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "La foi et la confiance"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Or la foi est une ferme ___ des choses qu’on espère, une démonstration de celles qu’on ne voit pas. (Hébreux 11.1)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "assurance"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "promesse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "attente"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "espérance"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Or la foi est une ferme assurance des choses qu’on espère, une démonstration de celles qu’on ne voit pas. » (Hébreux 11.1, Louis Segond)"
+              },
+              "source": "Hébreux 11.1"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Or sans la foi il est ___ de lui être agréable ; car il faut que celui qui s’approche de Dieu croie que Dieu existe, et qu’il est le rémunérateur de ceux qui le cherchent. (Hébreux 11.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "difficile"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "rare"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "inutile"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "impossible"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Or sans la foi il est impossible de lui être agréable ; car il faut que celui qui s’approche de Dieu croie que Dieu existe, et qu’il est le rémunérateur de ceux qui le cherchent. » (Hébreux 11.6, Louis Segond)"
+              },
+              "source": "Hébreux 11.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Confie-toi en l’Éternel de tout ton ___, Et ne t’appuie pas sur ta sagesse. (Proverbes 3.5)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "être"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "temps"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "cœur"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "esprit"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Confie-toi en l’Éternel de tout ton cœur, Et ne t’appuie pas sur ta sagesse. » (Proverbes 3.5, Louis Segond)"
+              },
+              "source": "Proverbes 3.5"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "L’Éternel est mon ___ : je ne manquerai de rien. (Psaume 23.1)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "bouclier"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "berger"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "roi"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "rocher"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« L’Éternel est mon berger : je ne manquerai de rien. » (Psaume 23.1, Louis Segond)"
+              },
+              "source": "Psaume 23.1"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je puis tout par celui qui me ___. (Philippiens 4.13)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "garde"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "fortifie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "guide"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "aime"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Je puis tout par celui qui me fortifie. » (Philippiens 4.13, Louis Segond)"
+              },
+              "source": "Philippiens 4.13"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Nous savons, du reste, que toutes choses concourent au ___ de ceux qui aiment Dieu, de ceux qui sont appelés selon son dessein. (Romains 8.28)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "salut"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "bonheur"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "repos"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "bien"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Nous savons, du reste, que toutes choses concourent au bien de ceux qui aiment Dieu, de ceux qui sont appelés selon son dessein. » (Romains 8.28, Louis Segond)"
+              },
+              "source": "Romains 8.28"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais ceux qui se confient en l’Éternel renouvellent leur ___. Ils prennent le vol comme les aigles. (Ésaïe 40.31)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "courage"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "force"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "foi"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "joie"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Mais ceux qui se confient en l’Éternel renouvellent leur force. Ils prennent le vol comme les aigles. » (Ésaïe 40.31, Louis Segond)"
+              },
+              "source": "Ésaïe 40.31"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ne t’ai-je pas donné cet ordre : Fortifie-toi et prends ___ ? Ne t’effraie point et ne t’épouvante point, car l’Éternel, ton Dieu, est avec toi dans tout ce que tu entreprendras. (Josué 1.9)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "garde"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "confiance"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "courage"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "patience"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Ne t’ai-je pas donné cet ordre : Fortifie-toi et prends courage ? Ne t’effraie point et ne t’épouvante point, car l’Éternel, ton Dieu, est avec toi dans tout ce que tu entreprendras. » (Josué 1.9, Louis Segond)"
+              },
+              "source": "Josué 1.9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "La mission"
+      },
+      "description": {
+        "fr": "Faire des disciples, porter sa croix, le réveil."
+      },
+      "color": "#0E7A72",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Faire des disciples"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Allez, faites de toutes les nations des ___, les baptisant au nom du Père, du Fils et du Saint-Esprit. (Matthieu 28.19)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "serviteurs"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "disciples"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "croyants"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "églises"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Allez, faites de toutes les nations des disciples, les baptisant au nom du Père, du Fils et du Saint-Esprit. » (Matthieu 28.19, Louis Segond)"
+              },
+              "source": "Matthieu 28.19"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Puis il leur dit : Allez par tout le monde, et prêchez la bonne nouvelle à toute la ___. (Marc 16.15)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "ville"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "nation"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "création"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "terre"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Puis il leur dit : Allez par tout le monde, et prêchez la bonne nouvelle à toute la création. » (Marc 16.15, Louis Segond)"
+              },
+              "source": "Marc 16.15"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais vous recevrez une ___, le Saint-Esprit survenant sur vous, et vous serez mes témoins à Jérusalem, dans toute la Judée, dans la Samarie, et jusqu’aux extrémités de la terre. (Actes 1.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "promesse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "puissance"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "onction"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "parole"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Mais vous recevrez une puissance, le Saint-Esprit survenant sur vous, et vous serez mes témoins à Jérusalem, dans toute la Judée, dans la Samarie, et jusqu’aux extrémités de la terre. » (Actes 1.8, Louis Segond)"
+              },
+              "source": "Actes 1.8"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Et ce que tu as entendu de moi en présence de beaucoup de témoins, confie-le à des hommes ___, qui soient capables de l’enseigner aussi à d’autres. (2 Timothée 2.2)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "riches"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "fidèles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "sages"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "forts"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Et ce que tu as entendu de moi en présence de beaucoup de témoins, confie-le à des hommes fidèles, qui soient capables de l’enseigner aussi à d’autres. » (2 Timothée 2.2, Louis Segond)"
+              },
+              "source": "2 Timothée 2.2"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Alors il dit à ses disciples : La moisson est grande, mais il y a peu d’___. (Matthieu 9.37)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "greniers"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "semeurs"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "ouvriers"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "épis"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Alors il dit à ses disciples : La moisson est grande, mais il y a peu d’ouvriers. » (Matthieu 9.37, Louis Segond)"
+              },
+              "source": "Matthieu 9.37"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car je n’ai point ___ de l’Évangile : c’est une puissance de Dieu pour le salut de quiconque croit. (Romains 1.16)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "fierté"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "honte"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "peur"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "doute"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Car je n’ai point honte de l’Évangile : c’est une puissance de Dieu pour le salut de quiconque croit. » (Romains 1.16, Louis Segond)"
+              },
+              "source": "Romains 1.16"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ainsi la ___ vient de ce qu’on entend, et ce qu’on entend vient de la parole de Christ. (Romains 10.17)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "foi"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "grâce"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "paix"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "sagesse"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Ainsi la foi vient de ce qu’on entend, et ce qu’on entend vient de la parole de Christ. » (Romains 10.17, Louis Segond)"
+              },
+              "source": "Romains 10.17"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je suis le cep, vous êtes les ___. Celui qui demeure en moi et en qui je demeure porte beaucoup de fruit, car sans moi vous ne pouvez rien faire. (Jean 15.5)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "branches"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "sarments"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "racines"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "feuilles"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Je suis le cep, vous êtes les sarments. Celui qui demeure en moi et en qui je demeure porte beaucoup de fruit, car sans moi vous ne pouvez rien faire. » (Jean 15.5, Louis Segond)"
+              },
+              "source": "Jean 15.5"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Le prix et la puissance"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si quelqu’un veut venir après moi, qu’il renonce à lui-même, qu’il se charge chaque jour de sa ___, et qu’il me suive. (Luc 9.23)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "croix"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "tâche"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "charge"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "peine"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Si quelqu’un veut venir après moi, qu’il renonce à lui-même, qu’il se charge chaque jour de sa croix, et qu’il me suive. » (Luc 9.23, Louis Segond)"
+              },
+              "source": "Luc 9.23"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je vous exhorte donc, frères, par les compassions de Dieu, à offrir vos corps comme un ___ vivant, saint, agréable à Dieu, ce qui sera de votre part un culte raisonnable. (Romains 12.1)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "service"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "sacrifice"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "temple"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "chant"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Je vous exhorte donc, frères, par les compassions de Dieu, à offrir vos corps comme un sacrifice vivant, saint, agréable à Dieu, ce qui sera de votre part un culte raisonnable. » (Romains 12.1, Louis Segond)"
+              },
+              "source": "Romains 12.1"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ne vous conformez pas au siècle présent, mais soyez ___ par le renouvellement de l’intelligence. (Romains 12.2)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "transformés"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "instruits"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "fortifiés"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "consolés"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Ne vous conformez pas au siècle présent, mais soyez transformés par le renouvellement de l’intelligence. » (Romains 12.2, Louis Segond)"
+              },
+              "source": "Romains 12.2"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Soumettez-vous donc à Dieu ; résistez au ___, et il fuira loin de vous. (Jacques 4.7)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "monde"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "péché"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "mal"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "diable"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Soumettez-vous donc à Dieu ; résistez au diable, et il fuira loin de vous. » (Jacques 4.7, Louis Segond)"
+              },
+              "source": "Jacques 4.7"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Voici le ___ auquel je prends plaisir : Détache les chaînes de la méchanceté, Dénoue les liens de la servitude. (Ésaïe 58.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "chant"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "sacrifice"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "jeûne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "culte"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Voici le jeûne auquel je prends plaisir : Détache les chaînes de la méchanceté, Dénoue les liens de la servitude. » (Ésaïe 58.6, Louis Segond)"
+              },
+              "source": "Ésaïe 58.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ce n’est ni par la puissance ni par la force, mais c’est par mon ___, dit l’Éternel des armées. (Zacharie 4.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "peuple"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "esprit"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "bras"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "nom"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Ce n’est ni par la puissance ni par la force, mais c’est par mon esprit, dit l’Éternel des armées. » (Zacharie 4.6, Louis Segond)"
+              },
+              "source": "Zacharie 4.6"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Et moi, je te dis que tu es Pierre, et que sur cette pierre je bâtirai mon ___, et que les portes du séjour des morts ne prévaudront point contre elle. (Matthieu 16.18)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "peuple"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Église"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "royaume"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "temple"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Et moi, je te dis que tu es Pierre, et que sur cette pierre je bâtirai mon Église, et que les portes du séjour des morts ne prévaudront point contre elle. » (Matthieu 16.18, Louis Segond)"
+              },
+              "source": "Matthieu 16.18"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Si mon peuple sur qui est invoqué mon nom s’___, prie, et cherche ma face, et s’il se détourne de ses mauvaises voies, je l’exaucerai des cieux, je lui pardonnerai son péché, et je guérirai son pays. (2 Chroniques 7.14)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "assemble"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "éveille"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "attriste"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "humilie"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Si mon peuple sur qui est invoqué mon nom s’humilie, prie, et cherche ma face, et s’il se détourne de ses mauvaises voies, je l’exaucerai des cieux, je lui pardonnerai son péché, et je guérirai son pays. » (2 Chroniques 7.14, Louis Segond)"
+              },
+              "source": "2 Chroniques 7.14"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

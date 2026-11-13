@@ -194,6 +194,28 @@ func (s *Server) SetupRouter() *gin.Engine {
 			admin.PUT("/members/:username/role", requireRole(s.store, roleSuperadmin), s.setMemberRole)
 
 			admin.POST("/media", s.uploadMedia)
+			// the games: a course comes in as one file, then the admins write
+			// it piece by piece (every write answers with the course or the
+			// lesson whole)
+			admin.POST("/games/import", s.importGameCourse)
+			admin.GET("/games/stats", s.getGameStats)
+			admin.GET("/games/courses", s.listAdminGameCourses)
+			admin.POST("/games/courses", s.createGameCourse)
+			admin.GET("/games/courses/:code", s.getAdminGameCourse)
+			admin.PUT("/games/courses/:code", s.updateGameCourse)
+			admin.POST("/games/courses/:code/levels", s.createGameLevel)
+			admin.PUT("/games/courses/:code/levels/order", s.orderGameLevels)
+			admin.PUT("/games/levels/:id", s.updateGameLevel)
+			admin.DELETE("/games/levels/:id", s.deleteGameLevel)
+			admin.POST("/games/levels/:id/lessons", s.createGameLesson)
+			admin.PUT("/games/levels/:id/lessons/order", s.orderGameLessons)
+			admin.GET("/games/lessons/:id", s.getAdminGameLesson)
+			admin.PUT("/games/lessons/:id", s.updateGameLesson)
+			admin.DELETE("/games/lessons/:id", s.deleteGameLesson)
+			admin.POST("/games/lessons/:id/questions", s.createGameQuestion)
+			admin.PUT("/games/lessons/:id/questions/order", s.orderGameQuestions)
+			admin.PUT("/games/questions/:id", s.updateGameQuestion)
+			admin.DELETE("/games/questions/:id", s.deleteGameQuestion)
 			admin.GET("/events", s.adminListEvents)
 			admin.POST("/events", s.createEvent)
 			admin.PUT("/events/:id", s.updateEvent)
@@ -377,6 +399,18 @@ func (s *Server) SetupRouter() *gin.Engine {
 		}
 
 		// Mes lectures: the books named by the LLC item of the reports
+		// the games: the path of a course, a lesson to play
+		games := r.Group("/games", authMiddleware(s.jwtAuthenticator))
+		{
+			games.GET("/path", s.getGamePath)
+			games.GET("/lessons/:id", s.getGameLesson)
+			games.POST("/lessons/:id/results", s.submitGameLesson)
+			games.GET("/leaderboard", s.getGameLeaderboard)
+			games.PUT("/me", s.updateGamePlayer)
+			games.GET("/daily", s.getGameDaily)
+			games.POST("/daily/results", s.submitGameDaily)
+		}
+
 		reading := r.Group("/reading").Use(authMiddleware(s.jwtAuthenticator))
 		{
 			reading.GET("/books", s.listReadingBooks)

@@ -1,0 +1,1789 @@
+{
+  "code": "priere",
+  "position": 4,
+  "title": {
+    "fr": "La prière et le jeûne"
+  },
+  "published": true,
+  "levels": [
+    {
+      "title": {
+        "fr": "Prier comme Jésus"
+      },
+      "description": {
+        "fr": "Ce que Jésus a enseigné et vécu."
+      },
+      "color": "#0B3B70",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Jésus et la prière"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que demanda un disciple à Jésus après l’avoir vu prier ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Seigneur, apprends-nous à jeûner »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Seigneur, enseigne-nous à prier »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Seigneur, montre-nous le Père »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Seigneur, augmente-nous la foi »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Seigneur, enseigne-nous à prier, comme Jean l’a enseigné à ses disciples. »"
+              },
+              "source": "Luc 11.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment commence la prière que Jésus a enseignée ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Notre Père qui es aux cieux »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Éternel, notre Seigneur »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Dieu de nos pères »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Saint, saint, saint »"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Voici donc comment vous devez prier : Notre Père qui es aux cieux ! Que ton nom soit sanctifié. »"
+              },
+              "source": "Matthieu 6.9"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faisait Jésus de grand matin, avant le jour ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il enseignait au temple"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Il allait prier dans un lieu désert"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il pêchait avec ses disciples"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il dormait encore"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Vers le matin, pendant qu’il faisait encore très sombre, il se leva et sortit pour aller dans un lieu désert, où il pria."
+              },
+              "source": "Marc 1.35"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que fit Jésus avant de choisir les douze apôtres ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il jeûna sept jours"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Il passa toute la nuit à prier Dieu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il consulta les anciens"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il tira au sort"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il passa toute la nuit à prier Dieu ; quand le jour parut, il choisit douze disciples."
+              },
+              "source": "Luc 6.12-13"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans quel jardin Jésus pria-t-il avant son arrestation ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Éden"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Gethsémané"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Béthanie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le jardin du roi"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jésus alla avec eux dans un lieu appelé Gethsémané, et il dit : « Asseyez-vous ici, pendant que je m’éloignerai pour prier. »"
+              },
+              "source": "Matthieu 26.36"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que dit Jésus aux disciples qui dormaient à Gethsémané ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Levez-vous, allons-nous-en »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Veillez et priez, afin que vous ne tombiez pas en tentation »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Dormez maintenant et reposez-vous »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Pourquoi avez-vous peur ? »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Veillez et priez, afin que vous ne tombiez pas en tentation ; l’esprit est bien disposé, mais la chair est faible. »"
+              },
+              "source": "Matthieu 26.41"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que ne faut-il pas faire en priant, selon Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Prier seul"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Multiplier de vaines paroles"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Prier à genoux"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Prier la nuit"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« En priant, ne multipliez pas de vaines paroles, comme les païens. »"
+              },
+              "source": "Matthieu 6.7"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Sur la croix, Jésus pria pour ceux qui le crucifiaient."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "« Père, pardonne-leur, car ils ne savent ce qu’ils font. »"
+              },
+              "source": "Luc 23.34"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les promesses de la prière"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Au nom de qui Jésus nous apprend-il à demander ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Au nom des anges"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Au nom de Jésus"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Au nom de Moïse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En notre propre nom"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Tout ce que vous demanderez en mon nom, je le ferai, afin que le Père soit glorifié dans le Fils. »"
+              },
+              "source": "Jean 14.13"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que promet Jésus à celui qui frappe ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "On lui répondra demain"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "On lui ouvrira"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il recevra une épreuve"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il devra attendre"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Demandez, et l’on vous donnera ; cherchez, et vous trouverez ; frappez, et l’on vous ouvrira. »"
+              },
+              "source": "Matthieu 7.7"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien faut-il être réunis au nom de Jésus pour qu’il soit au milieu d’eux ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux ou trois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Cent vingt"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Là où deux ou trois sont assemblés en mon nom, je suis au milieu d’eux. »"
+              },
+              "source": "Matthieu 18.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Jacques, quelle prière a une grande efficacité ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La prière la plus longue"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La prière agissante du juste"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La prière dite à haute voix"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La prière apprise par cœur"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« La prière agissante du juste a une grande efficace. »"
+              },
+              "source": "Jacques 5.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que promet Dieu à celui qui l’invoque, en Jérémie 33.3 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une longue vie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De répondre et d’annoncer de grandes choses cachées"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La richesse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La victoire sur ses ennemis"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Invoque-moi, et je te répondrai ; je t’annoncerai de grandes choses, des choses cachées, que tu ne connais pas. »"
+              },
+              "source": "Jérémie 33.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faut-il croire de ce qu’on demande en priant ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Qu’on le recevra peut-être"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Qu’on l’a reçu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Qu’on ne le mérite pas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Qu’il faut le redemander souvent"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Tout ce que vous demanderez en priant, croyez que vous l’avez reçu, et vous le verrez s’accomplir. »"
+              },
+              "source": "Marc 11.24"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Pourquoi Jésus raconta-t-il la parabole de la veuve et du juge ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Pour montrer qu’il faut toujours prier sans se relâcher"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Pour parler de la justice des hommes"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Pour enseigner le jeûne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Pour annoncer sa mort"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Jésus leur adressa une parabole, pour montrer qu’il faut toujours prier, et ne point se relâcher."
+              },
+              "source": "Luc 18.1"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Dieu nous écoute quand nous demandons quelque chose selon sa volonté."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "« Si nous demandons quelque chose selon sa volonté, il nous écoute. »"
+              },
+              "source": "1 Jean 5.14"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Les hommes et les femmes de prière"
+      },
+      "description": {
+        "fr": "Ceux qui ont prié dans la Bible, et ce que Dieu a fait."
+      },
+      "color": "#7A4A98",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Dans l’Ancien Testament"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui intercéda auprès de Dieu pour Sodome ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Lot"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Abraham"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Isaac"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Melchisédek"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Abraham s’approcha et dit : « Feras-tu aussi périr le juste avec le méchant ? »"
+              },
+              "source": "Genèse 18.23-32"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui demanda à Dieu de pardonner au peuple après le veau d’or ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Aaron"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Moïse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Josué"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Caleb"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Moïse retourna vers l’Éternel et dit : « Pardonne maintenant leur péché ! »"
+              },
+              "source": "Exode 32.31-32"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui pria à Silo pour avoir un fils, et Dieu lui donna Samuel ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sara"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Rachel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Élisabeth"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Anne pria l’Éternel en versant des pleurs ; elle enfanta un fils et l’appela Samuel."
+              },
+              "source": "1 Samuel 1.10-20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui dit : « Loin de moi aussi de pécher contre l’Éternel, de cesser de prier pour vous ! » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Samuel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "David"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Élie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Néhémie"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Samuel, devant le peuple qui avait demandé un roi."
+              },
+              "source": "1 Samuel 12.23"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de fois par jour Daniel se mettait-il à genoux pour prier ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une fois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Deux fois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trois fois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sept fois"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Trois fois le jour il se mettait à genoux, il priait, et il louait son Dieu, comme il le faisait auparavant."
+              },
+              "source": "Daniel 6.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien d’années de vie Dieu ajouta-t-il à Ézéchias, après sa prière ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Cinq"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Dix"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quinze"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« J’ai entendu ta prière, j’ai vu tes larmes… J’ajouterai à tes jours quinze années. »"
+              },
+              "source": "2 Rois 20.5-6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel prophète pria pour qu’il ne pleuve pas, et il ne plut pas pendant trois ans et six mois ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Élisée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Élie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jonas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Amos"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Élie était un homme de la même nature que nous : il pria avec instance pour qu’il ne plût point."
+              },
+              "source": "Jacques 5.17"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Néhémie pleura, jeûna et pria en apprenant le malheur de Jérusalem."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "« Je m’assis, je pleurai, et je fus plusieurs jours dans la désolation. Je jeûnai et je priai devant le Dieu des cieux. »"
+              },
+              "source": "Néhémie 1.4"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Dans le Nouveau Testament"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faisaient les disciples dans la chambre haute, avant la Pentecôte ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ils attendaient en silence"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ils persévéraient d’un commun accord dans la prière"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ils écrivaient les évangiles"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ils se préparaient à partir"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tous d’un commun accord persévéraient dans la prière, avec les femmes, et Marie, mère de Jésus."
+              },
+              "source": "Actes 1.14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que se passa-t-il quand les disciples eurent prié, en Actes 4 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il se mit à pleuvoir"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le lieu trembla et ils furent remplis du Saint-Esprit"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Les prisons s’ouvrirent"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un ange leur apparut"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le lieu où ils étaient assemblés trembla ; ils furent tous remplis du Saint-Esprit, et ils annonçaient la parole de Dieu avec assurance."
+              },
+              "source": "Actes 4.31"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faisait l’Église pendant que Pierre était en prison ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Elle préparait sa défense"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Elle priait Dieu pour lui sans relâche"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Elle se cachait"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Elle choisissait un autre chef"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Pierre était gardé dans la prison ; et l’Église ne cessait d’adresser pour lui des prières à Dieu."
+              },
+              "source": "Actes 12.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que faisaient Paul et Silas à minuit, dans la prison de Philippes ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Ils dormaient"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ils priaient et chantaient les louanges de Dieu"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ils tentaient de s’enfuir"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ils écrivaient une lettre"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Vers le milieu de la nuit, Paul et Silas priaient et chantaient les louanges de Dieu, et les prisonniers les entendaient."
+              },
+              "source": "Actes 16.25"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel centenier romain priait Dieu continuellement, et reçut la visite d’un ange ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Corneille"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Julius"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lysias"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Félix"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Corneille… faisait beaucoup d’aumônes au peuple, et priait Dieu continuellement."
+              },
+              "source": "Actes 10.1-4"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle prophétesse servait Dieu nuit et jour dans le temple, dans le jeûne et la prière ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Marie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Élisabeth"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Marthe"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Anne, prophétesse, ne quittait pas le temple, et elle servait Dieu nuit et jour dans le jeûne et dans la prière."
+              },
+              "source": "Luc 2.36-37"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui « combat sans cesse » pour les Colossiens « dans ses prières » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Timothée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Épaphras"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Tychique"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Marc"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Épaphras, qui est des vôtres, ne cesse de combattre pour vous dans ses prières."
+              },
+              "source": "Colossiens 4.12"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Étienne pria pour ceux qui le lapidaient."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "« Seigneur, ne leur impute pas ce péché ! »"
+              },
+              "source": "Actes 7.60"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": {
+        "fr": "Le jeûne"
+      },
+      "description": {
+        "fr": "Les jeûnes de la Bible, et le jeûne qui plaît à Dieu."
+      },
+      "color": "#0E7A72",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les jeûnes de la Bible"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jours Moïse resta-t-il avec l’Éternel sans manger de pain ni boire d’eau ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Vingt et un"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Moïse fut là avec l’Éternel quarante jours et quarante nuits ; il ne mangea point de pain, et il ne but point d’eau."
+              },
+              "source": "Exode 34.28"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jours Esther demanda-t-elle aux Juifs de jeûner pour elle ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un jour"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante jours"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Jeûnez pour moi, sans manger ni boire pendant trois jours, ni la nuit ni le jour. »"
+              },
+              "source": "Esther 4.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle ville jeûna à la prédication de Jonas, et fut épargnée ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sodome"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ninive"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Babylone"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tyr"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Les gens de Ninive crurent à Dieu, publièrent un jeûne, et Dieu se repentit du mal qu’il avait résolu de leur faire."
+              },
+              "source": "Jonas 3.5-10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de temps Daniel resta-t-il en deuil, sans mets délicats ni viande ni vin ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois jours"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Trois semaines"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quarante jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Sept ans"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Je fus trois semaines dans le deuil ; je ne mangeai aucun mets délicat, il n’entra ni viande ni vin dans ma bouche."
+              },
+              "source": "Daniel 10.2-3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel roi publia un jeûne dans tout Juda, face à une grande armée ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Josaphat"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Saül"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Achab"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Manassé"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Josaphat se disposa à chercher l’Éternel, et il publia un jeûne pour tout Juda."
+              },
+              "source": "2 Chroniques 20.3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Près de quel fleuve Esdras publia-t-il un jeûne avant le voyage vers Jérusalem ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le Jourdain"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L’Euphrate"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "L’Ahava"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le Nil"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Je publiai un jeûne près du fleuve d’Ahava, pour nous humilier devant notre Dieu."
+              },
+              "source": "Esdras 8.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que fit l’Église d’Antioche avant d’envoyer Barnabas et Saul en mission ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Elle fit une collecte"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Elle jeûna, pria et leur imposa les mains"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Elle tira au sort"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Elle écrivit à Jérusalem"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Après avoir jeûné et prié, ils leur imposèrent les mains, et les laissèrent partir."
+              },
+              "source": "Actes 13.2-3"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Élie marcha quarante jours et quarante nuits avec la force de la nourriture donnée par l’ange."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "Il se leva, mangea et but ; et avec la force que lui donna cette nourriture, il marcha quarante jours et quarante nuits jusqu’à Horeb."
+              },
+              "source": "1 Rois 19.8"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Le jeûne qui plaît à Dieu"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que dit Jésus de faire quand on jeûne ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Prendre un air triste"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Se parfumer la tête et se laver le visage"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le dire à tous"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Rester à la maison"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Quand tu jeûnes, parfume ta tête et lave ton visage, afin de ne pas montrer aux hommes que tu jeûnes. »"
+              },
+              "source": "Matthieu 6.17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui voit le jeûne fait en secret ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les anciens"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le Père, qui voit dans le secret"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Personne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Les anges seulement"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« …mais à ton Père qui est là dans le lieu secret ; et ton Père, qui voit dans le secret, te le rendra. »"
+              },
+              "source": "Matthieu 6.18"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Selon Jésus, il faut montrer aux autres que l’on jeûne."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "false",
+              "explanation": {
+                "fr": "Les hypocrites se rendent le visage tout défait pour montrer aux hommes qu’ils jeûnent. « Ils reçoivent leur récompense. »"
+              },
+              "source": "Matthieu 6.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quand les disciples jeûneront-ils, selon Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le jour du sabbat"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Quand l’époux leur sera enlevé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Pendant les fêtes"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jamais"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Les jours viendront où l’époux leur sera enlevé, et alors ils jeûneront. »"
+              },
+              "source": "Matthieu 9.15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon Ésaïe 58, quel jeûne plaît à Dieu ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Celui qu’on montre au temple"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Celui qui détache les chaînes de la méchanceté"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Celui qui dure le plus longtemps"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Celui des prêtres seulement"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Voici le jeûne auquel je prends plaisir : Détache les chaînes de la méchanceté, dénoue les liens de la servitude, renvoie libres les opprimés. »"
+              },
+              "source": "Ésaïe 58.6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qu’ajoute Ésaïe 58.7 au jeûne qui plaît à Dieu ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Partager son pain avec celui qui a faim"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Offrir des sacrifices"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Se vêtir d’un sac"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Se raser la tête"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Partage ton pain avec celui qui a faim, et fais entrer dans ta maison les malheureux sans asile. »"
+              },
+              "source": "Ésaïe 58.7"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment Dieu appelle-t-il son peuple à revenir à lui, en Joël 2.12 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Avec des sacrifices et de l’or"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De tout leur cœur, avec des jeûnes, des pleurs et des lamentations"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Avec des chants et des danses"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "En bâtissant un nouveau temple"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Revenez à moi de tout votre cœur, avec des jeûnes, avec des pleurs et des lamentations ! »"
+              },
+              "source": "Joël 2.12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que répondit Jésus au tentateur, après avoir jeûné quarante jours ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Donne-moi du pain »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« L’homme ne vivra pas de pain seulement »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Je n’ai pas faim »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Le temps n’est pas venu »"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Il est écrit : L’homme ne vivra pas de pain seulement, mais de toute parole qui sort de la bouche de Dieu. »"
+              },
+              "source": "Matthieu 4.4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
