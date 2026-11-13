@@ -17,6 +17,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -284,6 +285,28 @@ func international(phone string) string {
 	return "+" + digits
 }
 
+func firstOf(texts ...string) string {
+	for _, text := range texts {
+		if strings.TrimSpace(text) != "" {
+			return strings.TrimSpace(text)
+		}
+	}
+	return ""
+}
+
+// phoneLike: 8 digits or more in a row, with a + before them or not.
+var phoneLike = regexp.MustCompile(`\+?\d{8,}`)
+
+// hidePhones: an answer of Wajub fit for the logs: no phone number, 1 KB at
+// most.
+func hidePhones(data []byte) string {
+	text := phoneLike.ReplaceAllString(string(data), "***")
+	if len(text) > 1024 {
+		text = text[:1024] + "…"
+	}
+	return text
+}
+
 // status: Wajub's status in the API's words.
 func status(s string) string {
 	switch s {
@@ -334,10 +357,29 @@ func (c *Client) call(ctx context.Context, method, path, idempotency string, bod
 		return fmt.Errorf("%w: %d", money.ErrUnknown, resp.StatusCode)
 	case resp.StatusCode >= 300:
 		var refused struct {
-			Message any `json:"message"`
+			Message any    `json:"message"`
+			Error   any    `json:"error"`
+			Reason  string `json:"reason"`
+			// a charge refused by the operator comes with its transaction
+			Transaction transaction `json:"transaction"`
+			Data        struct {
+				Transaction transaction `json:"transaction"`
+			} `json:"data"`
 		}
 		_ = json.Unmarshal(data, &refused)
-		return &money.RefusedError{Status: resp.StatusCode, Message: fmt.Sprint(refused.Message)}
+		reason := firstOf(
+			refused.Transaction.FailureReason, refused.Data.Transaction.FailureReason,
+			refused.Reason, refused.Transaction.FailureMessage, refused.Data.Transaction.FailureMessage,
+		)
+		if reason == "" {
+			if text, ok := refused.Error.(string); ok {
+				reason = text
+			}
+		}
+		return &money.RefusedError{
+			Status: resp.StatusCode, Message: fmt.Sprint(refused.Message),
+			Reason: reason, Detail: hidePhones(data),
+		}
 	}
 	if answer == nil {
 		return nil

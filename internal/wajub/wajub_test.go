@@ -197,3 +197,20 @@ func TestWebhooksAreReadInTheAPIsWords(t *testing.T) {
 		require.Equal(t, want, hook, body)
 	}
 }
+
+func TestAChargeRefusedKeepsTheOperatorsReasonWithoutThePhone(t *testing.T) {
+	client, _ := fakeWajub(t, map[string]func() (int, string){
+		"POST /payments": answer(201, `{"transaction":{"id":"pay_7","status":"pending"}}`),
+		"POST /payments/pay_7": answer(402, `{"status":"error","message":"The payment could not be completed.",
+			"transaction":{"id":"pay_7","status":"failed","failure_reason":"insufficient_funds",
+			"customer":{"phone":"+237659460125"}}}`),
+	})
+	_, err := client.Init(context.Background(), money.InitRequest{Amount: 2000, Currency: "XAF", Provider: "ORANGE_CMR", PhoneNumber: "237659460125", ExternalID: "z"})
+	var refused *money.RefusedError
+	require.ErrorAs(t, err, &refused)
+	require.Equal(t, 402, refused.Status)
+	require.Equal(t, "The payment could not be completed.", refused.Message)
+	require.Equal(t, "insufficient_funds", refused.Reason)
+	require.Contains(t, refused.Detail, "insufficient_funds")
+	require.NotContains(t, refused.Detail, "659460125")
+}

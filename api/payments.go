@@ -359,7 +359,8 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 		// it may have started: its webhook will tell
 		logFor(c).Warn("payment outcome unknown", "payment", payment.ID, "error", err)
 	case errors.As(err, &refused):
-		logFor(c).Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		logFor(c).Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status,
+			"reason", refused.Message, "wajub_reason", refused.Reason, "detail", refused.Detail)
 		s.failPayment(c, payment.ID, refusalCode(refused))
 	case err != nil:
 		logFor(c).Error("payment not sent to wajub", "payment", payment.ID, "error", err)
@@ -438,7 +439,27 @@ func (s *Server) startCardPayment(c *gin.Context, params db.CreatePaymentParams,
 // refusalCode: why Wajub refused a payment, as a code the apps translate.
 func refusalCode(refused *money.RefusedError) string {
 	message := strings.ToLower(refused.Message)
+	// the operator's reason, when Wajub gives it, says more than its message
+	reason := strings.ToLower(refused.Reason)
+	has := func(words ...string) bool {
+		for _, word := range words {
+			if strings.Contains(reason, word) {
+				return true
+			}
+		}
+		return false
+	}
 	switch {
+	case reason != "" && has("insufficient", "balance", "solde", "funds"):
+		return "INSUFFICIENT_BALANCE"
+	case reason != "" && has("limit", "plafond"):
+		return "PAYER_LIMIT_REACHED"
+	case reason != "" && has("not_found", "not found", "unknown", "invalid_phone", "invalid phone", "not registered", "inexistant"):
+		return "PAYER_NOT_FOUND"
+	case reason != "" && has("declined", "rejected", "cancel", "refus", "not_approved", "not approved", "timeout", "expired"):
+		return "PAYMENT_NOT_APPROVED"
+	case reason != "" && has("channel", "not enabled", "not activated", "disabled", "unavailable", "indisponible"):
+		return "PROVIDER_TEMPORARILY_UNAVAILABLE"
 	case refused.Status == http.StatusUnauthorized || refused.Status == http.StatusForbidden:
 		return "PAYMENTS_UNAVAILABLE"
 	case refused.Status == http.StatusTooManyRequests:

@@ -739,3 +739,21 @@ func TestADonationOfAChosenAmountIsPaidAndKept(t *testing.T) {
 	w.notify(t, "refund.completed", refundID, nil)
 	require.Equal(t, "refunded", w.payment(t, m.Token, gift.ID).Status)
 }
+
+func TestTheOperatorsReasonGivesTheMemberAClearMessage(t *testing.T) {
+	w := newPaymentsWorld(t)
+	m := registerMember(t, w.router, nil)
+	for reason, code := range map[string]string{
+		"insufficient_funds":   "INSUFFICIENT_BALANCE",
+		"subscriber_not_found": "PAYER_NOT_FOUND",
+		"transaction_limit":    "PAYER_LIMIT_REACHED",
+		"declined_by_payer":    "PAYMENT_NOT_APPROVED",
+		"channel_not_enabled":  "PROVIDER_TEMPORARILY_UNAVAILABLE",
+		"":                     "REJECTED",
+	} {
+		w.money.initErr = &money.RefusedError{Status: http.StatusPaymentRequired, Message: "The payment could not be completed.", Reason: reason}
+		gift := w.pay(t, m.Token, "/v1/donations", map[string]any{"amount": 2000, "phone_number": "+237690000001"})
+		require.Equal(t, "failed", gift.Status, reason)
+		require.Equal(t, code, gift.FailureCode, reason)
+	}
+}

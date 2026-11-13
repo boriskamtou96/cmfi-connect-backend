@@ -35,6 +35,12 @@ var (
 type RefusedError struct {
 	Status  int
 	Message string
+	// Reason: the provider's own words for why, when it gives some
+	// (insufficient_funds, a failure reason of the transaction…), else "".
+	Reason string
+	// Detail: the provider's whole answer, phone numbers hidden, cut to 1 KB,
+	// for the logs only.
+	Detail string
 }
 
 func (e *RefusedError) Error() string {
