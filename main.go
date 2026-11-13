@@ -62,13 +62,16 @@ func main() {
 	router := srv.SetupRouter()
 
 	// the courses of the games shipped in data/games that the database
-	// lacks (never over one that exists): a failure is said, the server
-	// still starts
-	importCtx, stopImport := context.WithTimeout(context.Background(), time.Minute)
-	if err := srv.ImportShippedGameCourses(importCtx, gamedata.Courses); err != nil {
-		slog.Error("shipped game courses not all imported", "error", err)
-	}
-	stopImport()
+	// lacks (never over one that exists), in the background: a course is a
+	// few hundred writes, too slow on a distant database to hold the start.
+	// A failure is said; the next start tries again.
+	go func() {
+		ctx, stop := context.WithTimeout(context.Background(), 15*time.Minute)
+		defer stop()
+		if err := srv.ImportShippedGameCourses(ctx, gamedata.Courses); err != nil {
+			slog.Error("shipped game courses not all imported", "error", err)
+		}
+	}()
 
 	// the mobile money payments whose answer was lost are asked again
 	reconcileCtx, stopReconciling := context.WithCancel(context.Background())
