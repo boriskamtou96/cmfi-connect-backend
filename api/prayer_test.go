@@ -317,6 +317,24 @@ func TestAnImportunityIsPrayedTogetherUntilItsGoal(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": 0}).Code)
 
+	// a tap too many is taken back, from the member and from the total
+	back := decode[importunityDetailResponse](t, send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": -10}))
+	require.Equal(t, int64(100), back.Total)
+	require.Equal(t, int64(40), back.MyCount)
+	// the goal was reached: it stays so
+	require.NotNil(t, back.ReachedAt)
+	// never more than the member has: Boris goes to zero, Marie keeps her 60
+	emptied := decode[importunityDetailResponse](t, send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": -500}))
+	require.Equal(t, int64(60), emptied.Total)
+	require.Equal(t, int64(0), emptied.MyCount)
+	// nothing left to take back: the topic as it is
+	nothing := send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": -1})
+	require.Equal(t, http.StatusOK, nothing.Code, nothing.Body.String())
+	require.Equal(t, int64(60), decode[importunityDetailResponse](t, nothing).Total)
+	require.Equal(t, http.StatusBadRequest, send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": -10001}).Code)
+	boris50 := decode[importunityDetailResponse](t, send(t, router, http.MethodPost, boris.Token, importunityPath(topic, "/count"), map[string]any{"amount": 50}))
+	require.Equal(t, int64(110), boris50.Total)
+
 	// only the author changes the topic
 	require.Equal(t, http.StatusForbidden, send(t, router, http.MethodPut, marie.Token, importunityPath(topic, ""),
 		map[string]any{"title": "Autre"}).Code)

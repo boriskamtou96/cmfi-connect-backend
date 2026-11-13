@@ -116,7 +116,9 @@ func (s *SQLStore) UpdateImportunityTx(ctx context.Context, arg UpdateImportunit
 }
 
 // AddProclamationsTx counts [amount] proclamations of a participant: theirs
-// and the total. The topic is locked so the goal is reached once.
+// and the total. The topic is locked so the goal is reached once. A negative
+// [amount] takes some back (a tap too many, a number set by hand): never
+// more than the participant has, so neither count goes under zero.
 func (s *SQLStore) AddProclamationsTx(ctx context.Context, importunityID, userID, amount int64) (Importunity, ImportunityMember, error) {
 	var importunity Importunity
 	var member ImportunityMember
@@ -130,6 +132,21 @@ func (s *SQLStore) AddProclamationsTx(ctx context.Context, importunityID, userID
 		}
 		if current.Status != "open" {
 			return ErrImportunityClosed
+		}
+		if amount < 0 {
+			mine, err := q.GetImportunityMember(ctx, GetImportunityMemberParams{ImportunityID: importunityID, UserID: userID})
+			if errors.Is(err, sql.ErrNoRows) || (err == nil && mine.Status != "joined") {
+				return ErrNotParticipant
+			}
+			if err != nil {
+				return err
+			}
+			amount = max(amount, -mine.Count, -current.Total)
+			if amount == 0 {
+				// nothing to take back: the topic as it is
+				importunity, member = current, mine
+				return nil
+			}
 		}
 		member, err = q.AddMemberProclamations(ctx, AddMemberProclamationsParams{
 			Amount:        amount,

@@ -350,8 +350,9 @@ func (s *Server) countProclamations(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	if req.Amount < 1 || req.Amount > maxProclamationsPerSend {
-		badRequestError(c, fmt.Errorf("amount: 1 to %d", maxProclamationsPerSend))
+	// a negative amount takes proclamations back, down to zero for the member
+	if req.Amount == 0 || req.Amount < -maxProclamationsPerSend || req.Amount > maxProclamationsPerSend {
+		badRequestError(c, fmt.Errorf("amount: -%d to %d, not 0", maxProclamationsPerSend, maxProclamationsPerSend))
 		return
 	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
