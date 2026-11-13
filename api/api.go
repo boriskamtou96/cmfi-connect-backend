@@ -334,6 +334,8 @@ func (s *Server) SetupRouter() *gin.Engine {
 			payments.POST("/predict-provider", s.predictPaymentProvider)
 			payments.GET("/:id", s.getPayment)
 		}
+		// « Faire un don »: an amount chosen, paid like the rest
+		r.POST("/donations", authMiddleware(s.jwtAuthenticator), s.donate)
 		r.POST("/wajub/webhooks", s.wajubWebhook)
 
 		// Premium sold on the website (the stores forbid it in the apps)

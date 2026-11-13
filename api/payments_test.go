@@ -691,3 +691,51 @@ func TestALateSuccessAfterAFailureCompletesThePayment(t *testing.T) {
 	w.notify(t, "payment.completed", payment.ID, map[string]any{"amount": 3000})
 	require.Equal(t, "completed", w.payment(t, m.Token, payment.ID).Status)
 }
+
+func TestADonationOfAChosenAmountIsPaidAndKept(t *testing.T) {
+	w := newPaymentsWorld(t)
+	admin := staffAdmin(t, w.router)
+	m := registerMember(t, w.router, nil)
+
+	gift := w.pay(t, m.Token, "/v1/donations", map[string]any{"amount": 2500, "phone_number": "+237670000009"})
+	require.Equal(t, "donation", gift.Purpose)
+	require.Equal(t, int64(2500), gift.Amount)
+	require.Equal(t, "XAF", gift.Currency)
+	require.Equal(t, "pending", gift.Status)
+
+	// the money arrived: nothing to give in return, the payment is done
+	w.notify(t, "payment.completed", gift.ID, map[string]any{"amount": 2500})
+	require.Equal(t, "completed", w.payment(t, m.Token, gift.ID).Status)
+	// it gives no Premium
+	lifetime, until := w.premiumOf(t, m.Token)
+	require.False(t, lifetime)
+	require.Nil(t, until)
+
+	// the admins see the donations apart
+	listed := send(t, w.router, http.MethodGet, admin.Token, "/v1/admin/payments?purpose=donation", nil)
+	require.Equal(t, http.StatusOK, listed.Code, listed.Body.String())
+	var mine []adminPaymentResponse
+	for _, payment := range decode[[]adminPaymentResponse](t, listed) {
+		require.Equal(t, "donation", payment.Purpose)
+		if payment.ID == gift.ID {
+			mine = append(mine, payment)
+		}
+	}
+	require.Len(t, mine, 1)
+	require.Equal(t, m.Username, mine[0].Member.Username)
+
+	// too little, too much, or nobody signed in
+	for _, amount := range []int{0, 50, 500001} {
+		refused := send(t, w.router, http.MethodPost, m.Token, "/v1/donations", map[string]any{"amount": amount, "phone_number": "+237670000009"})
+		require.Contains(t, []int{http.StatusBadRequest, http.StatusConflict}, refused.Code, "%d: %s", amount, refused.Body.String())
+	}
+	require.Equal(t, http.StatusUnauthorized, send(t, w.router, http.MethodPost, "", "/v1/donations", map[string]any{"amount": 1000}).Code)
+
+	// an admin can give it back
+	refund := send(t, w.router, http.MethodPost, admin.Token, "/v1/admin/payments/"+gift.ID+"/refund", nil)
+	require.Equal(t, http.StatusOK, refund.Code, refund.Body.String())
+	refundID, ok := w.money.refundOf(gift.ID)
+	require.True(t, ok)
+	w.notify(t, "refund.completed", refundID, nil)
+	require.Equal(t, "refunded", w.payment(t, m.Token, gift.ID).Status)
+}

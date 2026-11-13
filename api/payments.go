@@ -47,6 +47,12 @@ type MobileMoney interface {
 const (
 	paymentForEvent   = "event"
 	paymentForPremium = "premium"
+	// « Faire un don »: an amount the member chooses, nothing in return
+	paymentForDonation = "donation"
+
+	// a donation, in whole units of the currency (XAF)
+	minDonation = 100
+	maxDonation = 500_000
 
 	// what the member sees with the payment
 	paymentStatementText = "CMFI Connect"
@@ -606,6 +612,38 @@ func (s *Server) payForPremium(c *gin.Context) {
 	}, req.payerRequest, paymentStatementText+" Premium")
 }
 
+type donationRequest struct {
+	Amount int64 `json:"amount" binding:"required"`
+	payerRequest
+}
+
+// POST /v1/donations: a donation of the amount the member chooses, by mobile
+// money or by card. Nothing is given in return: once the money arrived, the
+// payment is settled.
+func (s *Server) donate(c *gin.Context) {
+	if !s.paymentsEnabled(c) {
+		return
+	}
+	var req donationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequestError(c, err)
+		return
+	}
+	if req.Amount < minDonation || req.Amount > maxDonation {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "AMOUNT_OUT_OF_BOUNDS",
+			fmt.Errorf("a donation is between %d and %d", minDonation, maxDonation)))
+		return
+	}
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	s.startPayment(c, db.CreatePaymentParams{
+		UserID:   nullID(authUser.ID),
+		Purpose:  paymentForDonation,
+		People:   1,
+		Amount:   req.Amount,
+		Currency: s.config.Pay.PremiumCurrency,
+	}, req.payerRequest, paymentStatementText+" Don")
+}
+
 // GET /v1/premium/status: the Premium bought here (not in the stores):
 // for life, or until when; null until when there is none.
 func (s *Server) getPremiumStatus(c *gin.Context) {
@@ -903,6 +941,11 @@ func (s *Server) settle(ctx context.Context, payment db.Payment) {
 		s.settleEventPayment(ctx, payment)
 	case paymentForPremium:
 		s.settlePremiumPayment(ctx, payment)
+	case paymentForDonation:
+		// nothing to give in return: the money arrived, that is all
+		if err := s.store.SettlePayment(ctx, db.SettlePaymentParams{ID: payment.ID}); err != nil {
+			slog.Error("cannot settle a donation", "payment", payment.ID, "error", err)
+		}
 	}
 }
 
