@@ -2426,6 +2426,926 @@
           ]
         }
       ]
+    },
+    {
+      "title": {
+        "fr": "Notre héritage"
+      },
+      "description": {
+        "fr": "Les livres du Pr Fomum, sa vie de prière et de jeûne, la vision de la CMCI et les nations."
+      },
+      "color": "#B5651D",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les livres du fondateur"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "De quelle série « Le chemin de la vie » est-il le premier livre ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Prier avec puissance"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De ses lèvres"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le chemin chrétien"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Aides pratiques pour les vainqueurs"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Le chemin de la vie » ouvre la série « Le chemin chrétien » : il montre comment entrer dans la vie chrétienne en recevant Jésus-Christ."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "order",
+              "prompt": {
+                "fr": "Remets ces livres de la série « Le chemin chrétien » dans l'ordre de leurs numéros."
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le chemin de la sanctification"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le chemin de la vie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le chemin du caractère chrétien"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le chemin de l'obéissance"
+                  }
+                }
+              ],
+              "answer": "b,d,a,c",
+              "explanation": {
+                "fr": "La série commence par « Le chemin de la vie » (n° 1), puis « Le chemin de l'obéissance » (n° 2), « Le chemin de la sanctification » (n° 4) et « Le chemin du caractère chrétien » (n° 5)."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelles vérités « Le chemin de l'obéissance » présente-t-il au jeune converti ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La dîme, le jeûne et la louange"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le baptême d'eau, le baptême dans le Saint-Esprit et le gain des âmes"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La prière, l'intercession et le combat spirituel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le mariage, la famille et l'argent"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ce deuxième livre de la série conduit le jeune converti à obéir sur trois points de base : le baptême d'eau, le baptême dans le Saint-Esprit et le gain des âmes."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel livre ouvre la série « Prier avec puissance » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le chemin de la prière victorieuse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le ministère du jeûne"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le chemin du combat spirituel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le chemin de la vie"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Le chemin de la prière victorieuse » est le n° 1 de la série « Prier avec puissance », consacrée aux différents aspects de la prière."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans « Le ministère du jeûne », si la prière est le rail sur lequel avance la locomotive de Dieu, qu'est le jeûne ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le moteur de la locomotive"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le chef de gare"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le signal qui ouvre la voie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "L'huile de graissage qui aide le train à aller vite"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Pour le Pr Fomum, la prière est le rail, et le jeûne l'huile de graissage qui permet au train de Dieu d'avancer à grande vitesse."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de traités d'évangélisation écrits par le Pr Fomum sont en circulation ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "16 millions, en 17 langues"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "1 million, en 3 langues"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "5 millions, en 8 langues"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "50 millions, en 40 langues"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "En plus de ses livres, 16 millions de ses traités d'évangélisation circulent en 17 langues."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Le Pr Fomum a lu plus de 1 350 livres sur la foi chrétienne."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "Vrai : grand lecteur, il a lu plus de 1 350 livres sur la foi chrétienne avant d'écrire les siens pour faire avancer l'Évangile."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Lequel de ces livres a été écrit par Théodore Andoseh ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le chemin de la vie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Le ministère du jeûne"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Le leadership spirituel selon le modèle de Gédéon"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le chemin de la prière victorieuse"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Dans « Le leadership spirituel selon le modèle de Gédéon », Théodore Andoseh tire de la vie de Gédéon, un homme faible rendu fort, des leçons pour ceux qui conduisent le peuple de Dieu."
+              },
+              "source": "ministry:leader"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Un homme de prière et de jeûne"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que considérait-il comme l'œuvre la plus importante que l'on puisse faire pour Dieu et pour l'homme ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La prédication"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L'enseignement de la Bible"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La prière"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le don aux pauvres"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il tenait la prière pour l'œuvre la plus importante que l'on puisse faire pour Dieu et pour l'homme. Il a noté plus de 50 000 exaucements."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qu'appelait-il une « croisade de prière » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Quarante jours avec au moins huit heures de prière chaque jour"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une nuit entière de prière dans un stade"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sept jours de prière et de jeûne en famille"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Une marche de prière d'une ville à l'autre"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Une croisade de prière dure quarante jours et quarante nuits, avec au moins huit heures de prière par jour. Avec son équipe, il en a mené plus de 57."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de temps dure un « siège de prière » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "De 1 à 3 heures"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De 24 à 120 heures, presque sans arrêt"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "De 7 à 14 jours, une heure par jour"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Toujours 40 jours"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Un siège de prière est un temps de prière presque ininterrompu de 24 à 120 heures. Avec son équipe, il en a mené plus de 80."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de temps passait-il chaque jour seul avec Dieu, dans ses « rencontres dynamiques quotidiennes avec Dieu » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Entre 15 minutes et 6 heures"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Exactement 1 heure"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Entre 2 et 3 minutes"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Toute la nuit"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Chaque jour, il passait entre 15 minutes et 6 heures seul avec Dieu à lire sa Parole, la méditer et prier. Il en a vécu plus de 18 000."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jours duraient ses « retraites pour le progrès spirituel » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une demi-journée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "De 3 à 21 jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "De 30 à 60 jours"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un an"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Il s'est retiré plus de 60 fois pour chercher Dieu seul, pendant 3 à 21 jours : il les appelait des retraites pour le progrès spirituel."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de jeûnes de 3 à 40 jours a-t-il faits ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Une dizaine"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une cinquantaine"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Plus de 250"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Plus de 2 000"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il voyait le jeûne comme une arme du combat spirituel et a fait plus de 250 jeûnes de 3 à 40 jours, en ne buvant que de l'eau."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle part de leurs revenus le Pr Fomum et son épouse investissaient-ils dans l'Évangile ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "10 %"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "50 %"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "75 %"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "92,5 %"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "En choisissant une vie simple, ils en sont venus à investir 92,5 % de leurs revenus dans l'Évangile, avec l'espoir d'atteindre un jour 99 %."
+              },
+              "source": "ministry:founder"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Dans son laboratoire de recherche, il considérait Jésus comme le directeur et se voyait lui-même comme directeur adjoint."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "Vrai : il voyait en Jésus le Seigneur de la science et lui attribuait sa réussite de chercheur."
+              },
+              "source": "ministry:founder"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "La vision et les nations"
+          },
+          "questions": [
+            {
+              "kind": "match",
+              "prompt": {
+                "fr": "Relie chaque mot du nom de la CMCI à ce qu'il veut dire."
+              },
+              "choices": [
+                {
+                  "id": "l1",
+                  "text": {
+                    "fr": "Chrétienne"
+                  }
+                },
+                {
+                  "id": "l2",
+                  "text": {
+                    "fr": "Missionnaire"
+                  }
+                },
+                {
+                  "id": "l3",
+                  "text": {
+                    "fr": "Communauté"
+                  }
+                },
+                {
+                  "id": "l4",
+                  "text": {
+                    "fr": "Internationale"
+                  }
+                },
+                {
+                  "id": "r1",
+                  "text": {
+                    "fr": "Chacun est appelé à être un missionnaire qui reste ou qui part"
+                  }
+                },
+                {
+                  "id": "r2",
+                  "text": {
+                    "fr": "Une œuvre qui va au-delà du Cameroun, jusqu'aux extrémités de la terre"
+                  }
+                },
+                {
+                  "id": "r3",
+                  "text": {
+                    "fr": "Une marche sans nuage avec le Seigneur et entre frères"
+                  }
+                },
+                {
+                  "id": "r4",
+                  "text": {
+                    "fr": "Chacun et chaque chose dans l'œuvre à l'image du Christ"
+                  }
+                }
+              ],
+              "answer": "l1=r4,l2=r1,l3=r3,l4=r2",
+              "explanation": {
+                "fr": "Chrétienne : tout à l'image du Christ ; missionnaire : chacun reste ou part ; communauté : une communion, une marche sans nuage avec le Seigneur et entre frères ; internationale : jusqu'aux extrémités de la terre."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle est la vision de la CMCI ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Bâtir une grande église dans chaque capitale"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Être comme Jésus dans son être, son faire et sa possession"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Former des pasteurs pour toutes les dénominations"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Traduire la Bible dans toutes les langues"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "La vision est d'être comme Jésus dans son être, son faire et sa possession, et d'y amener les personnes, les localités, les nations et les générations."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment se résume la mission de la CMCI ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Tout l'Évangile pour tout l'homme, par toute l'Église, au monde entier, par tous les moyens"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une Église dans chaque village d'ici l'an 2000"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Prier pour les nations sans jamais cesser"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Gagner le Cameroun avant d'aller ailleurs"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "La mission est : tout l'Évangile pour tout l'homme, par toute l'Église, au monde entier, par tous les moyens."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Après les débuts à Yaoundé en 1975, comment l'œuvre a-t-elle compris qu'elle devait aller vers 250 nations d'ici 2065 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Par un songe reçu au Nigeria"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Par un vote des responsables"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Par un message reçu lors de la convention de 2019"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Par la vision d'un Juif, celle de croyants priant aux États-Unis et la parole du Seigneur"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Par la vision d'un Juif, celle de croyants réunis pour prier aux États-Unis et ce que le Seigneur disait, l'œuvre a compris qu'elle devait porter l'Évangile à 250 nations d'ici 2065."
+              },
+              "source": "ministry:purpose"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans combien de nations l'œuvre est-elle présente selon la liste révisée en avril 2025 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "93"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "120"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "154"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "250"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "La liste « Les nations où nous sommes représentés », révisée en avril 2025, compte 154 nations, du Cameroun (n° 1) à l'Écosse (n° 154)."
+              },
+              "source": "ministry:nations"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle nation est la dernière, le n° 154, de la liste des nations ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les Maldives"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "L'Écosse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "L'Irlande du Nord"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le Lakshadweep"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "L'Écosse porte le n° 154. Juste avant viennent le Lakshadweep (n° 153) et les Maldives (n° 152)."
+              },
+              "source": "ministry:nations"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de nations restantes le but quinquennal 2026–2030 veut-il pénétrer ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "12"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "46"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "96"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "154"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le but quinquennal veut pénétrer les 46 nations restantes, pour porter l'œuvre à 100 millions de croyants dans 200 nations d'ici décembre 2030."
+              },
+              "source": "ministry:nations"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel but Théodore Andoseh a-t-il donné pour la phase 3, à la convention mondiale de 2019 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "100 000 églises de maison de 20 membres dans 100 nations"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "10 000 grandes églises de 1 000 membres dans 154 nations"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "1 million d'églises de maison de 12 membres dans 250 nations"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "1 million d'églises de maison de 50 à 100 membres dans 200 nations"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il a annoncé ce but : 1 million d'églises de maison de 50 à 100 membres dans 200 nations, conduites par 1 million de faiseurs de disciples."
+              },
+              "source": "ministry:leader"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

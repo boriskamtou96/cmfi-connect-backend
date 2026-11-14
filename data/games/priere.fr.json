@@ -1784,6 +1784,611 @@
           ]
         }
       ]
+    },
+    {
+      "title": {
+        "fr": "Prières exaucées et Psaumes"
+      },
+      "description": {
+        "fr": "Ce que Dieu a fait quand on l’a prié, et les Psaumes comme prières."
+      },
+      "color": "#B4521E",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Des prières exaucées"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sur le Carmel, combien de fois Élie dit-il à son serviteur de retourner regarder du côté de la mer ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Trois fois"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept fois"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douze fois"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quarante fois"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Élie pria, le visage entre ses genoux ; à la septième fois, un petit nuage s’éleva de la mer, puis il y eut une forte pluie."
+              },
+              "source": "1 Rois 18.42-45"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que demanda Élisée à l’Éternel pour son serviteur, effrayé par la troupe qui entourait Dothan ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Qu’il fasse tomber la pluie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Qu’il envoie le feu du ciel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Qu’il lui donne une épée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Qu’il ouvre ses yeux, pour qu’il voie"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Élisée pria : « Éternel, ouvre ses yeux, pour qu’il voie. » Le serviteur vit la montagne pleine de chevaux et de chars de feu autour d’Élisée."
+              },
+              "source": "2 Rois 6.13-17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "La première nuit, quel signe Gédéon demanda-t-il à Dieu avec la toison ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "La toison sèche, et tout le terrain couvert de rosée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Du feu sur la toison"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La toison seule couverte de rosée, et tout le terrain sec"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "La toison changée en sang"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Dieu accorda ce signe ; la nuit suivante, à la demande de Gédéon, la toison seule resta sèche et tout le terrain se couvrit de rosée."
+              },
+              "source": "Juges 6.36-40"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que fit Dieu quand Jaebets le pria de le bénir et d’étendre ses limites ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il lui demanda d’attendre sept ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Il accorda ce qu’il avait demandé"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il refusa, à cause de son orgueil"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il lui envoya un prophète"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Jaebets invoqua le Dieu d’Israël : « Si tu me bénis et que tu étendes mes limites… » Et Dieu accorda ce qu’il avait demandé."
+              },
+              "source": "1 Chroniques 4.10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Le serviteur d’Abraham pria près de la source. Qui arriva avant même qu’il ait fini de parler ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Rebecca"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Rachel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Léa"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Milca"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Il demanda à l’Éternel de lui faire rencontrer la femme destinée à Isaac ; il n’avait pas encore fini de parler que Rebecca sortit, sa cruche sur l’épaule."
+              },
+              "source": "Genèse 24.12-15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Que se passa-t-il lorsque Salomon eut achevé de prier, à la dédicace du temple ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un grand tremblement de terre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Une voix se fit entendre du ciel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il se mit à pleuvoir"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le feu descendit du ciel et consuma l’holocauste"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Lorsque Salomon eut achevé de prier, le feu descendit du ciel et consuma l’holocauste et les sacrifices, et la gloire de l’Éternel remplit la maison. »"
+              },
+              "source": "2 Chroniques 7.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sous Josaphat, que fit l’Éternel au moment où l’on commençait les chants et les louanges ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Il plaça une embuscade contre les ennemis"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Il fit tomber la grêle sur eux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Il ouvrit la terre sous leurs pieds"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Il fit reculer la mer"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Les chantres marchaient devant l’armée : « Louez l’Éternel, car sa miséricorde dure à toujours ! » L’Éternel plaça une embuscade, et les ennemis se détruisirent entre eux."
+              },
+              "source": "2 Chroniques 20.21-23"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "L’ange dit à Zacharie que sa prière avait été exaucée : sa femme Élisabeth lui enfanterait un fils."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "« Ne crains point, Zacharie ; car ta prière a été exaucée. Ta femme Élisabeth t’enfantera un fils, et tu lui donneras le nom de Jean. »"
+              },
+              "source": "Luc 1.13"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les Psaumes, des prières"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Selon son titre, quand David composa-t-il le Psaume 51, une prière de repentance ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Quand il fuyait devant Saül"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Quand le prophète Nathan vint à lui, après Bath-Schéba"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Après sa victoire sur Goliath"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À la dédicace du temple"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Le titre précise : « Lorsque Nathan, le prophète, vint à lui, après que David fut allé vers Bath-Schéba. » David y implore le pardon de Dieu."
+              },
+              "source": "Psaume 51.1-2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel psaume est intitulé « Prière de Moïse, homme de Dieu » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Psaume 23"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Psaume 51"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Psaume 90"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Psaume 150"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Le Psaume 90 commence ainsi : « Seigneur ! Tu as été pour nous un refuge, De génération en génération. »"
+              },
+              "source": "Psaume 90.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quels moments de la journée David dit-il soupirer et gémir devant Dieu, au Psaume 55 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Le soir, le matin, et à midi"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Seulement la nuit"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Au lever du soleil"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Avant chaque repas"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Le soir, le matin, et à midi, je soupire et je gémis, Et il entendra ma voix. »"
+              },
+              "source": "Psaume 55.18"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Le cri de Jésus sur la croix, « Mon Dieu, mon Dieu, pourquoi m’as-tu abandonné ? », est au début de quel psaume ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Psaume 1"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Psaume 23"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Psaume 91"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Psaume 22"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Le Psaume 22 commence par : « Mon Dieu ! Mon Dieu ! Pourquoi m’as-tu abandonné… ? » Jésus cria ces paroles vers la neuvième heure."
+              },
+              "source": "Psaume 22.2 ; Matthieu 27.46"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "À quoi David compare-t-il sa prière, au Psaume 141 ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "À la rosée du matin"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "À l’encens"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "À une flèche"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "À une source d’eau"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Que ma prière soit devant ta face comme l’encens, Et l’élévation de mes mains comme l’offrande du soir ! »"
+              },
+              "source": "Psaume 141.2"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Par quel appel se termine le dernier psaume ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "« Amen ! Amen ! »"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "« Mon âme, bénis l’Éternel ! »"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "« Que tout ce qui respire loue l’Éternel ! »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "« Gloire à Dieu dans les lieux très hauts ! »"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Le Psaume 150 s’achève par : « Que tout ce qui respire loue l’Éternel ! Louez l’Éternel ! » Le livre des Psaumes finit dans la louange."
+              },
+              "source": "Psaume 150.6"
+            },
+            {
+              "kind": "match",
+              "prompt": {
+                "fr": "Relie chaque psaume à ses premières paroles."
+              },
+              "choices": [
+                {
+                  "id": "l1",
+                  "text": {
+                    "fr": "Psaume 1"
+                  }
+                },
+                {
+                  "id": "l2",
+                  "text": {
+                    "fr": "Psaume 23"
+                  }
+                },
+                {
+                  "id": "l3",
+                  "text": {
+                    "fr": "Psaume 121"
+                  }
+                },
+                {
+                  "id": "r1",
+                  "text": {
+                    "fr": "« Je lève mes yeux vers les montagnes »"
+                  }
+                },
+                {
+                  "id": "r2",
+                  "text": {
+                    "fr": "« Heureux l’homme qui ne marche pas selon le conseil des méchants »"
+                  }
+                },
+                {
+                  "id": "r3",
+                  "text": {
+                    "fr": "« L’Éternel est mon berger »"
+                  }
+                }
+              ],
+              "answer": "l1=r2,l2=r3,l3=r1",
+              "explanation": {
+                "fr": "Le Psaume 1 parle de l’homme heureux, le Psaume 23 du berger, et le Psaume 121 du secours qui vient de l’Éternel."
+              },
+              "source": "Psaume 1.1 ; 23.1 ; 121.1"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Le Psaume 3 fut composé par David lorsqu’il fuyait devant Saül."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "false",
+              "explanation": {
+                "fr": "Faux : son titre le dit : « A l’occasion de sa fuite devant Absalom, son fils. » David y prie : « Mais toi, ô Éternel ! Tu es mon bouclier. »"
+              },
+              "source": "Psaume 3.1-4"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

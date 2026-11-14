@@ -1856,6 +1856,623 @@
           ]
         }
       ]
+    },
+    {
+      "title": {
+        "fr": "La sainteté et l’espérance"
+      },
+      "description": {
+        "fr": "Une vie mise à part pour Dieu, et l’attente de ses promesses."
+      },
+      "color": "#2E9E5B",
+      "lessons": [
+        {
+          "title": {
+            "fr": "La sainteté"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Mais, puisque celui qui vous a appelés est saint, vous aussi soyez saints dans toute votre ___, selon qu’il est écrit : Vous serez saints, car je suis saint. (1 Pierre 1.15-16)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "parole"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "conduite"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "pensée"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "maison"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Mais, puisque celui qui vous a appelés est saint, vous aussi soyez saints dans toute votre conduite, selon qu’il est écrit : Vous serez saints, car je suis saint. » (1 Pierre 1.15-16, Louis Segond)"
+              },
+              "source": "1 Pierre 1.15-16"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Recherchez la paix avec tous, et la ___, sans laquelle personne ne verra le Seigneur. (Hébreux 12.14)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "sagesse"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "prière"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "sanctification"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "connaissance"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Recherchez la paix avec tous, et la sanctification, sans laquelle personne ne verra le Seigneur. » (Hébreux 12.14, Louis Segond)"
+              },
+              "source": "Hébreux 12.14"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Heureux ceux qui ont le cœur pur, car ils ___ Dieu ! (Matthieu 5.8)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "verront"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "serviront"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "loueront"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "connaîtront"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Heureux ceux qui ont le cœur pur, car ils verront Dieu ! » (Matthieu 5.8, Louis Segond)"
+              },
+              "source": "Matthieu 5.8"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "O Dieu ! Crée en moi un cœur ___, Renouvelle en moi un esprit bien disposé. (Psaume 51.12)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "nouveau"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "doux"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "fidèle"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "pur"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« O Dieu ! Crée en moi un cœur pur, Renouvelle en moi un esprit bien disposé. » (Psaume 51.12, Louis Segond)"
+              },
+              "source": "Psaume 51.12"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je serre ta ___ dans mon cœur, Afin de ne pas pécher contre toi. (Psaume 119.11)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "loi"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "parole"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "promesse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "louange"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Je serre ta parole dans mon cœur, Afin de ne pas pécher contre toi. » (Psaume 119.11, Louis Segond)"
+              },
+              "source": "Psaume 119.11"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car Dieu ne nous a pas appelés à l’___, mais à la sanctification. (1 Thessaloniciens 4.7)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "colère"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "paresse"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "impureté"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "tristesse"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Car Dieu ne nous a pas appelés à l’impureté, mais à la sanctification. » (1 Thessaloniciens 4.7, Louis Segond)"
+              },
+              "source": "1 Thessaloniciens 4.7"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Ne savez-vous pas que votre corps est le ___ du Saint-Esprit qui est en vous, que vous avez reçu de Dieu, et que vous ne vous appartenez point à vous-mêmes ? (1 Corinthiens 6.19)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "temple"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "trésor"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "serviteur"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "vase"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Ne savez-vous pas que votre corps est le temple du Saint-Esprit qui est en vous, que vous avez reçu de Dieu, et que vous ne vous appartenez point à vous-mêmes ? » (1 Corinthiens 6.19, Louis Segond)"
+              },
+              "source": "1 Corinthiens 6.19"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je dis donc : Marchez selon l’Esprit, et vous n’accomplirez pas les désirs de la ___. (Galates 5.16)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "terre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "loi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "nature"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "chair"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Je dis donc : Marchez selon l’Esprit, et vous n’accomplirez pas les désirs de la chair. » (Galates 5.16, Louis Segond)"
+              },
+              "source": "Galates 5.16"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "L’espérance"
+          },
+          "questions": [
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Car je connais les projets que j’ai formés sur vous, dit l’Éternel, projets de paix et non de malheur, afin de vous donner un ___ et de l’espérance. (Jérémie 29.11)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "royaume"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "avenir"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "héritage"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "repos"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Car je connais les projets que j’ai formés sur vous, dit l’Éternel, projets de paix et non de malheur, afin de vous donner un avenir et de l’espérance. » (Jérémie 29.11, Louis Segond)"
+              },
+              "source": "Jérémie 29.11"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Que le Dieu de l’espérance vous remplisse de toute ___ et de toute paix dans la foi, pour que vous abondiez en espérance, par la puissance du Saint-Esprit ! (Romains 15.13)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "joie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "force"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "sagesse"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "grâce"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Que le Dieu de l’espérance vous remplisse de toute joie et de toute paix dans la foi, pour que vous abondiez en espérance, par la puissance du Saint-Esprit ! » (Romains 15.13, Louis Segond)"
+              },
+              "source": "Romains 15.13"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Les bontés de l’Éternel ne sont pas épuisées, Ses compassions ne sont pas à leur terme ; Elles se renouvellent chaque ___. Oh ! Que ta fidélité est grande ! (Lamentations 3.22-23)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "jour"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "soir"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "matin"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "année"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Les bontés de l’Éternel ne sont pas épuisées, Ses compassions ne sont pas à leur terme ; Elles se renouvellent chaque matin. Oh ! Que ta fidélité est grande ! » (Lamentations 3.22-23, Louis Segond)"
+              },
+              "source": "Lamentations 3.22-23"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Il y a plusieurs ___ dans la maison de mon Père. Si cela n’était pas, je vous l’aurais dit. Je vais vous préparer une place. (Jean 14.2)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "palais"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "chambres"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "portes"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "demeures"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Il y a plusieurs demeures dans la maison de mon Père. Si cela n’était pas, je vous l’aurais dit. Je vais vous préparer une place. » (Jean 14.2, Louis Segond)"
+              },
+              "source": "Jean 14.2"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Il essuiera toute ___ de leurs yeux, et la mort ne sera plus, et il n’y aura plus ni deuil, ni cri, ni douleur, car les premières choses ont disparu. (Apocalypse 21.4)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "tache"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "larme"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "ombre"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "peine"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Il essuiera toute larme de leurs yeux, et la mort ne sera plus, et il n’y aura plus ni deuil, ni cri, ni douleur, car les premières choses ont disparu. » (Apocalypse 21.4, Louis Segond)"
+              },
+              "source": "Apocalypse 21.4"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Or, l’espérance ne ___ point, parce que l’amour de Dieu est répandu dans nos cœurs par le Saint-Esprit qui nous a été donné. (Romains 5.5)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "tarde"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "faiblit"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "trompe"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "finit"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Or, l’espérance ne trompe point, parce que l’amour de Dieu est répandu dans nos cœurs par le Saint-Esprit qui nous a été donné. » (Romains 5.5, Louis Segond)"
+              },
+              "source": "Romains 5.5"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Pourquoi t’abats-tu, mon âme, et gémis-tu au-dedans de moi ? ___ en Dieu, car je le louerai encore ; Il est mon salut et mon Dieu. (Psaume 42.12)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Espère"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Chante"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Demeure"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Marche"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "« Pourquoi t’abats-tu, mon âme, et gémis-tu au-dedans de moi ? Espère en Dieu, car je le louerai encore ; Il est mon salut et mon Dieu. » (Psaume 42.12, Louis Segond)"
+              },
+              "source": "Psaume 42.12"
+            },
+            {
+              "kind": "fill_verse",
+              "prompt": {
+                "fr": "Je suis persuadé que celui qui a commencé en vous cette bonne ___ la rendra parfaite pour le jour de Jésus-Christ. (Philippiens 1.6)"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "course"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "semence"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "nouvelle"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "œuvre"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Je suis persuadé que celui qui a commencé en vous cette bonne œuvre la rendra parfaite pour le jour de Jésus-Christ. » (Philippiens 1.6, Louis Segond)"
+              },
+              "source": "Philippiens 1.6"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

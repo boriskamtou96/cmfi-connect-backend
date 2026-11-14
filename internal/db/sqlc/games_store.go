@@ -92,6 +92,87 @@ func (s *SQLStore) ImportGameCourseTx(ctx context.Context, course GameCourseImpo
 	return result, err
 }
 
+// AppendGameLevelsTx adds to course [courseID] the [levels] it lacks, after
+// its own, with their lessons and questions, published at [published] (or
+// drafts). A level is already there when the course has a level, or a
+// lesson, with the same French title: one renamed by an admin keeps its
+// lessons. Nothing that exists is touched, so what members played stays.
+func (s *SQLStore) AppendGameLevelsTx(ctx context.Context, courseID int64, levels []GameLevelImport, published sql.NullTime) (GameCourseImportResult, error) {
+	var result GameCourseImportResult
+	err := s.execTx(ctx, func(q *Queries) error {
+		have, err := q.ListAdminGameLevels(ctx, courseID)
+		if err != nil {
+			return err
+		}
+		lessons, err := q.ListAdminGameLessons(ctx, courseID)
+		if err != nil {
+			return err
+		}
+		known := map[string]bool{}
+		position := int32(0)
+		for _, level := range have {
+			known[frenchTitle(level.Title)] = true
+			position = max(position, level.Position)
+		}
+		knownLessons := map[string]bool{}
+		for _, lesson := range lessons {
+			knownLessons[frenchTitle(lesson.Title)] = true
+		}
+		for _, level := range levels {
+			if known[frenchTitle(level.Title)] || anyLessonKnown(level, knownLessons) {
+				continue
+			}
+			position++
+			levelID, err := q.CreateGameLevel(ctx, CreateGameLevelParams{
+				CourseID: courseID, Position: position, Title: level.Title,
+				Description: level.Description, Color: level.Color, PublishedAt: published,
+			})
+			if err != nil {
+				return err
+			}
+			known[frenchTitle(level.Title)] = true
+			result.Levels++
+			for n, lesson := range level.Lessons {
+				lessonID, err := q.CreateGameLesson(ctx, CreateGameLessonParams{
+					LevelID: levelID, Position: int32(n + 1), Title: lesson.Title, PublishedAt: published,
+				})
+				if err != nil {
+					return err
+				}
+				result.Lessons++
+				for p, question := range lesson.Questions {
+					question.LessonID = lessonID
+					question.Position = int32(p + 1)
+					if err := q.CreateGameQuestion(ctx, question); err != nil {
+						return err
+					}
+					result.Questions++
+				}
+			}
+		}
+		return nil
+	})
+	return result, err
+}
+
+// frenchTitle is the French text of a title ({"fr": "…"}), "" when unreadable.
+func frenchTitle(raw json.RawMessage) string {
+	var texts map[string]string
+	if json.Unmarshal(raw, &texts) != nil {
+		return ""
+	}
+	return texts["fr"]
+}
+
+func anyLessonKnown(level GameLevelImport, known map[string]bool) bool {
+	for _, lesson := range level.Lessons {
+		if title := frenchTitle(lesson.Title); title != "" && known[title] {
+			return true
+		}
+	}
+	return false
+}
+
 // WithGamePlayerTx runs [fn] in a transaction with the player's line locked
 // (made if they never played): two plays of one member wait in line, and a
 // play sent twice is seen by the second.

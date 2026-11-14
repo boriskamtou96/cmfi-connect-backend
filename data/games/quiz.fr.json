@@ -6434,6 +6434,926 @@
           ]
         }
       ]
+    },
+    {
+      "title": {
+        "fr": "Personnages de la Bible"
+      },
+      "description": {
+        "fr": "Des femmes de foi et des personnages méconnus."
+      },
+      "color": "#A23B5A",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les femmes de l’Ancien Testament"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle prophétesse, sœur d’Aaron, prit un tambourin après le passage de la mer Rouge ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Débora"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Marie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Hulda"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "« Marie, la prophétesse, sœur d’Aaron, prit à sa main un tambourin », et toutes les femmes la suivirent en dansant."
+              },
+              "source": "Exode 15.20"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait la mère de Moïse et d’Aaron ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Séphora"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Milca"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jokébed"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ketura"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Amram prit pour femme Jokébed, qui lui enfanta Aaron et Moïse. Séphora, elle, fut la femme de Moïse."
+              },
+              "source": "Exode 6.20 ; 2.21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle femme tua Sisera, le chef de l’armée de Jabin, avec un pieu de la tente ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jaël"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Débora"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Rahab"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Delila"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Débora avait annoncé que l’Éternel livrerait Sisera entre les mains d’une femme : Jaël, femme de Héber, lui enfonça un pieu dans la tempe."
+              },
+              "source": "Juges 4.2-21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait l’autre femme d’Elkana, qui avait des enfants et mortifiait Anne ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Orpa"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Agar"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Léa"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Peninna"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Elkana avait deux femmes : Peninna, qui avait des enfants, et Anne, qui n’en avait point. Sa rivale lui prodiguait les mortifications."
+              },
+              "source": "1 Samuel 1.2-6"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle femme apaisa David irrité contre Nabal, puis devint sa femme après la mort de Nabal ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Abigaïl"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Bath-Schéba"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Mical"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tamar"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Abigaïl, « femme de bon sens », vint au-devant de David et l’empêcha de verser le sang ; après la mort de Nabal, elle devint sa femme."
+              },
+              "source": "1 Samuel 25.3-42"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle reine vint éprouver Salomon par des énigmes ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Vasthi"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jézabel"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La reine de Séba"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Athalie"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "La reine de Séba apprit la renommée de Salomon, à la gloire de l’Éternel, et vint l’éprouver par des énigmes."
+              },
+              "source": "1 Rois 10.1"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle reine refusa de venir quand le roi Assuérus la fit appeler ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Esther"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Athalie"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jézabel"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Vasthi"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "La reine Vasthi refusa de venir à l’ordre du roi. Plus tard, le roi mit la couronne royale sur la tête d’Esther, à la place de Vasthi."
+              },
+              "source": "Esther 1.12 ; 2.17"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Léa mourut en donnant naissance à Benjamin, sur le chemin de Bethléhem."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "false",
+              "explanation": {
+                "fr": "Faux : c’est Rachel. Mourante, Rachel appela son fils Ben-Oni, mais Jacob l’appela Benjamin. Elle fut enterrée sur le chemin d’Éphrata, qui est Bethléhem."
+              },
+              "source": "Genèse 35.16-19"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les femmes du Nouveau Testament"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle marchande de pourpre, de la ville de Thyatire, fut baptisée à Philippes avec sa famille ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Lydie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Priscille"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Dorcas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Phœbé"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Le Seigneur ouvrit le cœur de Lydie pour qu’elle soit attentive à ce que disait Paul ; elle fut baptisée et reçut les apôtres dans sa maison."
+              },
+              "source": "Actes 16.12-15"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel autre nom portait Tabitha, la disciple de Joppé que Pierre ressuscita ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Rhode"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Dorcas"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Damaris"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Chloé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Tabitha, « ce qui signifie Dorcas », faisait beaucoup de bonnes œuvres. Pierre pria, puis dit : « Tabitha, lève-toi ! »"
+              },
+              "source": "Actes 9.36-40"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait le mari de Priscille, faiseur de tentes comme Paul ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Silas"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Apollos"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Aquilas"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Tite"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "À Corinthe, Paul trouva Aquilas et sa femme Priscille ; ayant le même métier, il demeura chez eux : ils étaient faiseurs de tentes."
+              },
+              "source": "Actes 18.2-3"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle servante reconnut la voix de Pierre, sorti de prison, et courut l’annoncer au lieu d’ouvrir ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jeanne"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Marthe"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lydie"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Rhode"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Rhode reconnut la voix de Pierre ; dans sa joie, au lieu d’ouvrir, elle courut annoncer que Pierre était devant la porte."
+              },
+              "source": "Actes 12.13-14"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait l’aïeule de Timothée, dont Paul rappelle la foi sincère ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Eunice"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Loïs"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Anne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Salomé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "La foi sincère de Timothée « habita d’abord dans ton aïeule Loïs et dans ta mère Eunice »."
+              },
+              "source": "2 Timothée 1.5"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle femme mentit avec son mari Ananias sur le prix d’une propriété vendue ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Saphira"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Drusille"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Bérénice"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Hérodias"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Ananias et Saphira vendirent une propriété et retinrent une partie du prix en mentant ; tous deux tombèrent morts."
+              },
+              "source": "Actes 5.1-10"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quelle sœur, diaconesse de l’Église de Cenchrées, Paul recommande-t-il aux Romains ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Évodie"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Claudia"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Phœbé"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Syntyche"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Je vous recommande Phœbé, notre sœur, qui est diaconesse de l’Église de Cenchrées. »"
+              },
+              "source": "Romains 16.1"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Philippe l’évangéliste avait quatre filles qui prophétisaient."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "À Césarée, Paul logea chez Philippe l’évangéliste, l’un des sept, qui « avait quatre filles vierges qui prophétisaient »."
+              },
+              "source": "Actes 21.8-9"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Des personnages méconnus"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel jeune homme s’endormit sur la fenêtre pendant un long discours de Paul, et tomba du troisième étage ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Eutychus"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Tychique"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trophime"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Onésime"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Eutychus fut relevé mort ; Paul descendit, le prit dans ses bras, et le jeune homme fut ramené vivant."
+              },
+              "source": "Actes 20.9-12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel serviteur d’Élisée fut frappé de la lèpre de Naaman pour avoir couru après lui et menti ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Baruc"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Guéhazi"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Tsiba"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Abner"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Guéhazi obtint de Naaman de l’argent et des vêtements, puis mentit à Élisée ; il sortit de sa présence avec une lèpre comme la neige."
+              },
+              "source": "2 Rois 5.20-27"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel Éthiopien, eunuque de la maison du roi, fit retirer Jérémie de la citerne ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Baruc"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Seraja"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Ébed-Mélec"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Guedalia"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Ébed-Mélec, l’Éthiopien, apprit qu’on avait mis Jérémie dans la citerne ; on tira le prophète avec des cordes et on le fit monter."
+              },
+              "source": "Jérémie 38.7-13"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui saisit l’arche de Dieu, que les bœufs faisaient pencher, et fut frappé de mort sur place ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Achjo"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Obed-Édom"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Abinadab"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Uzza"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Uzza étendit la main vers l’arche et la saisit ; Dieu le frappa à cause de sa faute. L’arche fut ensuite conduite chez Obed-Édom."
+              },
+              "source": "2 Samuel 6.6-11"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel fils de Jonathan, boiteux des deux pieds, mangeait toujours à la table du roi David ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Mephiboscheth"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Isch-Boscheth"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Absalom"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Amnon"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Par amour pour Jonathan, David fit venir Mephiboscheth, qui habita à Jérusalem et mangea toujours à la table du roi."
+              },
+              "source": "2 Samuel 9.6-13"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel libérateur d’Israël, un Benjamite qui ne se servait pas de la main droite, tua Églon, roi de Moab ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Othniel"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Éhud"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Schamgar"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jephthé"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Éhud, fils de Guéra, apporta un présent à Églon ; il avança la main gauche, tira l’épée de son côté droit et la lui enfonça dans le ventre."
+              },
+              "source": "Juges 3.15-21"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Pour qui Paul écrivit-il à Philémon, demandant de le recevoir « comme un frère bien-aimé » ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Tychique"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Démas"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Épaphras"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Onésime"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Paul appelle Onésime « mon enfant, que j’ai engendré étant dans les chaînes », et le renvoie « non plus comme un esclave »."
+              },
+              "source": "Philémon 10-16"
+            },
+            {
+              "kind": "match",
+              "prompt": {
+                "fr": "Relie chaque personnage à son métier ou à sa fonction."
+              },
+              "choices": [
+                {
+                  "id": "l1",
+                  "text": {
+                    "fr": "Luc"
+                  }
+                },
+                {
+                  "id": "l2",
+                  "text": {
+                    "fr": "Zénas"
+                  }
+                },
+                {
+                  "id": "l3",
+                  "text": {
+                    "fr": "Éraste"
+                  }
+                },
+                {
+                  "id": "l4",
+                  "text": {
+                    "fr": "Démétrius"
+                  }
+                },
+                {
+                  "id": "r1",
+                  "text": {
+                    "fr": "Orfèvre"
+                  }
+                },
+                {
+                  "id": "r2",
+                  "text": {
+                    "fr": "Médecin"
+                  }
+                },
+                {
+                  "id": "r3",
+                  "text": {
+                    "fr": "Trésorier de la ville"
+                  }
+                },
+                {
+                  "id": "r4",
+                  "text": {
+                    "fr": "Docteur de la loi"
+                  }
+                }
+              ],
+              "answer": "l1=r2,l2=r4,l3=r3,l4=r1",
+              "explanation": {
+                "fr": "Luc est « le médecin bien-aimé », Zénas « le docteur de la loi », Éraste « le trésorier de la ville » et Démétrius un orfèvre d’Éphèse."
+              },
+              "source": "Colossiens 4.14 ; Tite 3.13 ; Romains 16.23 ; Actes 19.24"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

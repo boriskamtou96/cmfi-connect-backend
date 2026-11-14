@@ -3018,6 +3018,611 @@
           ]
         }
       ]
+    },
+    {
+      "title": {
+        "fr": "Paraboles et miracles"
+      },
+      "description": {
+        "fr": "Ce que Jésus a enseigné en paraboles, et les miracles qu’il a faits."
+      },
+      "color": "#8A5A0F",
+      "lessons": [
+        {
+          "title": {
+            "fr": "Les paraboles de Jésus"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans la parabole du semeur, que représente la semence ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Les bonnes œuvres"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "La foi des disciples"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "La parole de Dieu"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Le royaume des cieux"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Jésus l’explique lui-même : « La semence, c’est la parole de Dieu. »"
+              },
+              "source": "Luc 8.11"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans la parabole du bon Samaritain, qui passa outre sans secourir l’homme blessé ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un Samaritain et un Lévite"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un sacrificateur et un Lévite"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Deux brigands"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un pharisien et un publicain"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Un sacrificateur puis un Lévite passèrent outre ; c’est un Samaritain, ému de compassion, qui banda ses plaies et prit soin de lui."
+              },
+              "source": "Luc 10.31-34"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Quel travail le fils prodigue dut-il faire dans le pays éloigné ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Garder les pourceaux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Garder les brebis"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Travailler dans une vigne"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Pêcher sur le lac"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Ruiné, il fut envoyé dans les champs garder les pourceaux. Revenu à lui, il retourna vers son père, qui l’accueillit avec joie."
+              },
+              "source": "Luc 15.15-24"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de brebis le berger laisse-t-il dans le désert pour aller chercher celle qui est perdue ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Neuf"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Onze"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Quarante-neuf"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Quatre-vingt-dix-neuf"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "Il laisse les quatre-vingt-dix-neuf autres pour chercher la brebis perdue : il y a de la joie dans le ciel pour un seul pécheur qui se repent."
+              },
+              "source": "Luc 15.4-7"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Sur quoi l’homme prudent bâtit-il sa maison ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Sur le sable"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sur le roc"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Sur une colline"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Au bord du fleuve"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Celui qui entend les paroles de Jésus et les met en pratique est semblable à un homme prudent qui a bâti sa maison sur le roc : elle n’est point tombée."
+              },
+              "source": "Matthieu 7.24-25"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Dans la parabole des dix vierges, combien étaient sages ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Deux"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Cinq"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "« Cinq d’entre elles étaient folles, et cinq sages. » Les sages avaient pris de l’huile avec leurs lampes. « Veillez donc. »"
+              },
+              "source": "Matthieu 25.2-13"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Dans la parabole des talents, le serviteur qui n’avait reçu qu’un talent le fit valoir et en gagna un autre."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "false",
+              "explanation": {
+                "fr": "Faux : il eut peur et cacha l’argent de son maître dans la terre, au lieu de le faire valoir comme les deux autres serviteurs."
+              },
+              "source": "Matthieu 25.18-25"
+            },
+            {
+              "kind": "match",
+              "prompt": {
+                "fr": "Relie chaque image du royaume des cieux à ce que Jésus en dit."
+              },
+              "choices": [
+                {
+                  "id": "l1",
+                  "text": {
+                    "fr": "Le grain de sénevé"
+                  }
+                },
+                {
+                  "id": "l2",
+                  "text": {
+                    "fr": "Le levain"
+                  }
+                },
+                {
+                  "id": "l3",
+                  "text": {
+                    "fr": "Le filet jeté dans la mer"
+                  }
+                },
+                {
+                  "id": "r1",
+                  "text": {
+                    "fr": "Toute la pâte est levée"
+                  }
+                },
+                {
+                  "id": "r2",
+                  "text": {
+                    "fr": "Il ramasse des poissons de toute espèce"
+                  }
+                },
+                {
+                  "id": "r3",
+                  "text": {
+                    "fr": "Il devient un arbre où les oiseaux habitent"
+                  }
+                }
+              ],
+              "answer": "l1=r3,l2=r1,l3=r2",
+              "explanation": {
+                "fr": "Le grain de sénevé devient un arbre, le levain fait lever toute la pâte, et le filet ramasse des poissons de toute espèce."
+              },
+              "source": "Matthieu 13.31-33 ; 13.47"
+            }
+          ]
+        },
+        {
+          "title": {
+            "fr": "Les miracles de Jésus"
+          },
+          "questions": [
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment s’appelait le mendiant aveugle que Jésus guérit à la sortie de Jéricho ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Zachée"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Bartimée"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Lazare"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Jaïrus"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Bartimée, fils de Timée, cria : « Fils de David, Jésus aie pitié de moi ! » Jésus lui dit : « Va, ta foi t’a sauvé. »"
+              },
+              "source": "Marc 10.46-52"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était Jaïrus, dont Jésus ressuscita la fille ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un centenier romain"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un publicain"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un des chefs de la synagogue"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un sacrificateur"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Jaïrus, un des chefs de la synagogue, se jeta aux pieds de Jésus. Jésus ressuscita sa fille, qui avait douze ans."
+              },
+              "source": "Marc 5.22-42"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Combien de lépreux Jésus guérit-il, alors qu’un seul revint lui rendre grâces ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Dix"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Sept"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Douze"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Trois"
+                  }
+                }
+              ],
+              "answer": "a",
+              "explanation": {
+                "fr": "Les dix furent guéris en chemin, mais un seul revint glorifier Dieu. Jésus demanda : « Et les neuf autres, où sont-ils ? »"
+              },
+              "source": "Luc 17.12-17"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Qui était le lépreux qui revint remercier Jésus ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Un Lévite"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Un Galiléen"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Un Romain"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Un Samaritain"
+                  }
+                }
+              ],
+              "answer": "d",
+              "explanation": {
+                "fr": "« Il tomba sur sa face aux pieds de Jésus, et lui rendit grâces. C’était un Samaritain. »"
+              },
+              "source": "Luc 17.16"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Comment les porteurs du paralytique l’amenèrent-ils devant Jésus, malgré la foule ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Par une fenêtre"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Ils le descendirent par le toit"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Par une porte de derrière"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Ils attendirent que la foule parte"
+                  }
+                }
+              ],
+              "answer": "b",
+              "explanation": {
+                "fr": "Ils découvrirent le toit de la maison et descendirent le lit du paralytique. Jésus, voyant leur foi, lui pardonna et le guérit."
+              },
+              "source": "Marc 2.3-12"
+            },
+            {
+              "kind": "choice",
+              "prompt": {
+                "fr": "Depuis combien d’années l’homme guéri près de la piscine de Béthesda était-il malade ?"
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Douze ans"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Quarante ans"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Trente-huit ans"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Dix-huit ans"
+                  }
+                }
+              ],
+              "answer": "c",
+              "explanation": {
+                "fr": "Il était malade depuis trente-huit ans. Jésus lui dit : « Lève-toi, prends ton lit, et marche. » Aussitôt il fut guéri."
+              },
+              "source": "Jean 5.2-9"
+            },
+            {
+              "kind": "true_false",
+              "prompt": {
+                "fr": "Pierre marcha sur les eaux pour aller vers Jésus."
+              },
+              "choices": [
+                {
+                  "id": "true",
+                  "text": {
+                    "fr": "Vrai"
+                  }
+                },
+                {
+                  "id": "false",
+                  "text": {
+                    "fr": "Faux"
+                  }
+                }
+              ],
+              "answer": "true",
+              "explanation": {
+                "fr": "Pierre sortit de la barque et marcha sur les eaux ; voyant le vent fort, il eut peur et commença à enfoncer, et Jésus le saisit."
+              },
+              "source": "Matthieu 14.28-31"
+            },
+            {
+              "kind": "order",
+              "prompt": {
+                "fr": "Remets dans l’ordre le récit de la résurrection de Lazare."
+              },
+              "choices": [
+                {
+                  "id": "a",
+                  "text": {
+                    "fr": "Jésus pleura"
+                  }
+                },
+                {
+                  "id": "b",
+                  "text": {
+                    "fr": "Jésus apprend que Lazare est malade et reste encore deux jours"
+                  }
+                },
+                {
+                  "id": "c",
+                  "text": {
+                    "fr": "Jésus crie : « Lazare, sors ! »"
+                  }
+                },
+                {
+                  "id": "d",
+                  "text": {
+                    "fr": "Marthe va au-devant de Jésus"
+                  }
+                }
+              ],
+              "answer": "b,d,a,c",
+              "explanation": {
+                "fr": "Jésus resta encore deux jours, puis Marthe alla au-devant de lui ; devant le tombeau Jésus pleura, puis cria : « Lazare, sors ! »"
+              },
+              "source": "Jean 11.6 ; 11.20 ; 11.35 ; 11.43"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

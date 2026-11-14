@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -76,4 +78,57 @@ func TestTheServerShipsItsCourses(t *testing.T) {
 		names = append(names, entry.Name())
 	}
 	require.Subset(t, names, []string{"ministry.fr.json", "bible.fr.json", "versets.fr.json", "priere.fr.json", "quiz.fr.json"})
+}
+
+// twoLevelCourse is [code] with « Niveau 1 » (renamed or not in the
+// database) and « Niveau 2 », added to the file since.
+func twoLevelCourse(t *testing.T, code string) []byte {
+	level := func(n int) map[string]any {
+		return map[string]any{
+			"title":   map[string]string{"fr": fmt.Sprintf("Niveau %d", n)},
+			"lessons": []map[string]any{{"title": map[string]string{"fr": fmt.Sprintf("Leçon %d", n)}, "questions": sampleQuestions(8)}},
+		}
+	}
+	raw, err := json.Marshal(map[string]any{
+		"code": code, "position": 9, "title": map[string]string{"fr": "Parcours"}, "published": true,
+		"levels": []map[string]any{level(1), level(2)},
+	})
+	require.NoError(t, err)
+	return raw
+}
+
+func TestTheLevelsAddedToAShippedCourseReachTheDatabaseOnce(t *testing.T) {
+	router := newTestRouter(t)
+	token := adminToken(t, router)
+	server, err := New(testStore, &utils.Config{Token: utils.TokenConfig{SecretKey: strings.Repeat("k", 32), Duration: "15m"}})
+	require.NoError(t, err)
+	code := newCourseCode()
+	t.Cleanup(func() { _ = testStore.DeleteGameCourse(context.Background(), code) })
+
+	// the course as it was first shipped, then its first level renamed by
+	// an admin in the back-office
+	first := fstest.MapFS{code + ".fr.json": {Data: shippedCourse(t, code, "Parcours")}}
+	require.NoError(t, server.ImportShippedGameCourses(context.Background(), first))
+	level := readCourse(t, router, token, code).Levels[0]
+	renamed := adminGames(t, router, http.MethodPut, token, fmt.Sprintf("/levels/%d", level.ID), map[string]any{
+		"title": map[string]string{"fr": "Les débuts"}, "color": "#7A4A98", "published": true,
+	})
+	require.Equal(t, http.StatusOK, renamed.Code, renamed.Body.String())
+
+	// the file has a new level since: it comes after, published, and the
+	// renamed one stays as the admin left it, not added again
+	later := fstest.MapFS{code + ".fr.json": {Data: twoLevelCourse(t, code)}}
+	require.NoError(t, server.ImportShippedGameCourses(context.Background(), later))
+	course := readCourse(t, router, token, code)
+	require.Len(t, course.Levels, 2)
+	require.Equal(t, level.ID, course.Levels[0].ID)
+	require.Equal(t, "Les débuts", course.Levels[0].Title["fr"])
+	require.Equal(t, "Niveau 2", course.Levels[1].Title["fr"])
+	require.Equal(t, 2, course.Levels[1].Position)
+	require.True(t, course.Levels[1].Published)
+	require.Equal(t, 8, course.Levels[1].Lessons[0].Questions)
+
+	// started again: nothing more
+	require.NoError(t, server.ImportShippedGameCourses(context.Background(), later))
+	require.Len(t, readCourse(t, router, token, code).Levels, 2)
 }
