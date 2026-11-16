@@ -945,8 +945,8 @@ func (s *Server) reconcileOpenPayments(ctx context.Context, before time.Time) {
 	}
 }
 
-// reconcile does what is left to do for [payment]. One Wajub accepted is
-// asked about after 5 minutes without its webhook.
+// reconcile does what is left to do for [payment]. One the provider
+// accepted is asked about after 5 minutes without its webhook.
 func (s *Server) reconcile(ctx context.Context, payment db.Payment) {
 	switch {
 	case payment.Status == "completed" && !payment.SettledAt.Valid:
@@ -955,9 +955,13 @@ func (s *Server) reconcile(ctx context.Context, payment db.Payment) {
 		// the refund never got to Wajub: sent again (the same externalId)
 		s.sendRefund(ctx, payment)
 		_ = s.store.TouchPaymentCheck(ctx, payment.ID)
-	case payment.Status == "accepted" && payment.ProviderPaymentID != "" && s.money != nil &&
-		time.Since(payment.UpdatedAt) > 5*time.Minute:
-		s.lookUp(ctx, payment)
+	case payment.Status == "accepted" && payment.ProviderPaymentID != "" && s.money != nil:
+		// asked after 5 minutes without its webhook, then every 5 minutes
+		// (lookUp marks it checked); never touched before that, or the wait
+		// would start again each minute and it would never be asked
+		if time.Since(payment.UpdatedAt) > 5*time.Minute {
+			s.lookUp(ctx, payment)
+		}
 	case payment.Status == "initiated" && time.Since(payment.CreatedAt) > 30*time.Minute:
 		// Wajub never acknowledged it, nor sent a webhook
 		s.failPayment(ctx, payment.ID, "NOT_FOUND")

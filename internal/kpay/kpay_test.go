@@ -179,3 +179,11 @@ func TestOnlyASignedWebhookIsBelieved(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, money.Cancelled, hook.Status)
 }
+
+func TestTheSentencesOfKPayBecomeCodesTheAppsTranslate(t *testing.T) {
+	require.Equal(t, "PAYER_NOT_FOUND", codeOf("", "The customer does not have an account with the provider."))
+	require.Equal(t, "INSUFFICIENT_BALANCE", codeOf("", "Insufficient funds"))
+	require.Equal(t, "PAYER_LIMIT_REACHED", codeOf("", "PAYER_LIMIT_REACHED"))
+	require.Equal(t, "PAYMENT_NOT_APPROVED", codeOf("payment_not_approved", "whatever"))
+	require.Equal(t, "", codeOf("", "Something odd happened"))
+}

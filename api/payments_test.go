@@ -592,6 +592,12 @@ func TestTheReconcilerAsksWajubAboutAPaymentWithoutWebhook(t *testing.T) {
 	// a fresh payment is left to its webhook
 	w.server.reconcileOpenPayments(context.Background(), time.Now())
 	require.Zero(t, w.money.lookups)
+	// and the minutes of waiting add up: a pass does not start them again
+	// (touched each minute, a payment without webhook was never asked)
+	runSQL(t, `UPDATE payments SET updated_at = now() - interval '2 minutes' WHERE id = $1`, paid.ID)
+	w.server.reconcileOpenPayments(context.Background(), time.Now())
+	require.Zero(t, w.money.lookups)
+	require.True(t, waitedLongerThan(t, paid.ID, time.Minute), "the wait was started again")
 
 	// 10 minutes without a word: Wajub is asked
 	for _, id := range []string{paid.ID, waiting.ID} {
@@ -821,4 +827,15 @@ func TestThePaymentProviderIsChosenByTheConfiguration(t *testing.T) {
 	require.NoError(t, err)
 	_, isKPay := server.money.(*kpay.Client)
 	require.True(t, isKPay, "PAYMENT_PROVIDER=kpay with its keys: KPAY-NOW")
+}
+
+// waitedLongerThan: payment [id] was last changed more than [d] ago.
+func waitedLongerThan(t *testing.T, id string, d time.Duration) bool {
+	conn, err := sql.Open(dbDriver, testDSN())
+	require.NoError(t, err)
+	defer conn.Close()
+	var older bool
+	require.NoError(t, conn.QueryRowContext(context.Background(),
+		`SELECT updated_at < now() - make_interval(secs => $2) FROM payments WHERE id = $1`, id, d.Seconds()).Scan(&older))
+	return older
 }

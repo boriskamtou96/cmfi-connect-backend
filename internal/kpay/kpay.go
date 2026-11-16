@@ -370,7 +370,8 @@ func hookOf(kind string, data transaction) money.Webhook {
 }
 
 // codeOf: a failure as a code the apps translate (PAYER_NOT_FOUND…): KPAY's
-// own code, else its reason when it is one; "" otherwise.
+// own code, else its reason when it is one, else a sentence it is known to
+// write (its lookups give only the sentence); "" otherwise.
 func codeOf(code, reason string) string {
 	if code = strings.TrimSpace(code); code != "" {
 		return strings.ToUpper(code)
@@ -379,5 +380,28 @@ func codeOf(code, reason string) string {
 	if reason != "" && !strings.Contains(reason, " ") && strings.ToUpper(reason) == reason {
 		return reason
 	}
+	lower := strings.ToLower(reason)
+	for _, known := range reasons {
+		if strings.Contains(lower, known.words) {
+			return known.code
+		}
+	}
 	return ""
+}
+
+// reasons: the sentences of KPAY (and of the operators behind it) and the
+// codes the apps translate.
+var reasons = []struct{ words, code string }{
+	{"does not have an account", "PAYER_NOT_FOUND"},
+	{"payer not found", "PAYER_NOT_FOUND"},
+	{"recipient not found", "RECIPIENT_NOT_FOUND"},
+	{"insufficient", "INSUFFICIENT_BALANCE"},
+	{"limit", "PAYER_LIMIT_REACHED"},
+	{"not approved", "PAYMENT_NOT_APPROVED"},
+	{"declined", "PAYMENT_NOT_APPROVED"},
+	{"rejected", "PAYMENT_NOT_APPROVED"},
+	{"cancel", "CANCELLED"},
+	{"expired", "EXPIRED"},
+	{"timeout", "EXPIRED"},
+	{"timed out", "EXPIRED"},
 }
