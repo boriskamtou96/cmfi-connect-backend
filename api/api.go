@@ -13,6 +13,7 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/media"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/phoneauth"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/push"
@@ -95,14 +96,28 @@ func New(store *db.SQLStore, cfg *utils.Config) (*Server, error) {
 	if audio == nil {
 		slog.Warn("ffmpeg not found (FFMPEG_PATH): the sounds of the teachings stay as sent")
 	}
+	// the provider of the payments, chosen by PAYMENT_PROVIDER
 	var money MobileMoney
-	if cfg.Pay.WajubSecretKey != "" {
-		money = wajub.New(cfg.Pay.WajubURL, cfg.Pay.WajubSecretKey, cfg.Pay.WajubFees)
-		if cfg.Pay.WajubWebhookSecret == "" {
-			slog.Warn("WAJUB_WEBHOOK_SECRET is not set: the payments are confirmed only by asking Wajub")
+	switch cfg.Pay.Provider {
+	case utils.ProviderKPay:
+		if cfg.Pay.KPayAPIKey != "" && cfg.Pay.KPaySecretKey != "" {
+			money = kpay.New(cfg.Pay.KPayURL, cfg.Pay.KPayAPIKey, cfg.Pay.KPaySecretKey)
+			slog.Info("payments through KPAY-NOW", "sandbox", strings.HasPrefix(cfg.Pay.KPayAPIKey, "kpay_test_"))
+			if cfg.Pay.KPayWebhookSecret == "" {
+				slog.Warn("KPAY_WEBHOOK_SECRET is not set: the payments are confirmed only by asking KPAY")
+			}
+		} else {
+			slog.Warn("KPAY_API_KEY or KPAY_SECRET_KEY is not set: nobody can pay by mobile money")
 		}
-	} else {
-		slog.Warn("WAJUB_SECRET_KEY is not set: nobody can pay by mobile money")
+	default:
+		if cfg.Pay.WajubSecretKey != "" {
+			money = wajub.New(cfg.Pay.WajubURL, cfg.Pay.WajubSecretKey, cfg.Pay.WajubFees)
+			if cfg.Pay.WajubWebhookSecret == "" {
+				slog.Warn("WAJUB_WEBHOOK_SECRET is not set: the payments are confirmed only by asking Wajub")
+			}
+		} else {
+			slog.Warn("WAJUB_SECRET_KEY is not set: nobody can pay by mobile money")
+		}
 	}
 	return &Server{
 		money:            money,
@@ -337,6 +352,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		// « Faire un don »: an amount chosen, paid like the rest
 		r.POST("/donations", authMiddleware(s.jwtAuthenticator), s.donate)
 		r.POST("/wajub/webhooks", s.wajubWebhook)
+		r.POST("/kpay/webhooks", s.kpayWebhook)
 
 		// Premium sold on the website (the stores forbid it in the apps)
 		r.GET("/premium/plans", s.listPremiumPlans)

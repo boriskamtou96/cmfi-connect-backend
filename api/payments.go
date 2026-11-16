@@ -15,6 +15,7 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
@@ -155,7 +156,7 @@ var defaultProviders = []string{"MTN_MOMO_CMR", "ORANGE_CMR"}
 
 // operators: those of Wajub's catalogue the application offers.
 func (s *Server) operators() []money.Operator {
-	allowed := s.config.Pay.WajubProviders
+	allowed := s.config.Pay.Providers()
 	if len(allowed) == 0 {
 		allowed = defaultProviders
 	}
@@ -219,7 +220,7 @@ func (s *Server) listPaymentProviders(c *gin.Context) {
 	apiResponse(c, http.StatusOK, gin.H{
 		"countries": operatorsFor(s.operators(), currency),
 		// Visa and Mastercard on Wajub's page
-		"cards": s.config.Pay.WajubCards,
+		"cards": s.config.Pay.Cards(),
 	})
 }
 
@@ -304,7 +305,7 @@ func (s *Server) returnURL(asked string, id uuid.UUID) string {
 func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, payer payerRequest, description string) {
 	switch payer.Method {
 	case methodCard:
-		if !s.config.Pay.WajubCards {
+		if !s.config.Pay.Cards() {
 			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CARDS_DISABLED", fmt.Errorf("cards are not taken")))
 			return
 		}
@@ -761,6 +762,35 @@ func (s *Server) wajubWebhook(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
+	s.takeWebhook(c, hook)
+}
+
+// POST /v1/kpay/webhooks: what KPAY-NOW tells of a payment, a refund or a
+// sending, believed only when signed (X-KPAY-Signature, the HMAC-SHA256 of
+// the raw body with KPAY_WEBHOOK_SECRET). Like Wajub's: answered at once,
+// done in the background, done once when sent several times.
+func (s *Server) kpayWebhook(c *gin.Context) {
+	body, err := io.ReadAll(io.LimitReader(c.Request.Body, 1<<20))
+	if err != nil {
+		badRequestError(c, err)
+		return
+	}
+	if !kpay.VerifySignature(body, c.GetHeader("X-KPAY-Signature"), s.config.Pay.KPayWebhookSecret) {
+		logFor(c).Warn("kpay webhook refused: bad signature")
+		unauthorizedError(c)
+		return
+	}
+	hook, err := kpay.ParseWebhook(body)
+	if err != nil {
+		badRequestError(c, err)
+		return
+	}
+	s.takeWebhook(c, hook)
+}
+
+// takeWebhook answers the provider at once (it doesn't wait long), then
+// does what the change of status means in the background.
+func (s *Server) takeWebhook(c *gin.Context, hook money.Webhook) {
 	c.JSON(http.StatusOK, gin.H{"received": true})
 	s.hooking.Add(1)
 	go func() {
@@ -781,7 +811,7 @@ func (s *Server) onWebhook(ctx context.Context, hook money.Webhook) {
 	case strings.HasPrefix(hook.Event, "payout."):
 		s.onPayoutWebhook(ctx, hook)
 	default:
-		slog.Info("wajub webhook ignored", "event", hook.Event)
+		slog.Info("payment webhook ignored", "event", hook.Event)
 	}
 }
 
@@ -803,7 +833,7 @@ func webhookFailure(hook money.Webhook) string {
 func (s *Server) onPaymentWebhook(ctx context.Context, hook money.Webhook) {
 	payment, ok := s.paymentOf(ctx, hook)
 	if !ok {
-		slog.Warn("wajub webhook for an unknown payment", "event", hook.Event)
+		slog.Warn("payment webhook for an unknown payment", "event", hook.Event)
 		return
 	}
 	if hook.PaymentID != "" && payment.ProviderPaymentID == "" {

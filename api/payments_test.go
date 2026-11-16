@@ -14,6 +14,7 @@ import (
 	"time"
 
 	db "github.com/boriskamtou96/cmfi-connect-backend/internal/db/sqlc"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
@@ -756,4 +757,68 @@ func TestTheOperatorsReasonGivesTheMemberAClearMessage(t *testing.T) {
 		require.Equal(t, "failed", gift.Status, reason)
 		require.Equal(t, code, gift.FailureCode, reason)
 	}
+}
+
+// kpayWebhook posts [body] (as KPAY-NOW writes it) to its webhook endpoint,
+// signed with [secret], then waits for its work.
+func (w paymentsWorld) kpayWebhook(t *testing.T, body map[string]any, secret string) *httptest.ResponseRecorder {
+	t.Helper()
+	data, err := json.Marshal(body)
+	require.NoError(t, err)
+	request := httptest.NewRequest(http.MethodPost, "/v1/kpay/webhooks", bytes.NewReader(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-KPAY-Signature", kpay.Sign(data, secret))
+	recorder := httptest.NewRecorder()
+	w.router.ServeHTTP(recorder, request)
+	w.server.hooking.Wait()
+	return recorder
+}
+
+func TestKPayWebhooksCompleteOrFailAPaymentWhenSigned(t *testing.T) {
+	w := newPaymentsWorld(t)
+	w.server.config.Pay.Provider = utils.ProviderKPay
+	w.server.config.Pay.KPayWebhookSecret = "kpay_whsec"
+	admin := staffAdmin(t, w.router)
+	m := registerMember(t, w.router, nil)
+	event := createEvent(t, w.router, admin.Token, map[string]any{"price_amount": 5000})
+	payment := w.pay(t, m.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237653456789"})
+
+	// not signed with the secret: nothing changes
+	forged := w.kpayWebhook(t, map[string]any{"event": "payment.completed", "paymentId": "pay_x",
+		"status": "COMPLETED", "amount": 5000, "externalId": payment.ID}, "guessed")
+	require.Equal(t, http.StatusUnauthorized, forged.Code)
+	require.Equal(t, "pending", w.payment(t, m.Token, payment.ID).Status)
+
+	done := w.kpayWebhook(t, map[string]any{"event": "payment.completed", "paymentId": "pay_x",
+		"reference": "KPAY-X", "status": "COMPLETED", "amount": 5000, "externalId": payment.ID}, "kpay_whsec")
+	require.Equal(t, http.StatusOK, done.Code, done.Body.String())
+	require.Equal(t, "completed", w.payment(t, m.Token, payment.ID).Status)
+	detail := decode[eventResponse](t, send(t, w.router, http.MethodGet, m.Token, eventPath(event, ""), nil))
+	require.True(t, detail.MyRegistration.Paid)
+
+	// a failure says why, in the codes the apps translate
+	other := registerMember(t, w.router, nil)
+	refused := w.pay(t, other.Token, eventPath(event, "/payments"), map[string]any{"phone_number": "+237653456029"})
+	w.kpayWebhook(t, map[string]any{"event": "payment.failed", "paymentId": "pay_y", "status": "FAILED",
+		"externalId": refused.ID, "failureReason": "PAYER_NOT_FOUND"}, "kpay_whsec")
+	failed := w.payment(t, other.Token, refused.ID)
+	require.Equal(t, "failed", failed.Status)
+	require.Equal(t, "PAYER_NOT_FOUND", failed.FailureCode)
+}
+
+func TestThePaymentProviderIsChosenByTheConfiguration(t *testing.T) {
+	kpayPay := utils.PaymentsConfig{Provider: utils.ProviderKPay, KPayProviders: []string{"ORANGE_CMR"}, KPayCards: true, WajubCards: false}
+	require.Equal(t, []string{"ORANGE_CMR"}, kpayPay.Providers())
+	require.True(t, kpayPay.Cards())
+	wajubPay := utils.PaymentsConfig{Provider: utils.ProviderWajub, WajubProviders: []string{"MTN_MOMO_CMR"}, KPayCards: true}
+	require.Equal(t, []string{"MTN_MOMO_CMR"}, wajubPay.Providers())
+	require.False(t, wajubPay.Cards())
+
+	server, err := New(testStore, &utils.Config{
+		Token: utils.TokenConfig{SecretKey: strings.Repeat("k", 32), Duration: "15m"},
+		Pay:   utils.PaymentsConfig{Provider: utils.ProviderKPay, KPayAPIKey: "kpay_test_a", KPaySecretKey: "kpay_test_b"},
+	})
+	require.NoError(t, err)
+	_, isKPay := server.money.(*kpay.Client)
+	require.True(t, isKPay, "PAYMENT_PROVIDER=kpay with its keys: KPAY-NOW")
 }

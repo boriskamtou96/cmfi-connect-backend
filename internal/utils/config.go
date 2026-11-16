@@ -88,7 +88,24 @@ type PushConfig struct {
 // [PremiumPrices] (PREMIUM_PRICES, "monthly:1500,yearly:12000",
 // in [PremiumCurrency]) are the Premium plans sold on the website; the
 // Premium they give is kept here, and the apps read it.
+//
+// The provider is chosen by [Provider] (PAYMENT_PROVIDER: "wajub", the
+// default, or "kpay"), without a new version: KPAY-NOW (16/11/2026) needs
+// [KPayAPIKey] and [KPaySecretKey] (KPAY_API_KEY, KPAY_SECRET_KEY:
+// kpay_test_… in the sandbox, kpay_live_… in production), believes its
+// webhooks when signed with [KPayWebhookSecret] (KPAY_WEBHOOK_SECRET),
+// offers [KPayProviders] (KPAY_PROVIDERS, all of them when empty) and cards
+// with KPAY_CARDS=on.
 type PaymentsConfig struct {
+	Provider string
+
+	KPayURL           string
+	KPayAPIKey        string
+	KPaySecretKey     string
+	KPayWebhookSecret string
+	KPayProviders     []string
+	KPayCards         bool
+
 	WajubURL           string
 	WajubSecretKey     string
 	WajubWebhookSecret string
@@ -102,6 +119,29 @@ type PaymentsConfig struct {
 	ReturnURL       string
 	PremiumPrices   map[string]int64
 	PremiumCurrency string
+}
+
+// The payment providers PAYMENT_PROVIDER names.
+const (
+	ProviderWajub = "wajub"
+	ProviderKPay  = "kpay"
+)
+
+// Providers: the operators offered by the provider chosen (all of its
+// catalogue when empty).
+func (p PaymentsConfig) Providers() []string {
+	if p.Provider == ProviderKPay {
+		return p.KPayProviders
+	}
+	return p.WajubProviders
+}
+
+// Cards: whether the provider chosen takes cards on its hosted page.
+func (p PaymentsConfig) Cards() bool {
+	if p.Provider == ProviderKPay {
+		return p.KPayCards
+	}
+	return p.WajubCards
 }
 
 // LoadConfig loads the configuration from environment variables and returns a Config struct.
@@ -166,7 +206,18 @@ func (c *Config) loadConfig() (*Config, error) {
 			*rate = parsed
 		}
 	}
+	provider := strings.ToLower(strings.TrimSpace(getEnv("PAYMENT_PROVIDER", ProviderWajub)))
+	if provider != ProviderWajub && provider != ProviderKPay {
+		return nil, fmt.Errorf("PAYMENT_PROVIDER: %q or %q", ProviderWajub, ProviderKPay)
+	}
 	config.Pay = PaymentsConfig{
+		Provider:           provider,
+		KPayURL:            getEnv("KPAY_BASE_URL", "https://admin.kpay.site"),
+		KPayAPIKey:         getEnv("KPAY_API_KEY", ""),
+		KPaySecretKey:      getEnv("KPAY_SECRET_KEY", ""),
+		KPayWebhookSecret:  getEnv("KPAY_WEBHOOK_SECRET", ""),
+		KPayProviders:      getEnvList("KPAY_PROVIDERS"),
+		KPayCards:          getEnv("KPAY_CARDS", "off") == "on",
 		WajubURL:           getEnv("WAJUB_BASE_URL", "https://api.wajub.com"),
 		WajubSecretKey:     getEnv("WAJUB_SECRET_KEY", ""),
 		WajubWebhookSecret: getEnv("WAJUB_WEBHOOK_SECRET", ""),
