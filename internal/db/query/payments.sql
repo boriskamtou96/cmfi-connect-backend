@@ -1,9 +1,9 @@
 -- name: CreatePayment :one
 INSERT INTO payments (
     id, user_id, purpose, event_id, people, needs_lodging, departure_city,
-    premium_plan, amount, currency, phone_number, provider
+    premium_plan, amount, currency, phone_number, provider, renew, renewal
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 RETURNING *;
 
 -- name: GetPayment :one

@@ -448,6 +448,8 @@ type Payment struct {
 	ProviderPaymentID     string        `json:"provider_payment_id"`
 	ProviderRefundID      string        `json:"provider_refund_id"`
 	PayoutID              uuid.NullUUID `json:"payout_id"`
+	Renew                 bool          `json:"renew"`
+	Renewal               bool          `json:"renewal"`
 }
 
 type Payout struct {
@@ -539,6 +541,19 @@ type PremiumOffer struct {
 	CreatedBy    sql.NullInt64   `json:"created_by"`
 	CreatedAt    time.Time       `json:"created_at"`
 	RevokedAt    sql.NullTime    `json:"revoked_at"`
+}
+
+type PremiumRenewal struct {
+	UserID        int64         `json:"user_id"`
+	Plan          string        `json:"plan"`
+	PhoneNumber   string        `json:"phone_number"`
+	Provider      string        `json:"provider"`
+	PeriodEnd     time.Time     `json:"period_end"`
+	Attempts      int32         `json:"attempts"`
+	LastAttemptAt sql.NullTime  `json:"last_attempt_at"`
+	LastPaymentID uuid.NullUUID `json:"last_payment_id"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
 }
 
 type Profile struct {

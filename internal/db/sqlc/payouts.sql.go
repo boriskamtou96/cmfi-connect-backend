@@ -270,7 +270,7 @@ func (q *Queries) ListEventPayouts(ctx context.Context, eventID sql.NullInt64) (
 }
 
 const listPaymentsToForward = `-- name: ListPaymentsToForward :many
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE event_id = $1
   AND purpose = 'event'
@@ -318,6 +318,8 @@ func (q *Queries) ListPaymentsToForward(ctx context.Context, eventID sql.NullInt
 			&i.ProviderPaymentID,
 			&i.ProviderRefundID,
 			&i.PayoutID,
+			&i.Renew,
+			&i.Renewal,
 		); err != nil {
 			return nil, err
 		}

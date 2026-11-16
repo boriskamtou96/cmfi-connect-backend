@@ -345,7 +345,23 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 		internalServerError(c, err)
 		return
 	}
-	started, err := s.money.Init(c, money.InitRequest{
+	if err := s.askMobileMoney(c, logFor(c), payment, description); err != nil {
+		internalServerError(c, err)
+		return
+	}
+	if payment, err = s.store.GetPayment(c, payment.ID); err != nil {
+		internalServerError(c, err)
+		return
+	}
+	logFor(c).Info("payment started", "payment", payment.ID, "purpose", payment.Purpose, "status", payment.Status)
+	apiResponse(c, http.StatusCreated, toPaymentResponse(payment))
+}
+
+// askMobileMoney sends [payment] (kept, initiated) to the provider, which
+// pushes it to the phone for the PIN; its answer is written on the payment.
+// The error: the acceptance could not be kept.
+func (s *Server) askMobileMoney(ctx context.Context, log *slog.Logger, payment db.Payment, description string) error {
+	started, err := s.money.Init(ctx, money.InitRequest{
 		Amount:      payment.Amount,
 		Currency:    payment.Currency,
 		Provider:    payment.Provider,
@@ -358,28 +374,20 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 	switch {
 	case errors.Is(err, money.ErrUnknown):
 		// it may have started: its webhook will tell
-		logFor(c).Warn("payment outcome unknown", "payment", payment.ID, "error", err)
+		log.Warn("payment outcome unknown", "payment", payment.ID, "error", err)
 	case errors.As(err, &refused):
-		logFor(c).Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status,
+		log.Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status,
 			"reason", refused.Message, "wajub_reason", refused.Reason, "detail", refused.Detail)
-		s.failPayment(c, payment.ID, refusalCode(refused))
+		s.failPayment(ctx, payment.ID, refusalCode(refused))
 	case err != nil:
-		logFor(c).Error("payment not sent to wajub", "payment", payment.ID, "error", err)
-		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
+		log.Error("payment not sent to wajub", "payment", payment.ID, "error", err)
+		s.failPayment(ctx, payment.ID, "PAYMENTS_UNAVAILABLE")
 	case started.Status == money.Failed || started.Status == money.Cancelled:
-		s.failPayment(c, payment.ID, "UNSPECIFIED_FAILURE")
+		s.failPayment(ctx, payment.ID, "UNSPECIFIED_FAILURE")
 	default:
-		if err := s.store.MarkPaymentAccepted(c, db.MarkPaymentAcceptedParams{ID: payment.ID, ProviderPaymentID: started.ID}); err != nil {
-			internalServerError(c, err)
-			return
-		}
+		return s.store.MarkPaymentAccepted(ctx, db.MarkPaymentAcceptedParams{ID: payment.ID, ProviderPaymentID: started.ID})
 	}
-	if payment, err = s.store.GetPayment(c, payment.ID); err != nil {
-		internalServerError(c, err)
-		return
-	}
-	logFor(c).Info("payment started", "payment", payment.ID, "purpose", payment.Purpose, "status", payment.Status)
-	apiResponse(c, http.StatusCreated, toPaymentResponse(payment))
+	return nil
 }
 
 // startCardPayment keeps the payment, then asks Wajub for its hosted page,
@@ -604,6 +612,9 @@ func (s *Server) listPremiumPlans(c *gin.Context) {
 
 type premiumPaymentRequest struct {
 	Plan string `json:"plan" binding:"required"`
+	// « Renouveler automatiquement »: before the end, the same plan is asked
+	// again on the same number (mobile money, not for life)
+	Renew bool `json:"renew"`
 	payerRequest
 }
 
@@ -623,6 +634,11 @@ func (s *Server) payForPremium(c *gin.Context) {
 		badRequestError(c, fmt.Errorf("unknown plan %q", req.Plan))
 		return
 	}
+	if req.Renew && (req.Plan == "lifetime" || req.Method == methodCard) {
+		c.JSON(http.StatusBadRequest, NewErrorResponse(http.StatusBadRequest, "RENEWAL_NEEDS_MOBILE_MONEY",
+			fmt.Errorf("only a plan paid by mobile money renews")))
+		return
+	}
 	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	s.startPayment(c, db.CreatePaymentParams{
 		UserID:      nullID(authUser.ID),
@@ -631,6 +647,7 @@ func (s *Server) payForPremium(c *gin.Context) {
 		PremiumPlan: req.Plan,
 		Amount:      price,
 		Currency:    s.config.Pay.PremiumCurrency,
+		Renew:       req.Renew,
 	}, req.payerRequest, paymentStatementText+" Premium")
 }
 
@@ -678,7 +695,13 @@ func (s *Server) getPremiumStatus(c *gin.Context) {
 	if until != nil && until.Before(time.Now()) {
 		until = nil
 	}
-	apiResponse(c, http.StatusOK, gin.H{"lifetime": lifetime, "until": until})
+	// the payment requests the server sends before the end, when chosen
+	renewal, err := s.premiumRenewalOf(c, authUser.ID)
+	if err != nil {
+		internalServerError(c, err)
+		return
+	}
+	apiResponse(c, http.StatusOK, gin.H{"lifetime": lifetime, "until": until, "renewal": renewal})
 }
 
 // premiumBought: the Premium [userID] has from here (bought on the website,
@@ -930,6 +953,10 @@ func (s *Server) ReconcilePayments(ctx context.Context) {
 			}
 			// the premium gifts left undone (a restart), again
 			s.giveGifts(ctx, sql.NullInt64{}, 50)
+			// the payment requests of the renewals that are due
+			if s.money != nil {
+				s.renewPremiums(ctx, time.Now())
+			}
 		}
 	}
 }
@@ -1070,6 +1097,12 @@ func (s *Server) settlePremiumPayment(ctx context.Context, payment db.Payment) {
 		return
 	}
 	slog.Info("premium given", "payment", payment.ID, "plan", payment.PremiumPlan)
+	if until != nil {
+		s.keepPremiumRenewal(ctx, payment, *until)
+		if payment.Renewal {
+			s.pushRenewed(payment.UserID.Int64, *until)
+		}
+	}
 }
 
 // ----- refunds -----

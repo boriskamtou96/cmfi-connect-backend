@@ -184,6 +184,7 @@ type Querier interface {
 	DeletePrayerRetreat(ctx context.Context, arg DeletePrayerRetreatParams) (int64, error)
 	DeletePrayerTopic(ctx context.Context, id int64) (int64, error)
 	DeletePrayerTopicPoints(ctx context.Context, topicID int64) error
+	DeletePremiumRenewal(ctx context.Context, userID int64) (int64, error)
 	DeleteReadingBook(ctx context.Context, arg DeleteReadingBookParams) (int64, error)
 	DeleteRegistrationOfPayment(ctx context.Context, paymentID uuid.NullUUID) (int64, error)
 	DeleteReportEntries(ctx context.Context, reportID int64) error
@@ -251,6 +252,7 @@ type Querier interface {
 	GetPayoutByProviderID(ctx context.Context, providerPayoutID string) (Payout, error)
 	GetPrayerTopic(ctx context.Context, id int64) (PrayerTopic, error)
 	GetPremiumOffer(ctx context.Context, id int64) (PremiumOffer, error)
+	GetPremiumRenewal(ctx context.Context, userID int64) (PremiumRenewal, error)
 	GetProfile(ctx context.Context, userID int64) (Profile, error)
 	GetReadingBookOwner(ctx context.Context, id int64) (int64, error)
 	// One report, as ListReports gives it.
@@ -359,6 +361,8 @@ type Querier interface {
 	// Une page de documents, les publiés d'abord, les plus récents en premier.
 	// La recherche et la catégorie sont filtrées en base.
 	ListDocumentsFiltered(ctx context.Context, arg ListDocumentsFilteredParams) ([]DocumentDetail, error)
+	// Those whose Premium ends before [before]: the pass looks at them.
+	ListDuePremiumRenewals(ctx context.Context, before time.Time) ([]PremiumRenewal, error)
 	ListEventPayouts(ctx context.Context, eventID sql.NullInt64) ([]Payout, error)
 	ListEventPhotos(ctx context.Context, eventID int64) ([]EventPhoto, error)
 	// Pinned first, then the latest.
@@ -500,6 +504,7 @@ type Querier interface {
 	// The teachings of the merged speakers go to [into_id]; the others are
 	// archived. The name of each teaching follows through its before-save trigger.
 	MergeTeachingSpeakers(ctx context.Context, arg MergeTeachingSpeakersParams) error
+	RecordPremiumRenewalAttempt(ctx context.Context, arg RecordPremiumRenewalAttemptParams) error
 	// An account made with Google or Apple: its password is a random one nobody
 	// knows (has_password false) until the member chooses one.
 	RegisterSocialUser(ctx context.Context, arg RegisterSocialUserParams) (User, error)
@@ -509,6 +514,8 @@ type Querier interface {
 	ReplaceMediaFile(ctx context.Context, arg ReplaceMediaFileParams) (int64, error)
 	ReplyReportSending(ctx context.Context, arg ReplyReportSendingParams) (ReportSending, error)
 	ResolveReport(ctx context.Context, arg ResolveReportParams) (int64, error)
+	// Premium got a new end (renewed, or paid by hand): no request yet for it.
+	RestartPremiumRenewal(ctx context.Context, arg RestartPremiumRenewalParams) error
 	// Taken back: its gifts go (a revoked gift no longer counts in the
 	// Premium of its member), and the members they were given to are answered.
 	RevokePremiumOffer(ctx context.Context, id int64) ([]RevokePremiumOfferRow, error)
@@ -516,6 +523,8 @@ type Querier interface {
 	RevokeUserGifts(ctx context.Context, userID int64) (int64, error)
 	SaveGamePlayerProgress(ctx context.Context, arg SaveGamePlayerProgressParams) error
 	SaveGamePlayerSettings(ctx context.Context, arg SaveGamePlayerSettingsParams) error
+	// Asked with a paid plan: the requests start again for its new end.
+	SavePremiumRenewal(ctx context.Context, arg SavePremiumRenewalParams) (PremiumRenewal, error)
 	SetActivityGoal(ctx context.Context, arg SetActivityGoalParams) (ActivityGoal, error)
 	SetAnnouncementPushed(ctx context.Context, arg SetAnnouncementPushedParams) error
 	SetAsideGameLessonPositions(ctx context.Context, levelID int64) error

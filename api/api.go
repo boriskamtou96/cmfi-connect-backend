@@ -360,6 +360,7 @@ func (s *Server) SetupRouter() *gin.Engine {
 		{
 			premium.POST("/payments", s.payForPremium)
 			premium.GET("/status", s.getPremiumStatus)
+			premium.DELETE("/renewal", s.stopPremiumRenewal)
 		}
 
 		profiles := r.Group("/profiles").Use(authMiddleware(s.jwtAuthenticator))

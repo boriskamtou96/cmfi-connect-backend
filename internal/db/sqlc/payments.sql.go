@@ -21,7 +21,7 @@ SET status = 'completed',
     checked_at = now(),
     updated_at = now()
 WHERE id = $2 AND status IN ('initiated', 'accepted', 'failed')
-RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 `
 
 type CompletePaymentParams struct {
@@ -62,6 +62,8 @@ func (q *Queries) CompletePayment(ctx context.Context, arg CompletePaymentParams
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
@@ -70,7 +72,7 @@ const completePaymentRefund = `-- name: CompletePaymentRefund :one
 UPDATE payments
 SET status = 'refunded', refunded_at = now(), checked_at = now(), updated_at = now()
 WHERE refund_id = $1 AND status = 'refund_pending'
-RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 `
 
 func (q *Queries) CompletePaymentRefund(ctx context.Context, refundID uuid.NullUUID) (Payment, error) {
@@ -103,6 +105,8 @@ func (q *Queries) CompletePaymentRefund(ctx context.Context, refundID uuid.NullU
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
@@ -124,10 +128,10 @@ func (q *Queries) CountHeldEventPayments(ctx context.Context, eventID sql.NullIn
 const createPayment = `-- name: CreatePayment :one
 INSERT INTO payments (
     id, user_id, purpose, event_id, people, needs_lodging, departure_city,
-    premium_plan, amount, currency, phone_number, provider
+    premium_plan, amount, currency, phone_number, provider, renew, renewal
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 `
 
 type CreatePaymentParams struct {
@@ -143,6 +147,8 @@ type CreatePaymentParams struct {
 	Currency      string        `json:"currency"`
 	PhoneNumber   string        `json:"phone_number"`
 	Provider      string        `json:"provider"`
+	Renew         bool          `json:"renew"`
+	Renewal       bool          `json:"renewal"`
 }
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
@@ -159,6 +165,8 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		arg.Currency,
 		arg.PhoneNumber,
 		arg.Provider,
+		arg.Renew,
+		arg.Renewal,
 	)
 	var i Payment
 	err := row.Scan(
@@ -188,6 +196,8 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
@@ -237,7 +247,7 @@ func (q *Queries) FailPaymentRefund(ctx context.Context, arg FailPaymentRefundPa
 }
 
 const getPayment = `-- name: GetPayment :one
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE id = $1
 `
@@ -272,12 +282,14 @@ func (q *Queries) GetPayment(ctx context.Context, id uuid.UUID) (Payment, error)
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
 
 const getPaymentByProviderID = `-- name: GetPaymentByProviderID :one
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE provider_payment_id = $1 AND provider_payment_id <> ''
 `
@@ -312,12 +324,14 @@ func (q *Queries) GetPaymentByProviderID(ctx context.Context, providerPaymentID 
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
 
 const getPaymentByProviderRefundID = `-- name: GetPaymentByProviderRefundID :one
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE provider_refund_id = $1 AND provider_refund_id <> ''
 `
@@ -352,12 +366,14 @@ func (q *Queries) GetPaymentByProviderRefundID(ctx context.Context, providerRefu
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
 
 const getPaymentByRefundID = `-- name: GetPaymentByRefundID :one
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE refund_id = $1
 `
@@ -392,12 +408,14 @@ func (q *Queries) GetPaymentByRefundID(ctx context.Context, refundID uuid.NullUU
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
 
 const listOpenPayments = `-- name: ListOpenPayments :many
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE (status IN ('initiated', 'accepted', 'refund_pending')
        OR (status = 'completed' AND settled_at IS NULL))
@@ -444,6 +462,8 @@ func (q *Queries) ListOpenPayments(ctx context.Context, before time.Time) ([]Pay
 			&i.ProviderPaymentID,
 			&i.ProviderRefundID,
 			&i.PayoutID,
+			&i.Renew,
+			&i.Renewal,
 		); err != nil {
 			return nil, err
 		}
@@ -459,7 +479,7 @@ func (q *Queries) ListOpenPayments(ctx context.Context, before time.Time) ([]Pay
 }
 
 const listPayments = `-- name: ListPayments :many
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE ($1::bigint IS NULL OR event_id = $1)
   AND ($2::text = '' OR purpose = $2)
@@ -516,6 +536,8 @@ func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]P
 			&i.ProviderPaymentID,
 			&i.ProviderRefundID,
 			&i.PayoutID,
+			&i.Renew,
+			&i.Renewal,
 		); err != nil {
 			return nil, err
 		}
@@ -531,7 +553,7 @@ func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]P
 }
 
 const listUserPremiumPayments = `-- name: ListUserPremiumPayments :many
-SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+SELECT id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 FROM payments
 WHERE user_id = $1
   AND purpose = 'premium'
@@ -577,6 +599,8 @@ func (q *Queries) ListUserPremiumPayments(ctx context.Context, userID sql.NullIn
 			&i.ProviderPaymentID,
 			&i.ProviderRefundID,
 			&i.PayoutID,
+			&i.Renew,
+			&i.Renewal,
 		); err != nil {
 			return nil, err
 		}
@@ -668,7 +692,7 @@ SET status = 'refund_pending',
     failure_code = '',
     updated_at = now()
 WHERE id = $3 AND status IN ('completed', 'refund_failed')
-RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id
+RETURNING id, user_id, purpose, event_id, people, needs_lodging, departure_city, premium_plan, amount, currency, phone_number, provider, status, failure_code, provider_transaction_id, settled_at, premium_until, refund_id, refund_reason, refunded_at, checked_at, created_at, updated_at, provider_payment_id, provider_refund_id, payout_id, renew, renewal
 `
 
 type StartPaymentRefundParams struct {
@@ -708,6 +732,8 @@ func (q *Queries) StartPaymentRefund(ctx context.Context, arg StartPaymentRefund
 		&i.ProviderPaymentID,
 		&i.ProviderRefundID,
 		&i.PayoutID,
+		&i.Renew,
+		&i.Renewal,
 	)
 	return i, err
 }
