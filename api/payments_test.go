@@ -532,7 +532,9 @@ func TestPremiumBoughtOnTheWebsiteIsKeptHere(t *testing.T) {
 	plans := send(t, w.router, http.MethodGet, "", "/v1/premium/plans", nil)
 	require.Equal(t, http.StatusOK, plans.Code)
 	require.JSONEq(t, `{"enabled":true,"currency":"XAF","plans":[
-		{"plan":"monthly","amount":1500},{"plan":"yearly","amount":12000},{"plan":"lifetime","amount":50000}]}`,
+		{"plan":"monthly","amount":1500},{"plan":"yearly","amount":12000},{"plan":"lifetime","amount":50000}],
+		"prices":{"XAF":[
+		{"plan":"monthly","amount":1500},{"plan":"yearly","amount":12000},{"plan":"lifetime","amount":50000}]}}`,
 		string(decodeRaw[rawContent](t, plans).Content))
 
 	// a month, then a year bought before its end: they follow each other

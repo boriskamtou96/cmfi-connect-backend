@@ -119,6 +119,10 @@ type PaymentsConfig struct {
 	ReturnURL       string
 	PremiumPrices   map[string]int64
 	PremiumCurrency string
+	// the prices in the other currencies a member pays in (PREMIUM_PRICES_XOF,
+	// PREMIUM_PRICES_USD), chosen by the country of their number
+	PremiumPricesXOF map[string]int64
+	PremiumPricesUSD map[string]int64
 }
 
 // The payment providers PAYMENT_PROVIDER names.
@@ -134,6 +138,24 @@ func (p PaymentsConfig) Providers() []string {
 		return p.KPayProviders
 	}
 	return p.WajubProviders
+}
+
+// PremiumPricesIn: the Premium prices in [currency]: XAF ([PremiumPrices]),
+// XOF (those of XAF without prices of their own: the same value) or USD;
+// nil for another currency.
+func (p PaymentsConfig) PremiumPricesIn(currency string) map[string]int64 {
+	switch currency {
+	case "XAF":
+		return p.PremiumPrices
+	case "XOF":
+		if len(p.PremiumPricesXOF) > 0 {
+			return p.PremiumPricesXOF
+		}
+		return p.PremiumPrices
+	case "USD":
+		return p.PremiumPricesUSD
+	}
+	return nil
 }
 
 // Cards: whether the provider chosen takes cards on its hosted page.
@@ -192,7 +214,15 @@ func (c *Config) loadConfig() (*Config, error) {
 			PublicURL:       getEnv("PUBLIC_URL", ""),
 		},
 	}
-	prices, err := parsePrices(os.Getenv("PREMIUM_PRICES"))
+	prices, err := parsePrices("PREMIUM_PRICES", os.Getenv("PREMIUM_PRICES"))
+	if err != nil {
+		return nil, err
+	}
+	pricesXOF, err := parsePrices("PREMIUM_PRICES_XOF", os.Getenv("PREMIUM_PRICES_XOF"))
+	if err != nil {
+		return nil, err
+	}
+	pricesUSD, err := parsePrices("PREMIUM_PRICES_USD", getEnv("PREMIUM_PRICES_USD", "monthly:5,six_month:25,yearly:50,lifetime:100"))
 	if err != nil {
 		return nil, err
 	}
@@ -227,13 +257,15 @@ func (c *Config) loadConfig() (*Config, error) {
 		ReturnURL:          getEnv("PAYMENT_RETURN_URL", "https://cmfi-connect.com/paiement"),
 		PremiumPrices:      prices,
 		PremiumCurrency:    getEnv("PREMIUM_CURRENCY", "XAF"),
+		PremiumPricesXOF:   pricesXOF,
+		PremiumPricesUSD:   pricesUSD,
 	}
 	return config, nil
 }
 
 // parsePrices reads "monthly:1500,yearly:12000": a plan and its price, in
 // whole units of the currency.
-func parsePrices(value string) (map[string]int64, error) {
+func parsePrices(name, value string) (map[string]int64, error) {
 	prices := map[string]int64{}
 	for _, item := range strings.Split(value, ",") {
 		if item = strings.TrimSpace(item); item == "" {
@@ -242,7 +274,7 @@ func parsePrices(value string) (map[string]int64, error) {
 		plan, amount, ok := strings.Cut(item, ":")
 		price, err := strconv.ParseInt(strings.TrimSpace(amount), 10, 64)
 		if !ok || err != nil || price <= 0 {
-			return nil, fmt.Errorf("PREMIUM_PRICES: %q is not plan:price", item)
+			return nil, fmt.Errorf("%s: %q is not plan:price", name, item)
 		}
 		prices[strings.TrimSpace(plan)] = price
 	}

@@ -211,16 +211,24 @@ func operatorsFor(operators []money.Operator, currency string) []countryResponse
 	return countries
 }
 
-// GET /v1/payments/providers?currency=XAF: where one can pay from.
+// GET /v1/payments/providers?currency=XAF: where one can pay from, and,
+// for the member's country (the code of their number), the currency of their
+// card, the way of paying shown first and the amounts of a donation.
 func (s *Server) listPaymentProviders(c *gin.Context) {
 	if !s.paymentsEnabled(c) {
 		return
 	}
 	currency := strings.ToUpper(c.DefaultQuery("currency", "XAF"))
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	country := s.accountCountry(c, authUser.ID)
 	apiResponse(c, http.StatusOK, gin.H{
 		"countries": operatorsFor(s.operators(), currency),
-		// Visa and Mastercard on Wajub's page
-		"cards": s.config.Pay.Cards(),
+		// Visa and Mastercard on the provider's page
+		"cards":         s.config.Pay.Cards(),
+		"country":       country,
+		"card_currency": s.cardCurrency(country),
+		"preferred":     s.preferredMethod(country),
+		"donations":     s.donationRulesFor(country),
 	})
 }
 
@@ -595,18 +603,36 @@ type premiumPlanResponse struct {
 	Amount int64  `json:"amount"`
 }
 
-// GET /v1/premium/plans: the plans and their prices (no account needed).
-func (s *Server) listPremiumPlans(c *gin.Context) {
+// premiumPlansIn: the plans sold in [currency], with their prices.
+func (s *Server) premiumPlansIn(currency string) []premiumPlanResponse {
+	prices := s.config.Pay.PremiumPricesIn(currency)
 	plans := []premiumPlanResponse{}
 	for _, plan := range premiumPlans {
-		if price, ok := s.config.Pay.PremiumPrices[plan]; ok {
+		if price, ok := prices[plan]; ok {
 			plans = append(plans, premiumPlanResponse{Plan: plan, Amount: price})
+		}
+	}
+	return plans
+}
+
+// GET /v1/premium/plans: the plans and their prices (no account needed): in
+// XAF (currency, plans), and in each currency a member may pay in (prices;
+// XAF only with Wajub).
+func (s *Server) listPremiumPlans(c *gin.Context) {
+	plans := s.premiumPlansIn("XAF")
+	prices := gin.H{"XAF": plans}
+	if s.otherCurrencies() {
+		for _, currency := range []string{"XOF", "USD"} {
+			if others := s.premiumPlansIn(currency); len(others) > 0 {
+				prices[currency] = others
+			}
 		}
 	}
 	apiResponse(c, http.StatusOK, gin.H{
 		"enabled":  s.money != nil && len(plans) > 0,
 		"currency": s.config.Pay.PremiumCurrency,
 		"plans":    plans,
+		"prices":   prices,
 	})
 }
 
@@ -615,6 +641,8 @@ type premiumPaymentRequest struct {
 	// « Renouveler automatiquement »: before the end, the same plan is asked
 	// again on the same number (mobile money, not for life)
 	Renew bool `json:"renew"`
+	// the currency of the prices shown (XAF when absent)
+	Currency string `json:"currency"`
 	payerRequest
 }
 
@@ -629,7 +657,13 @@ func (s *Server) payForPremium(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	price, ok := s.config.Pay.PremiumPrices[req.Plan]
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	currency, err := s.chargeCurrency(c, authUser.ID, req.Method, req.Currency)
+	if err != nil {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CURRENCY_MISMATCH", err))
+		return
+	}
+	price, ok := s.config.Pay.PremiumPricesIn(currency)[req.Plan]
 	if !ok || !slices.Contains(premiumPlans, req.Plan) {
 		badRequestError(c, fmt.Errorf("unknown plan %q", req.Plan))
 		return
@@ -639,20 +673,21 @@ func (s *Server) payForPremium(c *gin.Context) {
 			fmt.Errorf("only a plan paid by mobile money renews")))
 		return
 	}
-	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	s.startPayment(c, db.CreatePaymentParams{
 		UserID:      nullID(authUser.ID),
 		Purpose:     paymentForPremium,
 		People:      1,
 		PremiumPlan: req.Plan,
 		Amount:      price,
-		Currency:    s.config.Pay.PremiumCurrency,
+		Currency:    currency,
 		Renew:       req.Renew,
 	}, req.payerRequest, paymentStatementText+" Premium")
 }
 
 type donationRequest struct {
 	Amount int64 `json:"amount" binding:"required"`
+	// the currency of the amount (XAF when absent)
+	Currency string `json:"currency"`
 	payerRequest
 }
 
@@ -668,18 +703,24 @@ func (s *Server) donate(c *gin.Context) {
 		badRequestError(c, err)
 		return
 	}
-	if req.Amount < minDonation || req.Amount > maxDonation {
-		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "AMOUNT_OUT_OF_BOUNDS",
-			fmt.Errorf("a donation is between %d and %d", minDonation, maxDonation)))
+	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	currency, err := s.chargeCurrency(c, authUser.ID, req.Method, req.Currency)
+	if err != nil {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CURRENCY_MISMATCH", err))
 		return
 	}
-	authUser := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	rule := donationRules[currency]
+	if low := rule.minFor(req.Method); req.Amount < low || req.Amount > rule.Max {
+		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "AMOUNT_OUT_OF_BOUNDS",
+			fmt.Errorf("a donation is between %d and %d %s", low, rule.Max, currency)))
+		return
+	}
 	s.startPayment(c, db.CreatePaymentParams{
 		UserID:   nullID(authUser.ID),
 		Purpose:  paymentForDonation,
 		People:   1,
 		Amount:   req.Amount,
-		Currency: s.config.Pay.PremiumCurrency,
+		Currency: currency,
 	}, req.payerRequest, paymentStatementText+" Don")
 }
 
@@ -701,7 +742,13 @@ func (s *Server) getPremiumStatus(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
-	apiResponse(c, http.StatusOK, gin.H{"lifetime": lifetime, "until": until, "renewal": renewal})
+	country := s.accountCountry(c, authUser.ID)
+	apiResponse(c, http.StatusOK, gin.H{
+		"lifetime": lifetime, "until": until, "renewal": renewal,
+		// how the website shows the prices: the currency of the member's card,
+		// the way of paying shown first
+		"card_currency": s.cardCurrency(country), "preferred": s.preferredMethod(country),
+	})
 }
 
 // premiumBought: the Premium [userID] has from here (bought on the website,
