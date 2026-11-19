@@ -77,7 +77,25 @@ func TestTheServerShipsItsCourses(t *testing.T) {
 	for _, entry := range entries {
 		names = append(names, entry.Name())
 	}
-	require.Subset(t, names, []string{"ministry.fr.json", "bible.fr.json", "versets.fr.json", "priere.fr.json", "quiz.fr.json"})
+	require.Subset(t, names, []string{"ministry.fr.json", "bible.fr.json", "versets.fr.json", "priere.fr.json", "quiz.fr.json", "parcours.fr.json"})
+}
+
+// Every course shipped with the server reads and passes the rules of an
+// import: a file that fails would be left out at start, without a word to
+// the members.
+func TestEveryShippedCourseIsValid(t *testing.T) {
+	entries, err := games.Courses.ReadDir(".")
+	require.NoError(t, err)
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+		raw, err := games.Courses.ReadFile(entry.Name())
+		require.NoError(t, err)
+		var course importGameCourseRequest
+		require.NoError(t, json.Unmarshal(raw, &course), entry.Name())
+		require.NoError(t, course.validate(), entry.Name())
+	}
 }
 
 // twoLevelCourse is [code] with « Niveau 1 » (renamed or not in the
