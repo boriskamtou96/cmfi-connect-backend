@@ -4,3 +4,5 @@
 .env
 # the binary of `go build`
 /main
+# the work folder of air (go build, build-errors.log)
+/tmp/
