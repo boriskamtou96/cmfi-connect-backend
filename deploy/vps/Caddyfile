@@ -1,0 +1,6 @@
+# HTTPS in front of the API: Caddy gets and renews the certificate from
+# Let's Encrypt once the domain points to this server.
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:8080
+}

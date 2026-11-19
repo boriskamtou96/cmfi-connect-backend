@@ -1,0 +1,91 @@
+# The API and its database on our own server (Contabo VPS, Ubuntu 24.04).
+# See README.md in this folder. Settings: .env next to this file (from
+# .env.example), never in git.
+#
+#   docker compose up -d --build     start or update
+#   docker compose logs -f api       follow the server
+
+name: cmfi
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  postgres:
+    # the same major version as the database we come from (Neon, Postgres 18)
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cmfi
+      POSTGRES_DB: cmfi_connect
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - max_connections=100
+    volumes:
+      # Postgres 18 keeps its data in a folder per version under this path
+      - pgdata:/var/lib/postgresql
+    # no port published: only the API reaches it, on the network of the project
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmfi -d cmfi_connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    shm_size: 256mb
+    logging: *logging
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: cmfi-connect-api:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # the password is made of letters and digits only (README): no escaping
+      DB_DSN: postgres://cmfi:${POSTGRES_PASSWORD}@postgres:5432/cmfi_connect?sslmode=disable
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/firebase-credentials.json
+    volumes:
+      # the Firebase key stays on the server, outside the repository
+      - /etc/cmfi/firebase-credentials.json:/run/secrets/firebase-credentials.json:ro
+      # images on disk, only used without a bucket (S3_BUCKET)
+      - media:/app/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # only from the server itself (Docker ports go around ufw): to test before Caddy
+    ports:
+      - "127.0.0.1:8080:8080"
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:-api.cmfi-connect.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # the certificates: keep them, Let's Encrypt limits new ones
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    logging: *logging
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
