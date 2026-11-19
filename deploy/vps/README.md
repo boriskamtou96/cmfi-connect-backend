@@ -16,8 +16,12 @@ Le dépôt est dans `/opt/cmfi-connect-backend` sur le serveur ; les commandes c
 ssh root@158.220.73.117
 
 apt update && apt upgrade -y
-apt install -y ca-certificates curl git ufw unattended-upgrades rclone
+apt install -y ca-certificates curl git ufw unattended-upgrades unzip
 dpkg-reconfigure -f noninteractive unattended-upgrades   # mises à jour de sécurité seules
+
+# rclone (envoi des sauvegardes sur R2) : la version officielle, pas celle
+# d'Ubuntu (1.60), dont chaque envoi vers R2 échoue d'abord en « Not Implemented »
+curl -fsSL https://rclone.org/install.sh | bash
 
 # Docker (dépôt officiel)
 curl -fsSL https://get.docker.com | sh
@@ -123,7 +127,27 @@ crontab -e                    # ajouter :
 # 0 3 * * * /opt/cmfi-connect-backend/deploy/vps/backup.sh >> /var/log/cmfi-backup.log 2>&1
 ```
 
-Copies dans `/var/backups/cmfi` (les 14 dernières). Pour en garder une hors du serveur, sur R2 : `rclone config` (type `s3`, fournisseur Cloudflare, les clés d'un jeton R2 limité au bucket des sauvegardes), puis `BACKUP_RCLONE_REMOTE=r2:cmfi-backups/db` dans `.env`.
+Copies dans `/var/backups/cmfi` (les 14 dernières), et chacune envoyée sur R2 (`BACKUP_RCLONE_REMOTE=r2:cmfi-backups/db` dans `.env`), pour ne pas tout perdre avec le serveur.
+
+Côté Cloudflare (en place depuis le 19/11/2026) :
+
+- le bucket `cmfi-backups`, avec une règle de cycle de vie qui supprime le dossier `db/` après 30 jours ;
+- le jeton `cmfi-vps-backups` (R2 › Manage API Tokens) : Object Read & Write, sur `cmfi-backups` seulement. **Sans filtre d'adresse IP** : limité à l'IP du VPS, R2 refuse tout (403).
+
+Côté serveur, le remote `r2` de rclone (`/root/.config/rclone/rclone.conf`, lisible par root seulement) :
+
+```ini
+[r2]
+type = s3
+provider = Cloudflare
+access_key_id = …
+secret_access_key = …
+endpoint = https://<id du compte>.r2.cloudflarestorage.com
+region = auto
+no_check_bucket = true
+```
+
+`no_check_bucket` : le jeton n'a pas le droit de lister ni de créer des buckets. Essai : `rclone ls r2:cmfi-backups/db/`.
 
 ### Restaurer une sauvegarde
 
