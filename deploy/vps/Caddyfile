@@ -15,3 +15,11 @@
 	encode zstd gzip
 	reverse_proxy uptime-kuma:3001
 }
+
+# the staging (../staging): its API, on the edge network
+{$STAGING_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy staging-api:8080 {
+		request_buffers 110MB
+	}
+}

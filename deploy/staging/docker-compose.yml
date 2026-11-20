@@ -1,0 +1,79 @@
+# The test server (staging), on the same VPS as production, from the dev
+# branch: its own database and API, behind the Caddy of production on
+# staging-api.cmfi-connect.com. See README.md in this folder. Settings:
+# .env next to this file (from .env.example), never in git.
+#
+#   docker compose up -d --build     start or update
+#   docker compose logs -f api       follow the server
+
+name: cmfi-staging
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cmfi
+      POSTGRES_DB: cmfi_connect
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=512MB
+      - -c
+      - max_connections=40
+    volumes:
+      - pgdata:/var/lib/postgresql
+    # no port published, and not on the edge network: only this API reaches it
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmfi -d cmfi_connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    shm_size: 128mb
+    logging: *logging
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: cmfi-connect-api:staging
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_DSN: postgres://cmfi:${POSTGRES_PASSWORD}@postgres:5432/cmfi_connect?sslmode=disable
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/firebase-credentials.json
+    volumes:
+      # the key of the Firebase project cmfi-connect-dev: no push reaches the
+      # members of production
+      - /etc/cmfi/firebase-staging.json:/run/secrets/firebase-credentials.json:ro
+      - media:/app/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080"
+    networks:
+      default: {}
+      # shared with the Caddy of production only (never its database)
+      edge:
+        aliases:
+          - staging-api
+    logging: *logging
+
+networks:
+  edge:
+    external: true
+    name: cmfi_edge
+
+volumes:
+  pgdata:
+  media:

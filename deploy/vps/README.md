@@ -184,6 +184,8 @@ Dans Uptime Kuma : un moniteur HTTP(s) sur `https://api.cmfi-connect.com/v1/heal
 
 ## Mettre à jour le serveur
 
+La production suit la branche `main` ; on essaie d'abord sur le staging, qui suit `dev` ([../staging/README.md](../staging/README.md)). Une fois `dev` passée dans `main` :
+
 ```bash
 cd /opt/cmfi-connect-backend && git pull
 cd deploy/vps && docker compose up -d --build api

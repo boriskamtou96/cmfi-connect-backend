@@ -76,6 +76,7 @@ services:
     environment:
       API_DOMAIN: ${API_DOMAIN:-api.cmfi-connect.com}
       STATUS_DOMAIN: ${STATUS_DOMAIN:-status.cmfi-connect.com}
+      STAGING_DOMAIN: ${STAGING_DOMAIN:-staging-api.cmfi-connect.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # the certificates: keep them, Let's Encrypt limits new ones
@@ -84,6 +85,10 @@ services:
     depends_on:
       - api
       - uptime-kuma
+    networks:
+      default: {}
+      # the API of the staging (../staging), and nothing else of it
+      edge: {}
     logging: *logging
 
   # the containers in a browser. It holds the keys of Docker (root on the
@@ -110,6 +115,12 @@ services:
     volumes:
       - uptime_kuma_data:/app/data
     logging: *logging
+
+networks:
+  # made once: docker network create cmfi_edge (../staging/README.md)
+  edge:
+    external: true
+    name: cmfi_edge
 
 volumes:
   pgdata:
