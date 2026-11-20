@@ -4,3 +4,9 @@
 	encode zstd gzip
 	reverse_proxy api:8080
 }
+
+# Uptime Kuma: the watch over the API, and its status page
+{$STATUS_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy uptime-kuma:3001
+}

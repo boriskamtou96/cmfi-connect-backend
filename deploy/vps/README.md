@@ -159,6 +159,29 @@ docker compose exec -T postgres pg_restore -U cmfi -d cmfi_connect --no-owner < 
 docker compose up -d api
 ```
 
+## 6. Tableaux de bord
+
+Deux outils dans le navigateur, à côté de l'API :
+
+- **Portainer** : les conteneurs, leur état, leurs journaux, leurs redémarrages. Il pilote Docker (autant que `root`) : il n'est ouvert que sur le serveur lui-même ;
+- **Uptime Kuma** : regarde `https://api.cmfi-connect.com/v1/health` et prévient (e-mail, Telegram…) quand l'API ne répond plus ; sa page est `https://status.cmfi-connect.com`.
+
+Pour les ouvrir depuis le Mac, un tunnel SSH (laisser le Terminal ouvert) :
+
+```bash
+ssh -N -L 9443:127.0.0.1:9443 -L 3001:127.0.0.1:3001 root@158.220.73.117
+```
+
+puis https://localhost:9443 (Portainer, le navigateur avertit : certificat du serveur lui-même) et http://localhost:3001 (Uptime Kuma).
+
+La première fois :
+
+1. `docker compose up -d portainer uptime-kuma` ;
+2. tout de suite, par le tunnel, créer le compte d'admin de Portainer (au-delà de 5 minutes il refuse : `docker compose restart portainer`) et celui d'Uptime Kuma (le premier venu le crée : avant que le domaine pointe ici) ;
+3. chez Cloudflare, `status` en `A` vers `158.220.73.117`, proxy désactivé (nuage gris), puis `docker compose up -d caddy` (et `docker compose restart caddy` si le certificat tarde).
+
+Dans Uptime Kuma : un moniteur HTTP(s) sur `https://api.cmfi-connect.com/v1/health` (toutes les 60 s) et une notification. Uptime Kuma tourne sur ce serveur : si le serveur entier tombe, il ne prévient pas. Un service extérieur gratuit (UptimeRobot…) sur la même adresse couvre ce cas.
+
 ## Mettre à jour le serveur
 
 ```bash

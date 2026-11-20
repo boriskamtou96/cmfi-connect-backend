@@ -75,6 +75,7 @@ services:
       - "443:443/udp"
     environment:
       API_DOMAIN: ${API_DOMAIN:-api.cmfi-connect.com}
+      STATUS_DOMAIN: ${STATUS_DOMAIN:-status.cmfi-connect.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # the certificates: keep them, Let's Encrypt limits new ones
@@ -82,6 +83,32 @@ services:
       - caddy_config:/config
     depends_on:
       - api
+      - uptime-kuma
+    logging: *logging
+
+  # the containers in a browser. It holds the keys of Docker (root on the
+  # server): only reachable from the server itself, through an SSH tunnel
+  # (README, « Tableaux de bord »)
+  portainer:
+    image: portainer/portainer-ce:lts
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    logging: *logging
+
+  # watches the API and warns when it falls; behind Caddy (STATUS_DOMAIN).
+  # Its first account is made through the SSH tunnel, before the domain
+  # points here (the first visitor would make it otherwise)
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
     logging: *logging
 
 volumes:
@@ -89,3 +116,5 @@ volumes:
   media:
   caddy_data:
   caddy_config:
+  portainer_data:
+  uptime_kuma_data:
