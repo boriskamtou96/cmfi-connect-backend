@@ -51,14 +51,29 @@ docker compose exec -T postgres dropdb -U cmfi cmfi_connect
 docker compose exec -T postgres createdb -U cmfi cmfi_connect
 docker compose exec -T postgres pg_restore -U cmfi -d cmfi_connect --no-owner --no-acl < /tmp/prod.dump
 rm /tmp/prod.dump
-docker compose exec -T postgres psql -U cmfi -d cmfi_connect -At -v ON_ERROR_STOP=1 < anonymize.sql > /tmp/avatars.txt
+docker compose exec -T postgres psql -U cmfi -d cmfi_connect -At -v ON_ERROR_STOP=1 < anonymize.sql > /dev/null
 docker compose up -d api
-# les fichiers : la copie du bucket, sans les photos des membres
-rclone sync r2:cmfi-connect-media r2:cmfi-connect-media-staging
-grep -v '^\(BEGIN\|COMMIT\|SELECT\|UPDATE\|DELETE\)' /tmp/avatars.txt | while read -r key; do
-  [ -n "$key" ] && rclone deletefile "r2:cmfi-connect-media-staging/$key"
+```
+
+Les fichiers : la copie du bucket de production, sans les photos des membres. Chaque bucket a son jeton (celui des `.env`), donc un accès rclone chacun, lu dans les `.env` (leurs valeurs sont entre apostrophes) :
+
+```bash
+get() { grep "^$2=" "$1" | cut -d= -f2- | tr -d "'\"" ; }
+P=/opt/cmfi-connect-backend/deploy/vps/.env; S=/opt/cmfi-connect-staging/deploy/staging/.env
+for r in PROD:$P STG:$S; do n=${r%%:*}; f=${r#*:}
+  export RCLONE_CONFIG_${n}_TYPE=s3 RCLONE_CONFIG_${n}_PROVIDER=Cloudflare RCLONE_CONFIG_${n}_REGION=auto RCLONE_CONFIG_${n}_NO_CHECK_BUCKET=true
+  export RCLONE_CONFIG_${n}_ENDPOINT="$(get $f S3_ENDPOINT)" RCLONE_CONFIG_${n}_ACCESS_KEY_ID="$(get $f S3_ACCESS_KEY_ID)" RCLONE_CONFIG_${n}_SECRET_ACCESS_KEY="$(get $f S3_SECRET_ACCESS_KEY)"
 done
+docker compose -f /opt/cmfi-connect-backend/deploy/vps/docker-compose.yml exec -T postgres psql -U cmfi -d cmfi_connect -At \
+  -c "select m.key from users u join media m on m.id = u.avatar_media_id where u.id not in (1, 142)" > /tmp/avatars.txt
+rclone copy prod:cmfi-connect-media stg:cmfi-connect-media-staging --transfers 16 --exclude-from /tmp/avatars.txt
 rm /tmp/avatars.txt
+```
+
+La démo (un an de comptes rendus pour @cmfic et ses 5 disciples), qui n'existe que sur le staging, se recrée après un rafraîchissement :
+
+```bash
+docker compose exec -T postgres psql -U cmfi -d cmfi_connect -v ON_ERROR_STOP=1 -q < demo.sql
 ```
 
 Se connecter au staging : avec le compte du propriétaire (n° 1) ou le compte de démonstration @cmfic, mêmes mots de passe qu'en production. Les autres membres sont devenus « Membre n° … », sans mot de passe utilisable.
