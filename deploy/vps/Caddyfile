@@ -2,7 +2,12 @@
 # Let's Encrypt once the domain points to this server.
 {$API_DOMAIN} {
 	encode zstd gzip
-	reverse_proxy api:8080
+	reverse_proxy api:8080 {
+		# an upload (a sound: 100 MB at most) is received whole before the
+		# API reads it, as behind Render: the API's 30 s to read a request
+		# no longer depend on the sender's connection
+		request_buffers 110MB
+	}
 }
 
 # Uptime Kuma: the watch over the API, and its status page
