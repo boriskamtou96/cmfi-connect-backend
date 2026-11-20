@@ -189,4 +189,11 @@ cd /opt/cmfi-connect-backend && git pull
 cd deploy/vps && docker compose up -d --build api
 ```
 
+Quand le `Caddyfile` change, `caddy reload` ne suffit pas : le conteneur voit encore l'ancien fichier (monté seul, `git pull` le remplace par un nouveau). Il faut recréer le conteneur, ce qui coupe le HTTPS une seconde :
+
+```bash
+docker compose up -d --force-recreate caddy
+docker compose exec caddy cat /etc/caddy/Caddyfile   # vérifier
+```
+
 Les commandes du dépôt sont dans l'image : `docker compose exec api import-hymns data/hymns/<recueil>.json`, `docker compose exec api promote <numéro>`.
