@@ -63,6 +63,11 @@ type donationRule struct {
 	Max      int64   `json:"max"`
 }
 
+// cardMinimum: the least a card pays in [currency] (0 when not known).
+func cardMinimum(currency string) int64 {
+	return donationRules[currency].CardMin
+}
+
 // minFor: the least that can be given by [method].
 func (r donationRule) minFor(method string) int64 {
 	if method == methodCard {

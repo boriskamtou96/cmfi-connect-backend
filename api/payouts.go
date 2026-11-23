@@ -54,7 +54,7 @@ func (s *Server) providerFees(ctx context.Context) money.Fees {
 	}
 	fees, err := s.money.PlatformFees(ctx)
 	if err != nil || fees.PaymentRate <= 0 || fees.PaymentRate >= 1 {
-		slog.Warn("wajub fees unknown: 5 % assumed", "error", err)
+		slog.Warn("provider fees unknown: 5 % assumed", "error", err)
 		return defaultFees
 	}
 	s.fees.fees, s.fees.fetched = fees, time.Now()
@@ -145,6 +145,7 @@ func (s *Server) payoutsOverview(c *gin.Context, event db.Event) (payoutsOvervie
 	if err != nil {
 		return overview, err
 	}
+	payments = forwardable(payments, event.PayoutProvider)
 	overview.ToForward = toForwardResponse{Payments: len(payments), Currency: event.PriceCurrency}
 	for _, payment := range payments {
 		overview.ToForward.Amount += payment.Amount
@@ -286,6 +287,7 @@ func (s *Server) forwardEventMoney(c *gin.Context) {
 		internalServerError(c, err)
 		return
 	}
+	payments = forwardable(payments, event.PayoutProvider)
 	fees := s.providerFees(c)
 	var amount int64
 	ids := []uuid.UUID{}
@@ -350,14 +352,14 @@ func (s *Server) sendPayout(ctx context.Context, payout db.Payout, description s
 	case errors.Is(err, money.ErrBalanceTooLow):
 		s.failPayout(ctx, payout.ID, "WALLET_BALANCE_TOO_LOW")
 	case errors.As(err, &refused):
-		slog.Warn("payout refused by wajub", "payout", payout.ID, "status", refused.Status, "reason", refused.Message)
+		slog.Warn("payout refused by the provider", "payout", payout.ID, "status", refused.Status, "reason", refused.Message)
 		code := refusalCode(refused)
 		if code == "REJECTED" {
 			code = "PAYOUT_REFUSED"
 		}
 		s.failPayout(ctx, payout.ID, code)
 	case err != nil:
-		slog.Error("payout not sent to wajub", "payout", payout.ID, "error", err)
+		slog.Error("payout not sent to the provider", "payout", payout.ID, "error", err)
 		s.failPayout(ctx, payout.ID, "PAYMENTS_UNAVAILABLE")
 	case sent.Status == money.Failed || sent.Status == money.Cancelled:
 		s.failPayout(ctx, payout.ID, "UNSPECIFIED_FAILURE")
@@ -401,7 +403,7 @@ func (s *Server) onPayoutWebhook(ctx context.Context, hook money.Webhook) {
 		found = err == nil
 	}
 	if !found {
-		slog.Warn("wajub webhook for an unknown payout", "event", hook.Event)
+		slog.Warn("provider webhook for an unknown payout", "event", hook.Event)
 		return
 	}
 	switch {
@@ -426,4 +428,24 @@ func (s *Server) onPayoutWebhook(ctx context.Context, hook money.Webhook) {
 		hook.Status == money.Failed || hook.Status == money.Cancelled:
 		s.failPayout(ctx, payout.ID, webhookFailure(hook))
 	}
+}
+
+// forwardable: those of [payments] in the wallet a payout to [payoutProvider]
+// leaves from. KPAY-NOW keeps one wallet per country (23/11/2026): what was
+// paid by mobile money in another country stays in that country's wallet,
+// to be withdrawn there; cards, and the operators the catalogue doesn't know,
+// count in the home wallet (Cameroon's when the account is not set yet).
+func forwardable(payments []db.Payment, payoutProvider string) []db.Payment {
+	country := "CMR"
+	if operator, ok := money.OperatorOf(payoutProvider); ok {
+		country = operator.Country
+	}
+	kept := []db.Payment{}
+	for _, payment := range payments {
+		operator, known := money.OperatorOf(payment.Provider)
+		if payment.Provider == cardProvider || !known || operator.Country == country {
+			kept = append(kept, payment)
+		}
+	}
+	return kept
 }

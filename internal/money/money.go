@@ -163,8 +163,37 @@ type Operator struct {
 
 // Operators: the operators the app can offer (PROVIDERS picks among them),
 // with the names shown to the members. Their codes are those kept on the
-// payments since the first provider.
+// payments since the first provider, and KPAY-NOW's (23/11/2026: the six
+// countries of the CFA francs it serves; Wajub only knows Cameroon's).
 var Operators = []Operator{
-	{"MTN_MOMO_CMR", "MTN", "CMR", map[string]string{"fr": "Cameroun", "en": "Cameroon"}, "237", "XAF", "50"},
-	{"ORANGE_CMR", "Orange", "CMR", map[string]string{"fr": "Cameroun", "en": "Cameroon"}, "237", "XAF", "50"},
+	{"MTN_MOMO_CMR", "MTN", "CMR", cameroon, "237", "XAF", "50"},
+	{"ORANGE_CMR", "Orange", "CMR", cameroon, "237", "XAF", "50"},
+	{"MTN_MOMO_COG", "MTN", "COG", map[string]string{"fr": "Congo", "en": "Congo"}, "242", "XAF", "100"},
+	{"AIRTEL_COG", "Airtel", "COG", map[string]string{"fr": "Congo", "en": "Congo"}, "242", "XAF", "100"},
+	{"AIRTEL_GAB", "Airtel", "GAB", map[string]string{"fr": "Gabon", "en": "Gabon"}, "241", "XAF", "100"},
+	{"MTN_MOMO_BEN", "MTN", "BEN", map[string]string{"fr": "Bénin", "en": "Benin"}, "229", "XOF", "100"},
+	{"MOOV_BEN", "Moov", "BEN", map[string]string{"fr": "Bénin", "en": "Benin"}, "229", "XOF", "100"},
+	{"MTN_MOMO_CIV", "MTN", "CIV", map[string]string{"fr": "Côte d'Ivoire", "en": "Côte d'Ivoire"}, "225", "XOF", "100"},
+	{"ORANGE_CIV", "Orange", "CIV", map[string]string{"fr": "Côte d'Ivoire", "en": "Côte d'Ivoire"}, "225", "XOF", "100"},
+	{"ORANGE_SEN", "Orange", "SEN", map[string]string{"fr": "Sénégal", "en": "Senegal"}, "221", "XOF", "100"},
+	{"FREE_SEN", "Free", "SEN", map[string]string{"fr": "Sénégal", "en": "Senegal"}, "221", "XOF", "100"},
+}
+
+var cameroon = map[string]string{"fr": "Cameroun", "en": "Cameroon"}
+
+// OperatorOf: the operator of [provider] in the catalogue.
+func OperatorOf(provider string) (Operator, bool) {
+	for _, operator := range Operators {
+		if operator.Provider == provider {
+			return operator, true
+		}
+	}
+	return Operator{}, false
+}
+
+// SameValue: whether an amount in [a] is the same amount in [b]: the same
+// currency, or the two CFA francs (XAF and XOF, both 655.957 to the euro).
+func SameValue(a, b string) bool {
+	cfa := func(c string) bool { return c == "XAF" || c == "XOF" }
+	return a == b || (cfa(a) && cfa(b))
 }

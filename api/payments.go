@@ -18,6 +18,7 @@ import (
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/kpay"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/money"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/token"
+	"github.com/boriskamtou96/cmfi-connect-backend/internal/utils"
 	"github.com/boriskamtou96/cmfi-connect-backend/internal/wajub"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -151,13 +152,18 @@ func toPaymentResponse(payment db.Payment) paymentResponse {
 
 // ----- the operators -----
 
-// defaultProviders: the operators offered without WAJUB_PROVIDERS.
+// defaultProviders: the operators offered by Wajub without WAJUB_PROVIDERS
+// (it only serves Cameroon); KPAY-NOW offers the whole catalogue without
+// KPAY_PROVIDERS.
 var defaultProviders = []string{"MTN_MOMO_CMR", "ORANGE_CMR"}
 
-// operators: those of Wajub's catalogue the application offers.
+// operators: those of the catalogue the application offers.
 func (s *Server) operators() []money.Operator {
 	allowed := s.config.Pay.Providers()
 	if len(allowed) == 0 {
+		if s.config.Pay.Provider == utils.ProviderKPay {
+			return money.Operators
+		}
 		allowed = defaultProviders
 	}
 	found := []money.Operator{}
@@ -187,12 +193,13 @@ type countryResponse struct {
 	Providers []providerResponse `json:"providers"`
 }
 
-// operatorsFor: the countries and operators that take [currency].
+// operatorsFor: the countries and operators that take [currency], or the
+// same amount in their own (the CFA francs of the other zone).
 func operatorsFor(operators []money.Operator, currency string) []countryResponse {
 	countries := []countryResponse{}
 	index := map[string]int{}
 	for _, operator := range operators {
-		if operator.Currency != currency {
+		if !money.SameValue(operator.Currency, currency) {
 			continue
 		}
 		i, ok := index[operator.Country]
@@ -224,7 +231,9 @@ func (s *Server) listPaymentProviders(c *gin.Context) {
 	apiResponse(c, http.StatusOK, gin.H{
 		"countries": operatorsFor(s.operators(), currency),
 		// Visa and Mastercard on the provider's page
-		"cards":         s.config.Pay.Cards(),
+		"cards": s.config.Pay.Cards(),
+		// the least a card pays in [currency] (KPAY-NOW refuses a card under 1 USD)
+		"card_min":      cardMinimum(currency),
 		"country":       country,
 		"card_currency": s.cardCurrency(country),
 		"preferred":     s.preferredMethod(country),
@@ -317,6 +326,11 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CARDS_DISABLED", fmt.Errorf("cards are not taken")))
 			return
 		}
+		if low := cardMinimum(params.Currency); params.Amount < low {
+			c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, "CARD_MINIMUM",
+				fmt.Errorf("a card pays at least %d %s", low, params.Currency)))
+			return
+		}
 		s.startCardPayment(c, params, payer, description)
 		return
 	case "", methodMobileMoney:
@@ -341,6 +355,12 @@ func (s *Server) startPayment(c *gin.Context, params db.CreatePaymentParams, pay
 	params.Provider = strings.TrimSpace(payer.Provider)
 	if params.Provider == "" {
 		params.Provider = prediction.Provider
+	}
+	// an operator of the other CFA zone is paid the same amount in its own
+	// francs (a Senegalese member pays an event in XAF with Orange in XOF)
+	if operator, ok := money.OperatorOf(params.Provider); ok && operator.Currency != params.Currency &&
+		money.SameValue(operator.Currency, params.Currency) {
+		params.Currency = operator.Currency
 	}
 	if code, err := checkOperator(s.operators(), params.Provider, params.Currency, params.Amount); err != nil {
 		c.JSON(http.StatusConflict, NewErrorResponse(http.StatusConflict, code, err))
@@ -384,11 +404,11 @@ func (s *Server) askMobileMoney(ctx context.Context, log *slog.Logger, payment d
 		// it may have started: its webhook will tell
 		log.Warn("payment outcome unknown", "payment", payment.ID, "error", err)
 	case errors.As(err, &refused):
-		log.Warn("payment refused by wajub", "payment", payment.ID, "status", refused.Status,
+		log.Warn("payment refused by the provider", "payment", payment.ID, "status", refused.Status,
 			"reason", refused.Message, "wajub_reason", refused.Reason, "detail", refused.Detail)
 		s.failPayment(ctx, payment.ID, refusalCode(refused))
 	case err != nil:
-		log.Error("payment not sent to wajub", "payment", payment.ID, "error", err)
+		log.Error("payment not sent to the provider", "payment", payment.ID, "error", err)
 		s.failPayment(ctx, payment.ID, "PAYMENTS_UNAVAILABLE")
 	case started.Status == money.Failed || started.Status == money.Cancelled:
 		s.failPayment(ctx, payment.ID, "UNSPECIFIED_FAILURE")
@@ -427,13 +447,13 @@ func (s *Server) startCardPayment(c *gin.Context, params db.CreatePaymentParams,
 	var refused *money.RefusedError
 	switch {
 	case errors.As(err, &refused):
-		logFor(c).Warn("card payment refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		logFor(c).Warn("card payment refused by the provider", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
 		s.failPayment(c, payment.ID, refusalCode(refused))
 	case err != nil:
-		logFor(c).Error("card payment not sent to wajub", "payment", payment.ID, "error", err)
+		logFor(c).Error("card payment not sent to the provider", "payment", payment.ID, "error", err)
 		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
 	case started.GatewayURL == "":
-		logFor(c).Error("wajub gave no page for a card payment", "payment", payment.ID)
+		logFor(c).Error("the provider gave no page for a card payment", "payment", payment.ID)
 		s.failPayment(c, payment.ID, "PAYMENTS_UNAVAILABLE")
 	default:
 		if err := s.store.MarkPaymentAccepted(c, db.MarkPaymentAcceptedParams{ID: payment.ID, ProviderPaymentID: started.ID}); err != nil {
@@ -914,7 +934,7 @@ func (s *Server) onPaymentWebhook(ctx context.Context, hook money.Webhook) {
 		// a card is charged in USD: its amount is not the one asked
 		if amount, err := strconv.ParseFloat(fmt.Sprint(hook.Amount), 64); err == nil &&
 			payment.Provider != cardProvider && int64(amount) < payment.Amount {
-			slog.Error("wajub says completed for less than asked: left pending", "payment", payment.ID)
+			slog.Error("the provider says completed for less than asked: left pending", "payment", payment.ID)
 			return
 		}
 		completed, err := s.store.CompletePayment(ctx, db.CompletePaymentParams{ID: payment.ID, ProviderTransactionID: hook.Reference})
@@ -963,7 +983,7 @@ func (s *Server) onRefundWebhook(ctx context.Context, hook money.Webhook) {
 		found = err == nil
 	}
 	if !found {
-		slog.Warn("wajub webhook for an unknown refund", "event", hook.Event)
+		slog.Warn("provider webhook for an unknown refund", "event", hook.Event)
 		return
 	}
 	switch {
@@ -1050,7 +1070,7 @@ func (s *Server) lookUp(ctx context.Context, payment db.Payment) {
 	defer func() { _ = s.store.TouchPaymentCheck(ctx, payment.ID) }()
 	hook, err := s.money.Lookup(ctx, payment.ProviderPaymentID)
 	if err != nil {
-		slog.Warn("cannot ask wajub about a payment", "payment", payment.ID, "error", err)
+		slog.Warn("cannot ask the provider about a payment", "payment", payment.ID, "error", err)
 		return
 	}
 	if hook.ExternalID == "" {
@@ -1177,7 +1197,7 @@ func (s *Server) refundPayment(ctx context.Context, payment db.Payment, reason s
 // with the same externalId, when it never got there).
 func (s *Server) sendRefund(ctx context.Context, payment db.Payment) {
 	if payment.ProviderPaymentID == "" {
-		slog.Error("refund impossible: wajub id unknown", "payment", payment.ID)
+		slog.Error("refund impossible: provider id unknown", "payment", payment.ID)
 		s.failRefund(ctx, payment.RefundID, "PAYMENT_NOT_FOUND")
 		return
 	}
@@ -1192,16 +1212,16 @@ func (s *Server) sendRefund(ctx context.Context, payment db.Payment) {
 	case errors.Is(err, money.ErrDuplicate):
 		slog.Info("refund already sent", "payment", payment.ID)
 	case errors.As(err, &refused):
-		slog.Warn("refund refused by wajub", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
+		slog.Warn("refund refused by the provider", "payment", payment.ID, "status", refused.Status, "reason", refused.Message)
 		s.failRefund(ctx, payment.RefundID, refundRefusalCode(refused))
 	case err != nil:
-		slog.Error("refund not sent to wajub", "payment", payment.ID, "error", err)
+		slog.Error("refund not sent to the provider", "payment", payment.ID, "error", err)
 		s.failRefund(ctx, payment.RefundID, "REFUNDS_UNAVAILABLE")
 	case refund.Status == money.Failed:
 		s.failRefund(ctx, payment.RefundID, "UNSPECIFIED_FAILURE")
 	default:
 		if err := s.store.SetPaymentProviderRefundID(ctx, db.SetPaymentProviderRefundIDParams{ID: payment.ID, ProviderRefundID: refund.ID}); err != nil {
-			slog.Error("cannot keep the wajub refund id", "payment", payment.ID, "error", err)
+			slog.Error("cannot keep the provider refund id", "payment", payment.ID, "error", err)
 		}
 		slog.Info("refund started", "payment", payment.ID, "reason", payment.RefundReason)
 	}

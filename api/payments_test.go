@@ -109,6 +109,10 @@ func (f *fakeMoney) PredictProvider(_ context.Context, phone string) (money.Pred
 		}
 		return -1
 	}, phone)
+	// Senegal (KPAY-NOW): Orange for its 77 numbers
+	if strings.HasPrefix(digits, "22177") && len(digits) == 12 {
+		return money.Prediction{Country: "SEN", Provider: "ORANGE_SEN", PhoneNumber: digits}, nil
+	}
 	if !strings.HasPrefix(digits, "237") || len(digits) != 12 {
 		return money.Prediction{}, money.ErrInvalidPhone
 	}
